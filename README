@@ -1,4 +1,4 @@
-Sim-OPTS version 0.01
+Sim-OPTS version 0.02
 ============================
 
 INSTALLATION
@@ -20,68 +20,67 @@ This module requires these other modules and libraries:
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2008-2014 by Gian Luca Brunetti and Politecnico di Milano
-This is free software.  You can redistribute it and/or modify it under the terms of the GNU General Public License 
-as published by the Free Software Foundation, version 2.
+Copyright (C) 2008-2014 by Gian Luca Brunetti and Politecnico di Milano.
+This is free software.  You can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
 
 
-Sim::OPTS is made to manage parametric explorations through the use of the ESP-r building energy performance simulation platform.
-Be aware that OPTS may modify directories and files in your work directory. 
-So it is necessary to examine how it works before attempting to use it.
+
+OPTS is made to manage parametric explorations through the use of the ESP-r building performance simulation platform.
+OPTS may modify directories and files in your work directory. So it is necessary to examine how it works before attempting to use it.
 All the necessary information about ESP-r is available at the web address http://www.esru.strath.ac.uk/Programs/ESP-r.htm.
 
 For the non-habitual users of Perl: to install OPTS it is necessary to issue the following command in the shell as a superuser: "cpanm Sim::OPTS".
 This way Perl will take care to install all necessary dependencies.
-After loading the module, which is made possible by the commands "use Sim::OPTS", only two commands will be available to the user.
-Those will be "opts" and "optslaunch".
-The command "opts" will give activate the opts functions as written in a previously prepared OPTS configuration file.
-The command "optslaunch" will open a text interface made to facilitate the preparation of OPTS configuration files.
-However, "optslaunch" has not been updated to the last several versions of opts, so it not usable at the moment. 
+After loading the module, which is made possible by the commands "use Sim::OPTS", only two commands will be available to the user:
+"opts" and "optslaunch".
+"opts" will activate the opts functions as written in a previously prepared OPTS configuration file.
+"optslaunch" will open a text interface made to facilitate the preparation of OPTS configuration files.
+However, "optslaunch" has not been updated to the last several versions of opts, so it is no more usable at the moment. 
 
-The command "opts" has no parameter or other information excepted the name of an OPTS configuration file.
-It will ask for its name as soon it is launched.
-On that OPTS configuration file the instructions for the program will be written.
-Therefore, all the activity of preparation for a run of opts will happen in an OPTS configuration file.
-The OPTS configuration files will have to be prepared in advance. The first thing to do 
-to run OPTS is to prepare an OPTS configuration files to apply to an existing ESP-r model.
+The command "opts" requires or even allows no parameter or other information excepted the name of an OPTS configuration file.
+OPTS will ask for the name of an OPTS configuration file as soon it is launched.
+On that OPTS configuration file the instructions for the program will have to be written before launching OPTS.
+All the activity of preparation to run opts will happen in an OPTS configuration file.
+An OPTS configuration file has to be applied to an existing ESP-r model.
 
-Currently the OPTS config files can only be prepared by example.
-In the distribution there is a template file with explanations and an example of an OPTS config file.
-That template file constitute an integrative part of the present documentation.
-The OPTS config file will make, is asked, OPTS give instruction to the ESP-r building performance simulation program
-in order to make it modify a model in several different copies; then, if asked, will run some simulations;
-then, if asked, will retrieve the results; then, if asked, will extract some results.
-These are the functions done by the subroutines written in the files "opts_morph.pl", "opts_sim.pl", "opts_report.pl".
-It should be noted that some functions in "opts_report.pl" have been used only once and have not been maintained since then.
-This is because I have mostly dedicated my time to "opts.pm" and "opts_morph.pl".
+Currently the OPTS configuration files can only be prepared by example.
+In the module distribution, there is a template file with explanations and an example of an OPTS configuration file.
+The template file constitutea an integrative part of the present documentation.
+The OPTS configuration file will make, if asked, OPTS give instruction to the ESP-r building performance simulation program in order to make it modify a model in several different copies; then, if asked, it will run some simulations; then, if asked, it will retrieve the results; then, if asked, it will extract some results and order them in the required manner; then, if asked, will format the so obtained results.
+Those functions are performed by the subroutines written in the following files: "opts_morph.pl", "opts_sim.pl", "opts_report.pl", "opts_format.pl".
+It should be noted that some functions in "opts_report.pl" and especially in "opts_format.pl" have been used only once and have not been maintained since then.
+My attention has imdeed been mostly directed to the "OPTS.pm" and "opts_morph.pl" files.
 
-To run opts, I advise that Perl is called in a repl, then the Sim:OPTS module is loaded from there, and
-the command "opts" is issued from there as well.
-As a repl, you may use the Perl debugger.
-To call it, the command "perl -de" may be used. Once in the debugger, issue "use Sim::OPTS". Then issue "opts".
-At that point, OPTS will ask you to write the name and path of the OPTS configuration file to consider.
-After you will have given that response, the activity of OPTS will start and will not stop until completion.
+To run OPTS, you may open Perl in a repl, then load the Sim:OPTS module from there ("use Sim:OPTS"),
+then issue the command "opts" from there as well.
+As a repl, you may use the Perl debugger. To launch it, the command "perl -de" may be used. 
+When launched, OPTS will ask you to write the name and path of the OPTS configuration file to be considered.
+After that, the activity of OPTS will start and will not stop until completion.
 
-OPTS will make ESP-r act on a certain ESP-r files by copying it several times and morphing it.
-The target ESP-r model file  must also therefore be prepared in advance and specified in the OPTS configuration file.
+OPTS will make ESP-r perform actions on a certain ESP-r model by copying it several times and morphing each copy.
+A target ESP-r model  must also therefore be prepared in advance and specified in the OPTS configuration file.
 The OPTS configuration file will also contain information about your work directory.
 I usually make OPTS work in a "optsworks" folder in my home folder.
-Beside OPTS configuration files, also configuration files for propagation of constraint may be specificed.
-I usually put them into a directory of the model folders named "opts".
+Beside OPTS configuration files, also configuration files for propagation of constraints may be specified.
+I usually put them into a directory in the model folder named "opts".
 
-The model folders and the result files that will be created by OPTS through ESP-r will be named as your root model, followed by a “_” character,  followed by a variable number referred to the first morphing phase, followed by a “-” character, followed by an iteration number for the variable in question, and so on for all morphing phases. 
-For example, the first iteration for a model named “model” in a search constituted by 3 morphing phases and 5 iteration steps each may be named “model_1-1_2-1_3-1”; and the last one may be named “model_1-5_2-5_3-5”.
+The model folders and the result files that will be created through ESP-r will be named as your root model, followed by a “_” character,  followed by a variable number referred to the first morphing phase, followed by a “-” character, followed by an iteration number for the variable in question, and so on for all morphing phases. 
+For example, the model instance produced in the first iteration for a model named “model” in a search constituted by 3 morphing phases and 5 iteration steps each may be named “model_1-1_2-1_3-1”; and the last one may be named “model_1-5_2-5_3-5”.
 
-Some of OPTS operations on models are based on propagation of constraints. That propagation may regard the geometry of the model, solar shadings, mass/flow network, and controls, and how they affect each other and daylighting (as calculated throuch the Radiance lighting simulation program). 
-To study what propagation on constraint can do for the program the tempate file must be studied.
+The propagation of constraints on which some OPTS operations on models may be based may regard the geometry of the model, solar shadings, mass/flow network, and/or controls, and how they affect each other and daylighting (as calculated throuch the Radiance lighting simulation program). 
+To study what propagation on constraint can do for the program, the tempate file included in the OPTS Perl module distribution should be studied.
 
-OPTS presently only works for UNIX, and there still are lots of things to add to it and to correct.
-This is a program I have written as a side project since 2008, where I was beginning to learn to program.
-For this reason, its writing at first proceeded slowly and the most fundamental parts of it are the ones that are written in the strangest manner.
+OPTS presently only works for UNIX and UNIX-like systems. With just a few variations, it could work for Windows as well.
+There still would be lots of things to add to it and bugs to correct in it.
+OPTS is a program I have written as a side project since 2008, where I was beginning to learn to program. I wrote it in my spare time.
+The only parte of it I wrote for work is that in the file "opts_launch.pl", which was needed to include the use of OPTS 
+in an institutional research I was carrying on in 2011-2012.
+
+Because I began to write OPTS when I was learning to program, the writing at first proceeded slowly, and the most fundamental parts of the programs are the ones that are written in the strangest manner.
 As you may realize by looking at the code, I am not a professional programmer and I don't do most things in a standard way.
-In this module I am making use of symbolic references and I use "eval" in place of "require" or else.
-I did this in order to make programming things easier. 
-This is also the reasons neither "warnings" nor "strict" are used in the program.
+In the last phases of the writing of OPTS, for instance, I begun to use symbolic references and "eval" in place of "require" or anything else.
+I did that in order to make the program easier to write. By the way, symbolic references seem a very good idea to me in general, although they are deprecated.
+This is also the reason why neither "warnings" nor "strict" are used in the program.
 
 
 The author
