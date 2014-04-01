@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# This is OPTS, version 0.01
+# This is OPTS
 # Copyright: Gian Luca Brunetti and Politecnico di Milano, 2008-2014
 # email gianluca.brunetti@polimi.it
 # THis is a part of the OPTS Perl module.
@@ -16,7 +16,7 @@
 # In questo modo, si può raccoglierle compiendo una ricerca con grep, così da poterle chiamare per nome/ordine, e così modificare dei loro campi
 # per assegnazione. Perché questo adesso non funziona. 
 
-sub optslaunch { # uncheck this if the program is not used as a part of a Perl module called from opts.pm.
+sub optslaunch { # uncheck this if the program is not used as a part of a Perl module called from OPTS.pm.
 
 print "This is OPTS-launch, a program written to prepare configuration files for OPTS.
 OPTS is a program written to manage parametric explorations through the ESP-r building performance simulation program.

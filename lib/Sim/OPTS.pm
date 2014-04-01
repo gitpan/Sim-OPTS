@@ -7,10 +7,12 @@ package Sim::OPTS;
 
 use 5.014002;
 use Exporter; # require Exporter;
-no strict; # use strict;
-no warnings; # use warnings;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
+use Devel::REPL;
+no strict; # use strict;
+use warnings; # use warnings;
 @ISA = qw(Exporter); # our @ISA = qw(Exporter);
+
 
 # Items to export into callers namespace by default. Note: do not export
 # names by default without a very good reason. Use EXPORT_OK instead.
@@ -21,12 +23,12 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 # will save memory.
 
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &optslaunch)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
-@EXPORT_OK   = qw(opts); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-@EXPORT = qw( ); # our @EXPORT = qw( );
-$VERSION = '0.01'; # our $VERSION = '0.01';
+@EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
+@EXPORT = qw(); # our @EXPORT = qw( );
+$VERSION = '0.03'; # our $VERSION = '0.03';
 
-eval `cat ./opts_launch.pl`; # HERE IS THE FUNCTION "launch", a text interface to the function "opts".
-# require "./opts_launch.pl"; # HERE IS THE FUNCTION "launch", a text interface to the function "opts".
+# eval `cat ../../scripts/opts_launch.pl`; # HERE IS THE FUNCTION "launch", a text interface to the function "opts".
+# require "../../scripts/opts_launch.pl"; # HERE IS THE FUNCTION "launch", a text interface to the function "opts".
 
 sub opts { # UNCOMMENT HERE AND AT THE END IF THIS PROGRAM IS A MODULE.
 print "THIS IS OPTS.
@@ -49,15 +51,21 @@ chomp $response1;
 if ( $response1 eq "y" )
 { ; }
 else { die; }
-require $configfile; # The file where the program data are
-require "./opts_morph.pl"; # HERE THERE ARE THE FUNCTION CALLED FROM
+eval `cat $configfile`; # The file where the program data are
+# require $configfile; # The file where the program data are
+
+# eval `cat ../../scripts/opts_morph.pl`; # HERE THERE ARE THE FUNCTION CALLED FROM
+require "../../scripts/opts_morph.pl"; # HERE THERE ARE THE FUNCTION CALLED FROM
 # THE MAIN FUNCTION, "morph", FROM THIS FILE (MAIN).
-require "./opts_sim.pl"; # HERE THERE IS THE FUNCTION "sim" CALLED
+# eval `cat ../../scripts/opts_sim.pl`; # HERE THERE IS THE FUNCTION "sim" CALLED
+require "../../scripts/opts_sim.pl"; # HERE THERE IS THE FUNCTION "sim" CALLED
 # FROM THIS FILE (MAIN).
-require "./opts_report.pl"; # NOT USED YET. FOR NOW THIS FILE IS
+# eval `cat ../../scripts/opts_report.pl`; # NOT USED YET. FOR NOW THIS FILE IS
+require "../../scripts/opts_report.pl"; # NOT USED YET. FOR NOW THIS FILE IS
 # STILL CALLED BY EVAL IN THE ENVIRONMENT WHERE THE CALL HAPPENS, WITHOUT
 # PARAMETERS (SEE BELOW).
-require "./opts_format.pl"; # # NOT USED YET. FOR NOW THIS FILE IS
+# eval `cat ../../scripts/opts_format.pl`; # # NOT USED YET. FOR NOW THIS FILE IS
+require "../../scripts/opts_format.pl"; # # NOT USED YET. FOR NOW THIS FILE IS
 # STILL CALLED BY EVAL IN THE ENVIRONMENT WHERE THE CALL HAPPENS, WITHOUT
 # PARAMETERS (SEE BELOW).
 # use strict; # THIS CAN'T BE DONE SINCE THE PROGRAM USES SYMBOLIC REFERENCES
@@ -149,6 +157,7 @@ sub morph    # This function generates the test case variables
 # ONE: A MORPHING SUB-PHASE.
 {
 	my $counter_countervar = 0;
+
 	foreach $countervar (@varnumbers)
 	{
 		if ( $countervar == 1 ) 
@@ -311,8 +320,7 @@ sub morph    # This function generates the test case variables
 					my $yes_or_no_keep_some_obstructions = "$$keep_obstructions[$counterzone][0]";    
 					# WHY?
 
-					my $countercycles_transl_surfs = 0;
-					my $recalc_net = $recalculatenet[0];				
+					my $countercycles_transl_surfs = 0;				
 					
 					if ( $stepsvar > 1)
 					{
@@ -359,7 +367,7 @@ sub morph    # This function generates the test case variables
 								constrain_net($to, $fileconfig, $stepsvar, $counterzone, 
 								$counterstep, $exeonfiles, \@applytype, \@constrain_net, $to_do); 
 							}
-							if ($recalc_net eq "y") 
+							if ($recalculatenet[0] eq "y") 
 							{ 
 								recalculatenet
 								($to, $fileconfig, $stepsvar, $counterzone, 
@@ -573,39 +581,41 @@ sub morph    # This function generates the test case variables
 	}
 }    # END SUB morph
 
-if ( $dowhat[0] eq "y" ) { unless (-e $to) { morph(); } }
+if ( $dowhat[0] eq "y" ) 
+{ 
+	unless (-e $to) 
+	{ &morph(); } 
+}
 
 if ( $dowhat[1] eq "y" ) 
 { 
-	sim( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+	&sim( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
 	\@simtitle, $preventsim, $exeonfiles, $fileconfig, \@themereports, 
 	\@reportperiods, \@retrievedata, \@retrievedatatemps, 
 	\@retrievedatacomfort, \@retrievedataloads, \@retrievedatatempsstats );
 }
 
 if ( $dowhat[4] eq "y" ) 
-{ report; 
-}
+{ &report; }
 
 if ( $dowhat[5] eq "y" )
-{ merge_reports;
-}
+{ &merge_reports; }
 
 if ( $dowhat[6] eq "y" )
 {
-	convert_report(); # CONVERT NOT YET FILTERED REPORTS
+	&convert_report(); # CONVERT NOT YET FILTERED REPORTS
 }
 if ( $dowhat[7] eq "y" )
 {
-	filter_reports(); # FILTER ALREADY CONVERTED REPORTS
+	&filter_reports(); # FILTER ALREADY CONVERTED REPORTS
 }
 if ( $dowhat[8] eq "y" )
 {
-	convert_filtered_reports(); # CONVERT ALREADY FILTERED REPORTS
+	&convert_filtered_reports(); # CONVERT ALREADY FILTERED REPORTS
 }
 if ( $dowhat[9] eq "y" )
 {
-	maketable(); # CONVERT TO TABLE ALREADY FILTERED REPORTS
+	&maketable(); # CONVERT TO TABLE ALREADY FILTERED REPORTS
 }
 
 close(OUTFILE);
@@ -629,16 +639,15 @@ Sim::OPTS manages parametric esplorations through the use of the ESP-r building 
 =head1 DESCRIPTION
 
 
-OPTS is written to manage parametric explorations through the use of the ESP-r building performance simulation platform.
+OPTS is written to manage parametric explorations through the use of the ESP-r building performance simulation platform. (All the necessary information about ESP-r is available at the web address http://www.esru.strath.ac.uk/Programs/ESP-r.htm.)
 OPTS may modify directories and files in your work directory. So it is necessary to examine how it works before attempting to use it.
-All the necessary information about ESP-r is available at the web address http://www.esru.strath.ac.uk/Programs/ESP-r.htm.
 
 For the non-habitual users of Perl: to install OPTS it is necessary to issue the following command in the shell as a superuser: "cpanm Sim::OPTS".
 This way Perl will take care to install all necessary dependencies.
 After loading the module, which is made possible by the commands "use Sim::OPTS", only two commands will be available to the user:
 "opts" and "optslaunch".
 "opts" will activate the opts functions as written in a previously prepared OPTS configuration file.
-"optslaunch" will open a text interface made to facilitate the preparation of OPTS configuration files.
+"optslaunch" will open a text interface made to facilitate the preparation of OPTS configuration files. I have currently disabled the loading of the file supporting it ("opts_launch.pl").
 However, "optslaunch" has not been updated to the last several versions of opts, so it is no more usable at the moment. 
 
 The command "opts" requires or even allows no parameter or other information excepted the name of an OPTS configuration file.
@@ -655,9 +664,9 @@ Those functions are performed by the subroutines written in the following files:
 It should be noted that some functions in "opts_report.pl" and especially in "opts_format.pl" have been used only once and have not been maintained since then.
 My attention has imdeed been mostly directed to the "OPTS.pm" and "opts_morph.pl" files.
 
-To run OPTS, you may open Perl in a repl, then load the Sim:OPTS module from there ("use Sim:OPTS"),
-then issue the command "opts" from there as well.
-As a repl, you may use the Perl debugger. To launch it, the command "perl -de" may be used. 
+To run OPTS, you may open Perl in a repl. As a repl, you may use the Devel::Repl module. To launch it, the command "re.pl" has to be given to the shell. 
+Then you may load the Sim:OPTS module from there ("use Sim:OPTS").
+Then issue the command "Sim::OPTS::opts" from there as well.
 When launched, OPTS will ask you to write the name and path of the OPTS configuration file to be considered.
 After that, the activity of OPTS will start and will not stop until completion.
 
@@ -672,19 +681,16 @@ The model folders and the result files that will be created through ESP-r will b
 For example, the model instance produced in the first iteration for a model named “model” in a search constituted by 3 morphing phases and 5 iteration steps each may be named “model_1-1_2-1_3-1”; and the last one may be named “model_1-5_2-5_3-5”.
 
 The propagation of constraints on which some OPTS operations on models may be based may regard the geometry of the model, solar shadings, mass/flow network, and/or controls, and how they affect each other and daylighting (as calculated throuch the Radiance lighting simulation program). 
-To study what propagation on constraint can do for the program, the tempate file included in the OPTS Perl module distribution should be studied.
+To study what propagation on constraint can do for the program, the template file included in the OPTS Perl module distribution should be studied.
 
 OPTS presently only works for UNIX and UNIX-like systems. With just a few variations, it could work for Windows as well.
 There still would be lots of things to add to it and bugs to correct in it.
 OPTS is a program I have written as a side project since 2008, where I was beginning to learn to program. I wrote it in my spare time.
-The only parte of it I wrote for work is that in the file "opts_launch.pl", which was needed to include the use of OPTS 
+The only parte of it I wrote for work is that in the file "opts_launch.pl", which was needed for the inclusion of the use of OPTS 
 in an institutional research I was carrying on in 2011-2012.
 
-Because I began to write OPTS when I was learning to program, the writing at first proceeded slowly, and the most fundamental parts of the programs are the ones that are written in the strangest manner.
+Because I began to write OPTS when I was learning to program, the most fundamental parts of it are the ones that are written in the strangest manner.
 As you may realize by looking at the code, I am not a professional programmer and I don't do most things in a standard way.
-In the last phases of the writing of OPTS, for instance, I begun to use symbolic references and "eval" in place of "require" or anything else.
-I did that in order to make the program easier to write. By the way, symbolic references seem a very good idea to me in general, although they are deprecated.
-This is also the reason why neither "warnings" nor "strict" are used in the program.
 
 =head2 EXPORT
 

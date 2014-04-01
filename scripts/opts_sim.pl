@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# This is OPTS, version 0.01
+# This is OPTS
 # Copyright: Gian Luca Brunetti and Politecnico di Milano, 2008-2014
 # email gianluca.brunetti@polimi.it
 # THis is a part of the OPTS Perl module.

@@ -4,13 +4,29 @@ MANIFEST
 README
 t/Sim-OPTS.t
 lib/Sim/OPTS.pm
-lib/Sim/opts_morph.pl
-lib/Sim/opts_sim.pl
-lib/Sim/opts_report.pl
-lib/Sim/opts_format.pl
-lib/Sim/opts_launch.pl
-lib/Sim/example_configuration_files/example-opts-configuration-file.pl
-lib/Sim/example_configuration_files/template-of_opts_configuration_file.odt
+scripts/opts_morph.pl
+scripts/opts_sim.pl
+scripts/opts_report.pl
+scripts/opts_format.pl
+scripts/opts_launch.pl
+examples/example_configuration_files/example-opts-configuration-file.pl
+examples/example_configuration_files/template-of_opts_configuration_file.odt
+examples/example_configuration_files/examples_of_costraint_files/amoeba.reshape_backwindow.pl
+examples/example_configuration_files/examples_of_costraint_files/amoeba.reshape_frontwindow.pl
+examples/example_configuration_files/examples_of_costraint_files/amoeba.reshape_leftwindow.pl
+examples/example_configuration_files/examples_of_costraint_files/amoeba.reshape_right_and_leftwindow.pl
+examples/example_configuration_files/examples_of_costraint_files/amoeba.reshape_rightwindow.pl
+examples/example_configuration_files/examples_of_costraint_files/confile_amoeba_recalculatenet7.pl
+examples/example_configuration_files/examples_of_costraint_files/confile_amoeba_recalculatenet__7.pl
+examples/example_configuration_files/examples_of_costraint_files/confile_ams.pl
+examples/example_configuration_files/examples_of_costraint_files/confile_ams1.pl
+examples/example_configuration_files/examples_of_costraint_files/confile_ams2n_recalculatenet7.pl
+examples/example_configuration_files/examples_of_costraint_files/confile_ams_e.pl
+examples/example_configuration_files/examples_of_costraint_files/first_ams2e.pl
 
 
 
+
+
+META.yml                                 Module YAML meta-data (added by MakeMaker)
+META.json                                Module JSON meta-data (added by MakeMaker)
