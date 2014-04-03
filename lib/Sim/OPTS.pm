@@ -5,7 +5,7 @@ package Sim::OPTS;
 # as published by the Free Software Foundation, version 2.
 
 
-use 5.014002;
+use 5.6.1;
 use Exporter; # require Exporter;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 use Devel::REPL;
@@ -25,7 +25,7 @@ use warnings; # use warnings;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &optslaunch)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(); # our @EXPORT = qw( );
-$VERSION = '0.06.1'; # our $VERSION = '0.06.1';
+$VERSION = '0.07'; # our $VERSION = '0.07';
 
 # eval `cat ../../scripts/opts_launch.pl`; # HERE IS THE FUNCTION "launch", a text interface to the function "opts".
 # require "../../scripts/opts_launch.pl"; # HERE IS THE FUNCTION "launch", a text interface to the function "opts".
