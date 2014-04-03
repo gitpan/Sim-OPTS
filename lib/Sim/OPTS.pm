@@ -25,7 +25,7 @@ use warnings; # use warnings;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &optslaunch)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(); # our @EXPORT = qw( );
-$VERSION = '0.05'; # our $VERSION = '0.05';
+$VERSION = '0.06'; # our $VERSION = '0.06';
 
 # eval `cat ../../scripts/opts_launch.pl`; # HERE IS THE FUNCTION "launch", a text interface to the function "opts".
 # require "../../scripts/opts_launch.pl"; # HERE IS THE FUNCTION "launch", a text interface to the function "opts".
