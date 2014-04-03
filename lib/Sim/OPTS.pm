@@ -25,7 +25,7 @@ use warnings; # use warnings;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &optslaunch)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(); # our @EXPORT = qw( );
-$VERSION = '0.06'; # our $VERSION = '0.06';
+$VERSION = '0.06.1'; # our $VERSION = '0.06.1';
 
 # eval `cat ../../scripts/opts_launch.pl`; # HERE IS THE FUNCTION "launch", a text interface to the function "opts".
 # require "../../scripts/opts_launch.pl"; # HERE IS THE FUNCTION "launch", a text interface to the function "opts".
@@ -683,6 +683,7 @@ To study what propagation on constraint can do for the program, the template fil
 OPTS presently only works for UNIX and UNIX-like systems. (With a few variations concerning paths and shell commands, it could easily work for Windows as well.)
 There still would be lots of things to add to it and bugs to correct. 
 OPTS is a program I have written as a side project since 2008, when I was beginning to learn programming. Due to that, the core parts of it are the ones that are written in the strangest manner. As you may realize by looking at the code, anyway, I am not a professional programmer and do several things in a non-standard way.
+The only part of OPTS I wrote for work is that in the file "opts_launch.pl", which was needed to include the use of the tool in an institutional research I was carrying on in 2011-2012.
 
 =head2 EXPORT
 

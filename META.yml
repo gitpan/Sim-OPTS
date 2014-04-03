@@ -1,12 +1,12 @@
 ---
-abstract: 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.'
+abstract: unknown
 author:
   - 'Gian Luca Brunetti <gianluca.brunetti@polimi.it>'
 build_requires:
   ExtUtils::MakeMaker: 0
 configure_requires:
   ExtUtils::MakeMaker: 0
-dynamic_config: 0
+dynamic_config: 1
 generated_by: 'ExtUtils::MakeMaker version 6.82, CPAN::Meta::Converter version 2.132830'
 license: unknown
 meta-spec:
@@ -18,4 +18,4 @@ no_index:
     - t
     - inc
 requires: {}
-version: 0.06
+version: v0.06.1
