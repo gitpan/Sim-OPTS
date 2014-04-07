@@ -6,8 +6,6 @@ $this_area = ( $edge_x * $edge_y);
 $new_height = ( $basevalue / $this_area);  $new_height = sprintf("%.3f", $new_height );
 
 
-
-
 $v[5][2] = $new_height;
 $v[6][2] = $new_height;
 $v[7][2] = $new_height;

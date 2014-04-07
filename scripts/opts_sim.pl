@@ -1,14 +1,11 @@
 #!/usr/bin/perl
 
-# This is OPTS
 # Copyright: Gian Luca Brunetti and Politecnico di Milano, 2008-2014
 # email gianluca.brunetti@polimi.it
-# THis is a part of the OPTS Perl module.
+# This is a part of the Sim::OPTS Perl module.
 # OPTS is made to manage parametric explorations through the use of the ESP-r building energy performance simulation platform.  
 # This is free software.  You can redistribute it and/or modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, version 2.
-
-# package OPTS;
 
 
 # HERE FOLLOWS THE "sim" FUNCTION, CALLED FROM THE MAIN PROGRAM FILE.  

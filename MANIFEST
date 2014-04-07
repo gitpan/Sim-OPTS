@@ -22,11 +22,6 @@ examples/examples_of_costraint_files/confile_ams.pl
 examples/examples_of_costraint_files/confile_ams1.pl
 examples/examples_of_costraint_files/confile_ams2n_recalculatenet7.pl
 examples/examples_of_costraint_files/confile_ams_e.pl
-examples/examples_of_costraint_files/first_ams2e.pl
-
-
-
-
 
 META.yml                                 Module YAML meta-data (added by MakeMaker)
 META.json                                Module JSON meta-data (added by MakeMaker)

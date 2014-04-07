@@ -1,9 +1,8 @@
 #!/usr/bin/perl
 
-# This is OPTS
 # Copyright: Gian Luca Brunetti and Politecnico di Milano, 2008-2014
 # email gianluca.brunetti@polimi.it
-# THis is a part of the OPTS Perl module.
+# This is a part of the Sim::OPTS Perl module.
 # OPTS is made to manage parametric explorations through the use of the ESP-r building energy performance simulation platform.  
 # This is free software.  You can redistribute it and/or modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, version 2.
@@ -11,12 +10,7 @@
 # This program launched a text interface for creating OPTS configuration files. 
 # It has not been updated after a lot of changes to OPTS, so it is currently not usable.
 
-
-# APPUNTI: negli optdef files le variabili devono essere denominate in modo riconoscibile. Per esempio, come _m_tramlate11 invece di traslate11. 
-# In questo modo, si può raccoglierle compiendo una ricerca con grep, così da poterle chiamare per nome/ordine, e così modificare dei loro campi
-# per assegnazione. Perché questo adesso non funziona. 
-
-sub optslaunch { # uncheck this if the program is not used as a part of a Perl module called from OPTS.pm.
+sub optslaunch { 
 
 print "This is OPTS-launch, a program written to prepare configuration files for OPTS.
 OPTS is a program written to manage parametric explorations through the ESP-r building performance simulation program.
