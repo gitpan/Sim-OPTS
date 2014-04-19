@@ -11,6 +11,8 @@
 
 ## HERE FOLLOW THE "report", "retrieve" and "merge" FUNCTIONS, CALLED FROM THE MAIN PROGRAM FILE.
 
+no strict; 
+
 sub report # This function retrieves the results of interest from the text file created by the "retrieve" function
 {
 	$" = "";

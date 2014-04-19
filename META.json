@@ -1,5 +1,5 @@
 {
-   "abstract" : "unknown",
+   "abstract" : "OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.",
    "author" : [
       "Gian Luca Brunetti <gianluca.brunetti@polimi.it>"
    ],
@@ -35,5 +35,5 @@
       }
    },
    "release_status" : "stable",
-   "version" : "0.08"
+   "version" : "0.09"
 }

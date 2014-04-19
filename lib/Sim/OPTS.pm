@@ -5,11 +5,12 @@ package Sim::OPTS;
 # as published by the Free Software Foundation, version 2.
 
 
-use 5.014002;
+use 5.18;
 use Exporter; # require Exporter;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 use Devel::REPL;
 use warnings; # use warnings;
+no strict; # use strict: THIS CAN'T BE DONE SINCE THE PROGRAM USES SYMBOLIC REFERENCES
 @ISA = qw(Exporter); # our @ISA = qw(Exporter);
 
 
@@ -24,7 +25,7 @@ use warnings; # use warnings;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &optslaunch)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(); # our @EXPORT = qw( );
-$VERSION = '0.08'; # our $VERSION = '';
+$VERSION = '0.09'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 # require "../../scripts/opts_launch.pl"; # HERE IS THE FUNCTION "launch", a text interface to the function "opts".
@@ -618,13 +619,12 @@ Sim::OPTS manages parametric esplorations through the use of the ESP-r building 
 
 =head1 DESCRIPTION
 
-OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform. Information about ESP-r is available at the web address http://www.esru.strath.ac.uk/Programs/ESP-r.htm. 
-
-Parametric explorations are usually performed to solve design optimization problems.
+OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform. 
+(Information about ESP-r is available at the web address http://www.esru.strath.ac.uk/Programs/ESP-r.htm.) Parametric explorations are usually performed to solve design optimization problems.
 
 OPTS may modify directories and files in your work directory. So it is necessary to examine how it works before attempting to use it.
 
-For the non-habitual users of Perl: to install OPTS it is necessary to issue the following command in the shell as a superuser: < cpanm Sim::OPTS >. This way Perl will take care to install all necessary dependencies. After loading the module, which is made possible by the commands < use Sim::OPTS >, only the command "opts" will be available to the user. That command "opts" will activate the opts functions following the setting specified in a previously prepared OPTS configuration file.
+To install OPTS it is necessary to issue the following command in the shell as a superuser: < cpanm Sim::OPTS >. This way Perl will take care to install all necessary dependencies. After loading the module, which is made possible by the commands < use Sim::OPTS >, only the command "opts" will be available to the user. That command will activate the OPTS functions following the setting specified in a previously prepared OPTS configuration file.
 
 The command "optslaunch" is also present in the capability of the code (file "opts_launch.pl"), but it is presently disabled, because it has not been updated to the last several versions of OPTS, so it is no more usable at the moment. "optslaunch" would open a text interface made to facilitate the preparation of OPTS configuration files. Due to this, currently the OPTS configuration files can only be prepared by example.
 
@@ -643,13 +643,13 @@ OPTS will make ESP-r perform actions on a certain ESP-r model by copying it seve
 Besides OPTS configuration files, also configuration files for propagation of constraints may be specified. I usually put them into a directory in the model folder named "opts".
 
 The model folders and the result files that will be created through ESP-r will be named as your root model, followed by a "_" character,  followed by a variable number referred to the first morphing phase, followed by a "-" character, followed by an iteration number for the variable in question, and so on for all morphing phases. For example, the model instance produced in the first iteration for a model named "model" in a search constituted by 3 morphing phases and 5 iteration steps each may be named "model_1-1_2-1_3-1"; and the last one may be named "model_1-5_2-5_3-5".
-The "_" characters tells OPTS to generate new cases. The character "£" will be used when two parametric variations must be joined before generating new cases. The character "§" stops both the joining and the generation for that branch, but it is useful only for the program, and not for the user.
+The "_" characters tells OPTS to generate new cases. The character "£" will be used when two parametric variations must be joined before generating new cases, and the character "§" will stop both the joining and the generation for the given branch.
 
 The propagation of constraints on which some OPTS operations on models may be based can regard the geometry of the model, solar shadings, mass/flow network, and/or controls, and how they affect each other and daylighting (as calculated throuch the Radiance lighting simulation program). To study what propagation on constraint can do for the program, the template file included in the OPTS Perl module distribution should be studied.
 
-OPTS presently only works for UNIX and UNIX-like systems. There still would be lots of things to add to it and bugs to correct. 
+OPTS presently only works for UNIX and UNIX-like systems. There would be lots of functionality to add to it and bugs to correct. 
 
-OPTS is a program I have written as a side project since 2008, when I was beginning to learn programming. Due to that, the core parts of it are among the ones that are written in the strangest manner. As you may realize by looking at the code, I am not a professional programmer and do several things in a non-standard way.
+OPTS is a program I have written for my personal use as a side project since 2008, when I was beginning to learn programming. Due to that fact, the core parts of it, when they have not been rewritten, are among the ones that are coded in the strangest manner. As you may realize by looking at the code, I am not a professional programmer and do several things in a non-standard way. In particular, I like the rather deprecated symbolic references, because I think they can simplify my coding. 
 The only part of OPTS I wrote for work is that in the file "opts_launch.pl", which was needed to include the use of the tool in an institutional research I was carrying on in 2011-2012.
 
 =head2 EXPORT

@@ -9,6 +9,8 @@
 
 # HERE FOLLOW THE "rank_reports", "convert_report" , "filter_reports" and "maketable" FUNCTIONS, CALLED FROM THE MAIN PROGRAM FILE.
 
+no strict; 
+
 sub rank_reports    # STILL UNUSED. Self-explaining. 
 {
 

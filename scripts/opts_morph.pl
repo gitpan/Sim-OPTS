@@ -11,6 +11,8 @@
 # HERE FOLLOWS THE FUNCTIONS WHICH ARE CALLED BY THE FUNCTION "morph" IN THE 
 # MAIN OPTS PROGRAM FILE.
 
+no strict; 
+
 ##############################################################################
 sub translate
 {

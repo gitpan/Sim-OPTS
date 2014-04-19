@@ -9,6 +9,9 @@
 
 
 # HERE FOLLOWS THE "sim" FUNCTION, CALLED FROM THE MAIN PROGRAM FILE.  
+
+no strict; 
+
 #____________________________________________________________________________
 # Activate or deactivate the following function calls depending from your needs
 sub sim    # This function launch the simulations in ESP-r

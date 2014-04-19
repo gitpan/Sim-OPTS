@@ -10,6 +10,8 @@
 # This program launched a text interface for creating OPTS configuration files. 
 # It has not been updated after a lot of changes to OPTS, so it is currently not usable.
 
+no strict; 
+
 sub optslaunch { 
 
 print "This is OPTS-launch, a program written to prepare configuration files for OPTS.

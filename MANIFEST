@@ -9,7 +9,7 @@ scripts/opts_sim.pl
 scripts/opts_report.pl
 scripts/opts_format.pl
 scripts/opts_launch.pl
-examples/example-opts-configuration-file.pl
+examples/template-of_opts_configuration_file.pl
 examples/template-of_opts_configuration_file.odt
 examples/examples_of_costraint_files/amoeba.reshape_backwindow.pl
 examples/examples_of_costraint_files/amoeba.reshape_frontwindow.pl
