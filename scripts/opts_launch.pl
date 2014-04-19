@@ -11,6 +11,7 @@
 # It has not been updated after a lot of changes to OPTS, so it is currently not usable.
 
 no strict; 
+no warnings;
 
 sub prepare { 
 
