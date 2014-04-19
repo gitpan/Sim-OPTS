@@ -22,13 +22,13 @@ no strict; # use strict: THIS CAN'T BE DONE SINCE THE PROGRAM USES SYMBOLIC REFE
 # If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
 # will save memory.
 
-%EXPORT_TAGS = ( DEFAULT => [qw(&opts &optslaunch)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
+%EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(); # our @EXPORT = qw( );
-$VERSION = '0.09'; # our $VERSION = '';
+$VERSION = '0.10'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
-# require "../../scripts/opts_launch.pl"; # HERE IS THE FUNCTION "launch", a text interface to the function "opts".
+require "../../scripts/opts_launch.pl"; # HERE IS THE FUNCTION "launch", a text interface to the function "opts".
 
 sub opts { # UNCOMMENT HERE AND AT THE END IF THIS PROGRAM IS A MODULE.
 print "THIS IS OPTS.
@@ -624,9 +624,9 @@ OPTS is a program conceived to manage parametric explorations through the use of
 
 OPTS may modify directories and files in your work directory. So it is necessary to examine how it works before attempting to use it.
 
-To install OPTS it is necessary to issue the following command in the shell as a superuser: < cpanm Sim::OPTS >. This way Perl will take care to install all necessary dependencies. After loading the module, which is made possible by the commands < use Sim::OPTS >, only the command "opts" will be available to the user. That command will activate the OPTS functions following the setting specified in a previously prepared OPTS configuration file.
+To install OPTS it is necessary to issue the following command in the shell as a superuser: < cpanm Sim::OPTS >. This way Perl will take care to install all necessary dependencies. After loading the module, which is made possible by the commands < use Sim::OPTS >, only the command "Sim::OPTS::opts" will be available to the user. That command will activate the OPTS functions following the setting specified in a previously prepared OPTS configuration file.
 
-The command "optslaunch" is also present in the capability of the code (file "opts_launch.pl"), but it is presently disabled, because it has not been updated to the last several versions of OPTS, so it is no more usable at the moment. "optslaunch" would open a text interface made to facilitate the preparation of OPTS configuration files. Due to this, currently the OPTS configuration files can only be prepared by example.
+The command "Sim::OPTS::prepare" would be also present in the capability of the code (file "opts_launch.pl"), but it is not possible to use it, because it has not been updated to the last several versions of OPTS, so it is no more usable at the moment. "optslaunch" would open a text interface made to facilitate the preparation of OPTS configuration files. Due to this, currently the OPTS configuration files can only be prepared by example.
 
 When it is launched, OPTS will ask for the name of an OPTS configuration file. On that file the instructions for the program will have to be written by the user before launching OPTS. All the activity of preparation to run OPTS will happen in an OPTS configuration file, which has to be applied to an existing ESP-r model.
 

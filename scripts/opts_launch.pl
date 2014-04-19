@@ -12,7 +12,7 @@
 
 no strict; 
 
-sub optslaunch { 
+sub prepare { 
 
 print "This is OPTS-launch, a program written to prepare configuration files for OPTS.
 OPTS is a program written to manage parametric explorations through the ESP-r building performance simulation program.

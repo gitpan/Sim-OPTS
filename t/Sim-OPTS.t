@@ -5,7 +5,7 @@
 
 # change 'tests => 1' to 'tests => last_test_to_print';
 
-use strict;
+no strict;
 use warnings;
 
 use Test::More tests => 1;
