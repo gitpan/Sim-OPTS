@@ -25,7 +25,7 @@ no strict; # use strict: THIS CAN'T BE DONE SINCE THE PROGRAM USES SYMBOLIC REFE
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(); # our @EXPORT = qw( );
-$VERSION = '0.16'; # our $VERSION = '';
+$VERSION = '0.17'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 # require "../../scripts/opts_launch.pl"; # HERE IS THE FUNCTION "launch", a text interface to the function "opts".
@@ -37,10 +37,9 @@ Dipartimento DAStU, Politecnico di Milano.
 Copyright license: GPL.
 -------------------
 
-To use OPTS an OPTS configuration file in should have been prepared
-in which a target ESP-r model is specified.
+To use OPTS, an OPTS configuration file and a target ESP-r model should have been prepared.
 This OPTS version is for UNIX systems and UNIX-like systems.
-Please insert the name of a configuration file (local path):\n";
+Insert the name of a configuration file (local path):\n";
 $configfile = <STDIN>;
 chomp $configfile;
 print "You wrote $configfile, is this correct? 
