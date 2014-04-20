@@ -1,4 +1,4 @@
-Sim-OPTS version 0.17
+Sim-OPTS version 0.018
 ============================
 
 INSTALLATION
@@ -39,7 +39,7 @@ In the module distribution, there is a template file with explanations and an ex
 
 To run OPTS without having it act on files, you should specify the setting < $exeonfiles = "n"; > in the OPTS configuration file. Then you should specify a path for the  text file that will receive the commands in place of the shell, by setting < $outfilefeedbacktoshell = address_the_text_file >. It is a good idea to always send the OPTS commands to a file also when they are prompted to the shell, to be able to trace what has been done to the model files.
 
-The OPTS configuration file will make, if asked, OPTS give instruction to ESP-r in order to make it modify a model in several different copies; then, if asked, it will run simulations; then, if asked, it will retrieve the results; then, if asked, it will extract some results and order them in a required manner; then, if asked, will format the so obtained results. Those functions were performed by the subroutines that should have been written in the following files: "opts_morph.pl", "opts_sim.pl", "opts_report.pl", "opts_format.pl". It should be noted that some functions in "opts_report.pl" and especially in "opts_format.pl" have been used only once and have not been maintained since then. My attention has indeed been mostly directed to the "OPTS.pm" and "opts_morph.pl" files. In this version of the program for CPAN I have anyway merged all files into one because I was having troubles with the installation and I wanted to resolve the thing quickly.
+The OPTS configuration file will make, if asked, OPTS give instruction to ESP-r in order to make it modify a model in several different copies; then, if asked, it will run simulations; then, if asked, it will retrieve the results; then, if asked, it will extract some results and order them in a required manner; then, if asked, will format the so obtained results. Those functions are performed by the subroutines that should have been written in the following files: "opts_morph.pl", "opts_sim.pl", "opts_report.pl", "opts_format.pl". It should be noted that some functions in "opts_report.pl" and especially in "opts_format.pl" have been used only once and have not been maintained since then. My attention has indeed been mostly directed to the "OPTS.pm" and "opts_morph.pl" files.
 
 To run OPTS, you may open Perl in a repl. As a repl, you may use the Devel::Repl module. It is going to be installed when OPTS is installed. To launch it, the command < re.pl > has to be given to the shell. Then you may load the Sim:OPTS module from there (< use Sim:OPTS >). Then you should issue the command < Sim::OPTS::opts > from there. When launched, OPTS will ask you to write the name (with path) of the OPTS configuration file to be considered. After that, the activity of OPTS will start and will not stop until completion.
 
