@@ -5,7 +5,7 @@ package Sim::OPTS;
 # as published by the Free Software Foundation, version 2.
 
 
-use use 5.014002;
+use 5.014002;
 use Exporter; # require Exporter;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 use Devel::REPL;
@@ -25,7 +25,7 @@ no strict; # use strict: THIS CAN'T BE DONE SINCE THE PROGRAM USES SYMBOLIC REFE
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(); # our @EXPORT = qw( );
-$VERSION = '0.14'; # our $VERSION = '';
+$VERSION = '0.15'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 # require "../../scripts/opts_launch.pl"; # HERE IS THE FUNCTION "launch", a text interface to the function "opts".
@@ -579,7 +579,7 @@ sub translate
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $translate = shift;
+
 	my $translate = shift;
 	
 	if ( $stepsvar > 1 )
@@ -1873,8 +1873,8 @@ sub change_thickness
 			{
 				@min_max_values =
 				  @{ $groups_of_couples_of_min_max_values[$thiscounter][$counterstrata] };
-				$min   = @min_max_values[0];
-				$max   = @min_max_values[1];
+				$min   = $min_max_values[0];
+				$max   = $min_max_values[1];
 				$swing = $max - $min;
 				$pace  = ( $swing / ( $stepsvar - 1 ) );
 				$thickness = $min + ( $pace * ( $counterstep - 1 ) );
@@ -2743,7 +2743,7 @@ sub recalculatenet
 	my $y_or_n_reassign_cp = $recalculatenet[6];
 	my $y_or_n_detect_obs = $recalculatenet[7];
 	my @crackwidths = @{$recalculatenet[9]};
-	my @obspoints;
+
 	my @obstaclesdata;
 	my $counterlines = 0;
 	my $counternode = 0;
@@ -4366,7 +4366,7 @@ sub constrain_geometry # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY
 	my $swap = shift;
 	my @constrain_geometry = @$swap;
 	my $to_do = shift;
-	@v;	
+
 	# print "YOUCALLED!\n\n";
 	# print "HERE: \@constrain_geometry:" . Dumper(@constrain_geometry) . "\n\n";
 	if ($longmenu eq "y")
@@ -4434,7 +4434,6 @@ sub read_geometry
 	my $sourceaddress = "$to$sourcefile";
 	my $targetaddress = "$to$targetfile";
 	my $configaddress = "$to$configfile";
-	@v; # IT IS GLOBAL!!!
 											
 	open( SOURCEFILE, $sourceaddress ) or die "Can't open $sourcefile 2: $!\n";
 	my @lines = <SOURCEFILE>;
@@ -4655,10 +4654,10 @@ sub vary_controls
 	# print "THIRD: \$sourcefile:$sourcefile, \$targetfile:$targetfile, \$configfile:$configfile, \@swing_zone_hours:@swing_zone_hours, \@swing_max_heating_powers:@swing_max_heating_powers, \@swing_max_cooling_powers:@swing_max_cooling_powers, \@swing_min_cooling_powers:@swing_min_cooling_powers, \@swing_heating_setpoints:@swing_heating_setpoints, \@swing_cooling_setpoints:@swing_cooling_setpoints, \@swing_zone_hours:@swing_zone_hours, \@swing_zone_setpoints:@swing_zone_setpoints, \$sourceaddress:$sourceaddress, \$targetaddress:$targetaddress, \$configaddress:$configaddress."  .
 	# "\n\n"; 
 
-	@loop_control; # DON'T PUT "my" HERE.
-	@flow_control; # DON'T PUT "my" HERE.
-	@new_loop_controls; # DON'T PUT "my" HERE.
-	@new_flow_controls; # DON'T PUT "my" HERE.
+	#@loop_control; # DON'T PUT "my" HERE.
+	#@flow_control; # DON'T PUT "my" HERE.
+	#@new_loop_controls; # DON'T PUT "my" HERE.
+	#@new_flow_controls; # DON'T PUT "my" HERE.
 	my @groupzone_letters;
 	my @zone_period_letters;
 	my @flow_letters;
@@ -4918,7 +4917,7 @@ sub constrain_controls
 	my $configaddress = "$to$configfile";
 	# print "\$sourcefile:$sourcefile, \$targetfile:$targetfile, \$configfile:$configfile. \n\n";
 	# print "FIRST: \$to:$to, \$fileconfig:$fileconfig, \$stepsvar:$stepsvar, \$counterzone:$counterzone, \$counterstep:$counterstep, \@applytype:@applytype, \@group:@group\n\n";
-	@loop_control; @flow_control; @new_loop_controls; @new_flow_controls; # DON'T PUT "my" HERE. THEY ARE GLOBAL!!!
+	#@loop_control; @flow_control; @new_loop_controls; @new_flow_controls; # DON'T PUT "my" HERE. THEY ARE GLOBAL!!!
 	my $semaphore_zone;
 	my $semaphore_dataloop;
 	my $semaphore_massflow;
@@ -5006,7 +5005,7 @@ sub read_controls
 	my $loop_control_letter;
 	my $flow_letter;
 	my $flow_control_letter;
-	print "\HERE\n";
+	
 	foreach my $line (@lines)
 	{
 		if ( $line =~ /Control function/ )
@@ -5048,7 +5047,7 @@ sub read_controls
 			$min_cooling_power, $heating_setpoint, $cooling_setpoint );
 
 			$semaphore_loopcontrol = "no";
-			$doline = null;
+			$doline = "";
 		}
 
 		if ($line =~ /Control mass/ )
@@ -5086,7 +5085,7 @@ sub read_controls
 			$flow_letter, $flow_control_letter, $flow_hour, $flow_setpoint, $flow_onoff, $flow_fraction);
 			$semaphore_flowcontrol = "no";
 			# print "DOTHIS: " . Dumper(@flow_control) . "\n\n";
-			$doline = null;
+			$doline = "";
 		}
 		$counterlines++;
 	}
@@ -5156,7 +5155,7 @@ sub read_control_constraints
 		sub flatten_loopcontrol_constraints
 		{
 			my @looptemp = @loop_control;
-			@new_loop_control = null;
+			@new_loop_control = "";
 			foreach my $elm (@looptemp)
 			{
 				my @loop = @{$elm};
@@ -5172,7 +5171,7 @@ sub read_control_constraints
 		sub flatten_flowcontrol_constraints
 		{
 			my @flowtemp = @flow_control;
-			@new_flow_control = null;
+			@new_flow_control = "";
 			foreach my $elm (@flowtemp)
 			{
 				my @flow = @{$elm};
@@ -5410,7 +5409,7 @@ sub constrain_obstructions # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY
 	my @constrain_obstructions = @$swap2;
 	my $to_do = shift;
 	my @work_letters;
-	@obs;	# GLOBAL!
+	#@obs;	# GLOBAL!
 	
 	foreach my $elm (@constrain_obstructions)
 	{
@@ -6020,8 +6019,8 @@ sub vary_net
 	my $targetaddress = "$to$targetfile";
 	my $configaddress = "$to$configfile";	
 
-	@node; @component; # PLURAL. DON'T PUT "my" HERE!
-	@new_nodes; @new_components; # DON'T PUT "my" HERE.
+	#@node; @component; # PLURAL. DON'T PUT "my" HERE!
+	#@new_nodes; @new_components; # DON'T PUT "my" HERE.
 
 	my @flow_letters;
 	
@@ -6716,8 +6715,8 @@ sub constrain_net
 	my $countnode = 0;
 	my $countcomponent = 0;
 	
-	@node; @component; # PLURAL! DON'T PUT "MY" HERE. GLOBAL.
-	@new_nodes; @new_components; # DON'T PUT "my" HERE. THEY ARE GLOBAL!!!
+	#@node; @component; # PLURAL! DON'T PUT "MY" HERE. GLOBAL.
+	#@new_nodes; @new_components; # DON'T PUT "my" HERE. THEY ARE GLOBAL!!!
 	
 	unless ($to_do eq "justwrite")
 	{
@@ -8983,8 +8982,8 @@ sub maketable
 
 sub prepare
 {
-{
-sub optslaunch { 
+sub optslaunch 
+{ 
 
 print "This is OPTS-launch, a program written to prepare configuration files for OPTS.
 OPTS is a program written to manage parametric explorations through the ESP-r building performance simulation program.
@@ -9012,7 +9011,7 @@ my $var_number        = 1;
 my $casenumber        = 1;
 my $numberofcases     = 1;
 
-sub variables()
+sub variables
 {
 	$stepsvar                  = ${ "stepsvar" . "$var_number" };
 	@applytype                 = @{ "applytype" . "$var_number" };
@@ -9029,7 +9028,7 @@ sub variables()
 }
 
 	
-sub mainloop()
+sub mainloop
 {
 	print "
 ______________________________________________________
@@ -9133,7 +9132,7 @@ Copyright: Gian Luca Brunetti and Politecnico di Milano, 2008-2014
 }
 
 
-sub simpletestsloop()
+sub simpletestsloop
 {
 	print "
 ______________________________________________________
@@ -9181,7 +9180,7 @@ f - test the composition of a building envelope
 }
 
 
-sub testcollectorloop()
+sub testcollectorloop
 {
 	$configfile = "./optdatadefaults-collector.pl";
 	require $configfile;
@@ -9278,7 +9277,7 @@ To change one or more of the values above, go back to the main page, then go to 
 
 
 
-sub operationsloop()
+sub operationsloop
 {
 	print "
 ______________________________________________________
@@ -9365,9 +9364,10 @@ j - launch the execution of planned operations by OPTs
 	}
 }
 
-sub morphingloop()
+sub morphingloop
 {
-	variables();
+	&variables;
+	my $thingtoprint = ${ "stepsvar" . "$stepsvar" };
 	print "
 ______________________________________________________
 
@@ -9375,7 +9375,7 @@ OPTs - EDITING - variable: $var_number, iteration number: $casenumber
 ______________________________________________________
 
 a - set the variable number you want to define now. Current: $var_number
-b - set the number_of_steps_for_this_variable. Current: ${stepsvar . "$stepsvar" }
+b - set the number_of_steps_for_this_variable. Current: $thingtoprint
 c - set the times do you want to iterate the steps on the model. Current: $numberofcases
 d - what is the iteration number you are going to set now? Current: $casenumber
 e - set the geometry file name you are working on now. Current: $applytype[$casenumber-1][1]
@@ -9623,7 +9623,7 @@ Do you want to go to the editing page?\n";
 }
 
 
-sub gotoedit()
+sub gotoedit
 {
 	if ( $applytype[ $casenumber - 1 ][0] eq "translation" )
 	{
@@ -9652,7 +9652,7 @@ sub gotoedit()
 	}
 }
 
-sub translation()
+sub translation
 {
 	my $var_number = $_[0];
 	my $casenumber = $_[1];
@@ -9720,7 +9720,7 @@ d - update radiation data with the \"ish\" module. Current. $$translate[$casenum
 	}
 }
 
-sub rotation()
+sub rotation
 {
 	my $var_number = $_[0];
 	my $casenumber = $_[1];
@@ -9784,7 +9784,7 @@ d - update radiation data with the \"ish\" module. Current. $$rotate[$casenumber
 	}
 }
 
-sub rotationz()
+sub rotationz
 {
 	my $var_number = $_[0];
 	my $casenumber = $_[1];
@@ -9882,7 +9882,7 @@ g - swing for the rotation on the vertical plane - $$rotatez[$casenumber-1][6]
 	}
 }
 
-sub surface_translation()
+sub surface_translation
 {
 	my $var_number = $_[0];
 	my $casenumber = $_[1];
@@ -9950,7 +9950,7 @@ d - update radiation data (y/n). Current: $$translate_surface[$casenumber-1][3]
 	}
 }
 
-sub vertex_translation()
+sub vertex_translation
 {
 	my $var_number = $_[0];
 	my $casenumber = $_[1];
@@ -10018,7 +10018,7 @@ d - update radiation data (y/n). Current: $$shift_vertexes[$casenumber -1][3]
 	}
 }
 
-sub construction_reassignment()
+sub construction_reassignment
 {
 	my $var_number = $_[0];
 	my $casenumber = $_[1];
@@ -10076,7 +10076,7 @@ c - constructions to be put in place of the previous. Current: @{$$shift_vertexe
 	}
 }
 
-sub thickness_change()
+sub thickness_change
 {
 	my $var_number  = $_[0];
 	my $casenumber  = $_[1];
@@ -10165,11 +10165,11 @@ and using the letters used in the ESP-r zone construction dialog. Each pair will
 		morphingloop();
 	} else
 	{
-		thickness_change();
+		&thickness_change;
 	}
 }
 
-sub keep_obstructions_back() ##THIS HAS TO BE REMADE TO BE SIMPLER AND NEATER: TAKING THE ESP-r CONFIGURATION FILES
+sub keep_obstructions_back ##THIS HAS TO BE REMADE TO BE SIMPLER AND NEATER: TAKING THE ESP-r CONFIGURATION FILES
 {
 	my $var_number         = $_[0];
 	my $casenumber         = $_[1];
@@ -10254,7 +10254,7 @@ d - update radiation data (y/n). Current: $$keep_obstructions[$casenumber -1][2]
 	}
 }
 
-sub simulationloop()
+sub simulationloop
 {
 	print "
 ______________________________________________________
@@ -10301,7 +10301,7 @@ c - mass/flow network existence. Current:$simnetwork
 	}
 }
 
-sub ask_stratagroups()   #IT HAS TO BE FIXED OR DELETED. IT IS UNUSED AS IS NOW.
+sub ask_stratagroups   #IT HAS TO BE FIXED OR DELETED. IT IS UNUSED AS IS NOW.
 {
 	my @mygroups         = @{ $_[0] };
 	my $number_of_groups = scalar(@mygroups);
@@ -10341,7 +10341,7 @@ sub ask_stratagroups()   #IT HAS TO BE FIXED OR DELETED. IT IS UNUSED AS IS NOW.
 	thickness_change();
 }
 
-sub resultsloop()
+sub resultsloop
 {
 	$tempdata = Dumper( @{ $reporttempsdata[0] } );
 	print "
@@ -10438,7 +10438,7 @@ i - column units in the load stats report file. Current: @{$reportloadsdata->[3]
 	}
 }
 
-sub filteringloop()
+sub filteringloop
 {
 	$varnumbersprint = Dumper(@varnumbers);
 	$filter_reports_print = Dumper(@filter_reports);
@@ -10558,7 +10558,7 @@ i - set the general contents of the reports. Current: @themereports
 	else{filteringloop();}
 }
 
-sub filteringstrategies()
+sub filteringstrategies
 {
 	#$filtered_files_numbers = $_[0];
 	if ( scalar(@filter_reports) < $filtered_files_numbers )
@@ -10638,7 +10638,7 @@ e - Regarding file $filenumber: number of step to which the fixed variables have
 	else {filteringstrategies();}
 }
 
-sub choose()
+sub choose
 {
 	my $theme      = $_[0];
 	my $text       = $_[1];
@@ -10657,7 +10657,7 @@ sub choose()
 	}
 }
 
-sub longchoose()
+sub longchoose
 {
 	my $theme      = $_[0];
 	my $text       = $_[1];
@@ -10678,7 +10678,7 @@ sub longchoose()
 
 
 
-sub multichoose()
+sub multichoose
 {
 	my @theme      = @{ $_[0] };
 	my $text       = $_[1];
@@ -10699,7 +10699,7 @@ sub multichoose()
 	}
 }
 
-sub quickchoose()
+sub quickchoose
 {
 	my $theme      = $_[0];
 	my $text       = $_[1];
@@ -10715,7 +10715,7 @@ sub quickchoose()
 
 sub obstructionloop() { morphingloop(); }
 
-sub opt()
+sub opt
 {
 	my $theme                = $_[0];
 	my $text                 = $_[1];
@@ -10737,7 +10737,7 @@ sub opt()
 	}
 }
 
-sub gotoloop()
+sub gotoloop
 {
 	my $frame      = $_[0];
 	my $var_number = $_[1];
@@ -10769,12 +10769,12 @@ sub gotoloop()
 	}
 }
 
-sub launch()
+sub launch
 {
 	`.\run.opt`;	
 }
 
-sub savefile()
+sub savefile
 {
 	my $outfile = $_[0];
 	open( OUTFILE, ">$outfile" ) or die "Can't open $outfile\: $!\n";
@@ -10857,7 +10857,7 @@ my $printconstruction_reassignment = Dumper($construction_reassignment);
 
 mainloop(); 
 } 
-optslaunch; 
+&optslaunch; 
 }
 
 # END OF THE CONTENT OF THE "opts_launch.pl" FILE.
