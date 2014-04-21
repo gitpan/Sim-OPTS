@@ -1,4 +1,4 @@
-Sim-OPTS version 0.18
+Sim-OPTS version 0.19
 ============================
 
 INSTALLATION
@@ -31,7 +31,7 @@ OPTS may modify directories and files in your work directory. So it is necessary
 
 To install OPTS it is necessary to issue the following command in the shell as a superuser: < cpanm Sim::OPTS >. This way Perl will take care to install all necessary dependencies. After loading the module, which is made possible by the commands < use Sim::OPTS >, only the command "Sim::OPTS::opts" will be available to the user. That command will activate the OPTS functions following the setting specified in a previously prepared OPTS configuration file.
 
-The command "Sim::OPTS::prepare" would be also present in the capability of the code (file "opts_launch.pl"), but it is not possible to use it, because it has not been updated to the last several versions of OPTS, so it is no more usable at the moment. "optslaunch" would open a text interface made to facilitate the preparation of OPTS configuration files. Due to this, currently the OPTS configuration files can only be prepared by example.
+The command "Sim::OPTS::prepare" would be also present in the capability of the code (file "opts_prepare.pl"), but it is not possible to use it, because it has not been updated to the last several versions of OPTS, so it is no more usable at the moment. "optslaunch" would open a text interface made to facilitate the preparation of OPTS configuration files. Due to this, currently the OPTS configuration files can only be prepared by example.
 
 When it is launched, OPTS will ask for the name of an OPTS configuration file. On that file the instructions for the program will have to be written by the user before launching OPTS. All the activity of preparation to run OPTS will happen in an OPTS configuration file, which has to be applied to an existing ESP-r model.
 
@@ -55,7 +55,7 @@ The propagation of constraints on which some OPTS operations on models may be ba
 OPTS presently only works for UNIX and UNIX-like systems. There would be lots of functionality to add to it and bugs to correct. 
 
 OPTS is a program I have written for my personal use as a side project since 2008, when I was beginning to learn programming. Due to that fact, the core parts of it, when they have not been rewritten, are among the ones that are coded in the strangest manner. As you may realize by looking at the code, I am not a professional programmer and do several things in a non-standard way. In particular, I like the rather deprecated symbolic references, because I think they can simplify my coding. 
-The only part of OPTS I wrote for work is that in the file "opts_launch.pl", which was needed to include the use of the tool in an institutional research I was carrying on in 2011-2012.
+The only part of OPTS I wrote for work is that in the file "opts_prepare.pl", which was needed to include the use of the tool in an institutional research I was carrying on in 2011-2012.
 
 Gian Luca Brunetti, Politecnico di Milano
 gianluca.brunetti@polimi.it

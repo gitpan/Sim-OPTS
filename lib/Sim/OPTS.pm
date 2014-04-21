@@ -25,10 +25,10 @@ no strict; # use strict: THIS CAN'T BE DONE SINCE THE PROGRAM USES SYMBOLIC REFE
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(); # our @EXPORT = qw( );
-$VERSION = '0.18'; # our $VERSION = '';
+$VERSION = '0.19'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
-use lib "./scripts/opts_prepare.pl"; # HERE IS THE FUNCTION "launch", a text interface to the function "opts".
+use lib "./OPTS/opts_prepare.pl"; # HERE IS THE FUNCTION "launch", a text interface to the function "opts".
 
 sub opts { # UNCOMMENT HERE AND AT THE END IF THIS PROGRAM IS A MODULE.
 print "THIS IS OPTS.
@@ -52,14 +52,14 @@ else { die; }
 eval `cat $configfile`; # The file where the program data are
 # require $configfile; # The file where the program data are
 
-use lib "./scripts/opts_morph.pl"; # HERE THERE ARE THE FUNCTION CALLED FROM
+use lib "./OPTS/opts_morph.pl"; # HERE THERE ARE THE FUNCTION CALLED FROM
 # THE MAIN FUNCTION, "morph", FROM THIS FILE (MAIN).
-use lib "../../scripts/opts_sim.pl"; # HERE THERE IS THE FUNCTION "sim" CALLED
+use lib "./OPTS/scripts/opts_sim.pl"; # HERE THERE IS THE FUNCTION "sim" CALLED
 # FROM THIS FILE (MAIN).
-use lib "./scripts/opts_report.pl"; # NOT USED YET. FOR NOW THIS FILE IS
+use lib "./OPTS/opts_report.pl"; # NOT USED YET. FOR NOW THIS FILE IS
 # STILL CALLED BY EVAL IN THE ENVIRONMENT WHERE THE CALL HAPPENS, WITHOUT
 # PARAMETERS (SEE BELOW).
-use lib "./scripts/opts_format.pl"; # # NOT USED YET. FOR NOW THIS FILE IS
+use lib "./OPTS/opts_format.pl"; # # NOT USED YET. FOR NOW THIS FILE IS
 # STILL CALLED BY EVAL IN THE ENVIRONMENT WHERE THE CALL HAPPENS, WITHOUT
 # PARAMETERS (SEE BELOW).
 # use strict; # THIS CAN'T BE DONE SINCE THE PROGRAM USES SYMBOLIC REFERENCES
@@ -562,11 +562,6 @@ sub morph    # This function generates the test case variables
 
 
 
-# END OF THE CONTENT OF THE "opts_launch.pl" FILE.
-##############################################################################
-##############################################################################
-
-
 if ( $dowhat[0] eq "y" ) 
 { 
 	unless (-e $to) 
@@ -631,7 +626,7 @@ OPTS may modify directories and files in your work directory. So it is necessary
 
 To install OPTS it is necessary to issue the following command in the shell as a superuser: < cpanm Sim::OPTS >. This way Perl will take care to install all necessary dependencies. After loading the module, which is made possible by the commands < use Sim::OPTS >, only the command "Sim::OPTS::opts" will be available to the user. That command will activate the OPTS functions following the setting specified in a previously prepared OPTS configuration file.
 
-The command "Sim::OPTS::prepare" would be also present in the capability of the code (file "opts_launch.pl"), but it is not possible to use it, because it has not been updated to the last several versions of OPTS, so it is no more usable at the moment. "optslaunch" would open a text interface made to facilitate the preparation of OPTS configuration files. Due to this, currently the OPTS configuration files can only be prepared by example.
+The command "Sim::OPTS::prepare" would be also present in the capability of the code (file "opts_prepare.pl"), but it is not possible to use it, because it has not been updated to the last several versions of OPTS, so it is no more usable at the moment. "optslaunch" would open a text interface made to facilitate the preparation of OPTS configuration files. Due to this, currently the OPTS configuration files can only be prepared by example.
 
 When it is launched, OPTS will ask for the name of an OPTS configuration file. On that file the instructions for the program will have to be written by the user before launching OPTS. All the activity of preparation to run OPTS will happen in an OPTS configuration file, which has to be applied to an existing ESP-r model.
 
@@ -655,7 +650,7 @@ The propagation of constraints on which some OPTS operations on models may be ba
 OPTS presently only works for UNIX and UNIX-like systems. There would be lots of functionality to add to it and bugs to correct. 
 
 OPTS is a program I have written for my personal use as a side project since 2008, when I was beginning to learn programming. Due to that fact, the core parts of it, when they have not been rewritten, are among the ones that are coded in the strangest manner. As you may realize by looking at the code, I am not a professional programmer and do several things in a non-standard way. In particular, I like the rather deprecated symbolic references, because I think they can simplify my coding. 
-The only part of OPTS I wrote for work is that in the file "opts_launch.pl", which was needed to include the use of the tool in an institutional research I was carrying on in 2011-2012.
+The only part of OPTS I wrote for work is that in the file "opts_prepare.pl", which was needed to include the use of the tool in an institutional research I was carrying on in 2011-2012.
 
 =head2 EXPORT
 
