@@ -57,28 +57,26 @@ $filenew = "$file"."_";
 "n" );  
 # 9) make table to be plotted in 3D? (NOTE: UNTESTED FROM VERSION 0.5 ON.)
 
-$optsworks = "optsworks"; # THIS SPECIFIES THE WORK DIRECTORY FOR THE OPTS MODELS. IF THIS VARIABLE IS BLANK, THE HOME DIRECTORY WILL BE USED. IF THIS VARIABLE IS NOT BLANK, OPTS  WILL WORK IN: "/home/yourhome/your_opts_work_directory/your_model_directory", which written in terms of the variables here used is: "/home/yourhome/$optsworks/$file".
-
 $preventsim = 
 "n"; 
 # prevent simulation, just retrieve
 
 $mypath = 
 "/home/ubuntu"; 
-# path of the directory in which the OPT executable is.
+# path of the directory in which you are going to work
 
 $homepath = 
 "/home/ubuntu"; 
-# path of the directory in which the OPT executable is, again. (OK, this redundancy has to be eliminated.)
+# path of the directory in which you are going to work, again. (OK, this redundancy has to be eliminated.)
 
 $fileconfig=(
 "cells.cfg"
 ); # name of the configuration file of the model, which will reside in the "./cfg/" directory in your model's directory.
 
-$outfilefeedback = "$mypath/$file-$fileconfig.feedback.txt"; 
+$outfile = "$mypath/$file-$fileconfig.feedback.txt"; 
 # Write here the name of the files in which reports will be printed. This may be useful to debug the program.  But in order to do this, you'll have to mess up with the source code to specify what you want to be printed.
 
-$outfilefeedbacktoshell = 
+$toshell = 
 "$mypath/$file-$fileconfig.feedbacktoshell.txt"; 
 # name of the files into which the output to the shell will be printed. This may be useful to check the inner working of the program, or to postpone the operations with ESP-r.  In that case, the printed has to be made executable to be launched from the shell afterward. 
 

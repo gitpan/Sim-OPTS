@@ -4,13 +4,11 @@ MANIFEST
 README
 t/Sim-OPTS.t
 lib/Sim/OPTS.pm
-lib/Sim/OPTS/opts_morph.pl
-lib/Sim/OPTS/opts_sim.pl
-lib/Sim/OPTS/opts_report.pl
-lib/Sim/OPTS/opts_format.pl
-lib/Sim/OPTS/opts_prepare.pl
+examples/example-of_opts_configuration_file.pl
+examples/otherexample-of_opts_configuration_file.pl
 examples/template-of_opts_configuration_file.pl
 examples/template-of_opts_configuration_file.odt
+examples/example_esp-r.model.tar.gz
 examples/examples_of_costraint_files/amoeba.reshape_backwindow.pl
 examples/examples_of_costraint_files/amoeba.reshape_frontwindow.pl
 examples/examples_of_costraint_files/amoeba.reshape_leftwindow.pl
