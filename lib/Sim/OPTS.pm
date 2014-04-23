@@ -25,7 +25,7 @@ use warnings; # use warnings;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(); # our @EXPORT = qw( );
-$VERSION = '0.23_1'; # our $VERSION = '';
+$VERSION = '0.24'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 
@@ -78,9 +78,6 @@ $Data::Dumper::Indent = 0;
 $Data::Dumper::Useqq  = 1;
 $Data::Dumper::Terse  = 1;
 
-
-###########################################################################################
-###########################################################################################
 ###########################################################################################
 # BELOW THE OPTS PROGRAM FOLLOWS.
 my $varprov;
