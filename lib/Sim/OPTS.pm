@@ -4,7 +4,7 @@ package Sim::OPTS;
 # This is free software.  You can redistribute it and/or modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, version 2.
 
-use 5.014002;
+use 5.008001;
 use Exporter; # require Exporter;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 use Devel::REPL;
@@ -25,7 +25,7 @@ use warnings; # use warnings;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(); # our @EXPORT = qw( );
-$VERSION = '0.24'; # our $VERSION = '';
+$VERSION = '0.24_1'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 
@@ -685,7 +685,7 @@ In the module distribution, there is a template file with explanations and an ex
 
 To run OPTS without having it act on files, you should specify the setting < $exeonfiles = "n"; > in the OPTS configuration file. Then you should specify a path for the  text file that will receive the commands in place of the shell, by setting < $outfilefeedbacktoshell = address_the_text_file >. It is a good idea to always send the OPTS commands to a file also when they are prompted to the shell, to be able to trace what has been done to the model files.
 
-The OPTS configuration file will make, if asked, OPTS give instruction to ESP-r in order to make it modify a model in several different copies; then, if asked, it will run simulations; then, if asked, it will retrieve the results; then, if asked, it will extract some results and order them in a required manner; then, if asked, will format the so obtained results. Those functions are performed by the subroutines contained in "OPTS.pm", which previously were written in the following separate files: "opts_morph.pl", "opts_sim.pl", "opts_report.pl", "opts_format.pl", "opts_prepare.pl". It should be noted that some functions in "opts_report.pl" and especially in "opts_format.pl" and "opts_prepare.pl" have been used only once and have not been maintained since then. My attention has indeed been mostly directed to the "OPTS.pm" and "opts_morph.pl" files.
+The OPTS configuration file will make, if asked, OPTS give instruction to ESP-r in order to make it modify a model in several different copies; then, if asked, it will run simulations; then, if asked, it will retrieve the results; then, if asked, it will extract some results and order them in a required manner; then, if asked, will format the so obtained results. Those functions are performed by the subroutines contained in "OPTS.pm", which previously were written in the following separate files: "opts_morph.pl", "opts_sim.pl", "opts_report.pl", "opts_format.pl", "opts_prepare.pl". Some functions in "opts_report.pl" and especially in "opts_format.pl" and "opts_prepare.pl" have been used only once and have not been maintained since then. My attention has indeed been mostly directed to the "OPTS.pm" and "opts_morph.pl" files.
 
 To run OPTS, you may open Perl in a repl. As a repl, you may use the Devel::Repl module. It is going to be installed when OPTS is installed. To launch it, the command < re.pl > has to be given to the shell. Then you may load the Sim:OPTS module from there (< use Sim:OPTS >). Then you should issue the command < Sim::OPTS::opts > from there. When launched, OPTS will ask you to write the name (with path) of the OPTS configuration file to be considered. After that, the activity of OPTS will start and will not stop until completion.
 
@@ -700,7 +700,7 @@ The propagation of constraints on which some OPTS operations on models may be ba
 
 OPTS presently only works for UNIX and UNIX-like systems. There would be lots of functionality to add to it and bugs to correct. 
 
-OPTS is a program I have written for my personal use as a side project since 2008, when I was beginning to learn programming. Due to that fact, the core parts of it, when they have not been rewritten, are among the ones that are coded in the strangest manner. I am not a professional programmer and do several things in a non-standard way. The part of OPTS I wrote for work is that in the file "opts_prepare.pl", which made possible to include the use of the tool in an institutional research I was participating to in 2011-2012.
+OPTS is a program I have written for my personal use as a side project since 2008, when I was beginning to learn programming. The earlier parts of it are the ones that are coded in the strangest manner. I am not a professional programmer and do several things in a non-standard way. The part of OPTS I wrote for work is that in the file "opts_prepare.pl", which made possible to include the use of the tool in an institutional research I was participating to in 2011-2012.
 
 =head2 EXPORT
 
