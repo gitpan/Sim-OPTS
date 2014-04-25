@@ -13,7 +13,7 @@
 
 ##############################################################################
 ##############################################################################
-##############################################################################
+
 # HERE FOLLOWES THE CONTENT OF THE "opts_report.pl" FILE, WHICH HAS BEEN MERGED HERE
 # TO AVOID COMPLICATION WITH THE PERL MODULE INSTALLATION.
 

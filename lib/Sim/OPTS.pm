@@ -7,7 +7,6 @@ package Sim::OPTS;
 use 5.008001;
 use Exporter; # require Exporter;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
-use Devel::REPL;
 no strict; 
 use warnings;
 
@@ -18,7 +17,6 @@ use warnings;
 # Items to export into callers namespace by default. Note: do not export
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
-
 # This allows declaration	use opts ':all';
 # If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
 # will save memory.
@@ -27,7 +25,7 @@ use warnings;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(opts prepare); # our @EXPORT = qw( );
-$VERSION = '0.26'; # our $VERSION = '';
+$VERSION = '0.27'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 
@@ -91,7 +89,6 @@ if ($outfile ne "" )
 if ($toshell ne "" ) 
 { open( TOSHELL, ">$toshell" ) or die "Can't open $toshell: $!" };
 
-#################################################################################
 #################################################################################
 #################################################################################
 

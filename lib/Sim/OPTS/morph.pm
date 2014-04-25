@@ -12,7 +12,7 @@
 
 #########################################################################################
 #########################################################################################
-#########################################################################################
+
 # HERE FOLLOWS THE CONTENT OF THE FILE "opts_morph.pl", which has been merged here
 # TO AVOID COMPLICATION WITH THE PERL MODULE INSTALLATION.
 package Sim::OPTS::morph;

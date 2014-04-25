@@ -12,7 +12,7 @@
 
 ##############################################################################
 ##############################################################################
-##############################################################################
+
 # HERE FOLLOWS THE CONTENT OF THE "opts_prepare.pl" FILE, WHICH HAS BEEN MERGED HERE
 # TO AVOID COMPLICATIONS WITH THE PERL MODULE INSTALLATION
 
