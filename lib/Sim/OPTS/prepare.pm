@@ -18,10 +18,13 @@
 
 # This program launched a text interface for creating OPTS configuration files. 
 # It has not been updated after a lot of changes to OPTS, so it is currently not usable.
+package Sim::OPTS::prepare;
 
 no strict; 
 no warnings;
 use lib "../../";
+@ISA = qw(Exporter); # our @ISA = qw(Exporter);
+@EXPORT = qw( &prepare );
 
 sub prepare 
 { 

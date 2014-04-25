@@ -7,7 +7,6 @@
 # This is free software.  You can redistribute it and/or modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, version 2.
 
-# package OPTS;
 # HERE FOLLOWS THE FUNCTIONS WHICH ARE CALLED BY THE FUNCTION "morph" IN THE 
 # MAIN OPTS PROGRAM FILE.
 
@@ -16,10 +15,14 @@
 #########################################################################################
 # HERE FOLLOWS THE CONTENT OF THE FILE "opts_morph.pl", which has been merged here
 # TO AVOID COMPLICATION WITH THE PERL MODULE INSTALLATION.
+package Sim::OPTS::morph;
 
 no strict; 
-use warnings;
+no warnings;
 use lib "../../";
+@ISA = qw(Exporter); # our @ISA = qw(Exporter);
+@EXPORT = qw( &translate &translate_surfaces_simple &translate_surfaces &rotate_surface &translate_vertexes &shift_vertexes &rotate &rotatez &make_generic_change &reassign_construction &change_thickness &obs_modify &bring_obstructions_back &recalculateish &daylightcalc &daylightcalc_new_proposed &change_config &checkfile &change_climate &recalculatenet &apply_constraints &reshape_windows &warp &constrain_geometry &read_geometry &read_geo_constraints &apply_geo_constraints &vary_controls &constrain_controls &read_controls  &read_control_constraints &apply_loopcontrol_changes &apply_flowcontrol_changes &constrain_obstructions &read_obstructions &read_obs_constraints &apply_obs_constraints &get_obstructions &write_temporary  &pin_obstructions &apply_pin_obstructions &vary_net &read_net &apply_node_changes &apply_component_changes &constrain_net  &read_net_constraints &propagate_constraints );
+
 
 ##############################################################################
 sub translate
@@ -2732,7 +2735,8 @@ ZZZ
 }	
 
 
-##############################################################################					
+##############################################################################	
+# THIS FUNCTION HAS BEEN UTDATED BY THOSE FOR CONSTRAINING THE NETS, BELOW				
 sub recalculatenet
 {
 	my $to = shift;
@@ -6300,8 +6304,10 @@ sub propagate_constraints
 {
 	# THIS FUNCTION ALLOWS TO MANIPULATE COMPOUND USER-IMPOSED CONSTRAINTS.
 	# IT MAKES AVAILABLE TO THE USER THE FOLLOWING VARIABLES FOR MANIPULATION.
+
 	# REGARDING GEOMETRY:
 	# @v[$number][$x], @v[$number][$y], @v[$number][$z]. EXAMPLE: @v[4][$x] = 1. OR: @v[4][$x] =  @v[4][$y].
+
 	# REGARDING OBSTRUCTIONS:
 	# $obs[$obs_number][$x], $obs[$obs_number][$y], $obs[$obs_number][$y]
 	# $obs[$obs_number][$width], $obs[$obs_number][$depth], $obs[$obs_number][$height]
@@ -6311,6 +6317,7 @@ sub propagate_constraints
 	# OTHER EXAMPLE: $obs[2][$x] = $obs[2][$y]. THIS MEANS: 
 	# NOTE THAT THE MATERIAL TO BE SPECIFIED IS A MATERIAL LETTER, BETWEEN QUOTES! EXAMPLE: $obs[1][$material] = "a".
 	#  $tilt IS PRESENTLY UNUSED.
+
 	# REGARDING MASS-FLOW NETWORKS:
 	# @nodes and @components.
 	# CURRENTLY: INTERNAL UNKNOWN AIR NODES AND BOUNDARY WIND-CONCERNED NODES.
@@ -6333,6 +6340,7 @@ sub propagate_constraints
 	# $component[node_number][$door_height] # REGARDING DOORS
 	# $component[node_number][$door_nodeheight] # REGARDING DOORS
 	# $component[node_number][$door_discharge] # REGARDING DOORS (DISCHARGE FACTOR)
+
 	# REGARDING CONTROLS:
 	# 1) $loop_control[$countloop][$countloopcontrol][$loop_hour] 
 	# Where $countloop and  $countloopcontrol has to be set to a specified number in the OPTS file for constraints.
@@ -6359,6 +6367,7 @@ sub propagate_constraints
 	# TYPICALLY, IT WILL BE USED FOR A ZONE, BUT NOTHING PREVENTS THAT SEVERAL OF THEM CHAINED ONE AFTER 
 	# THE OTHER ARE APPLIED TO THE SAME ZONE.
 	# $counterstep, WHICH TELLS THE PROGRAM WHAT THE CURRENT ITERATION STEP IS.
+
 	my $to = shift;
 	my $fileconfig = shift;
 	my $stepsvar = shift;

@@ -16,10 +16,13 @@
 # TO AVOID COMPLICATIONS WITH PERL MODULE INSTALLATION.
 
 # HERE FOLLOW THE "rank_reports", "convert_report" , "filter_reports" and "maketable" FUNCTIONS, CALLED FROM THE MAIN PROGRAM FILE.
+package Sim::OPTS::format;
 
 no strict; 
-use warnings;
+no warnings;
 use lib "../../";
+@ISA = qw(Exporter); # our @ISA = qw(Exporter);
+@EXPORT = qw( &rank_reports &convert_report &filter_reports &convert_filtered_reports &maketable );
 
 sub rank_reports    # STILL UNUSED. Self-explaining. 
 {

@@ -18,10 +18,13 @@
 # TO AVOID COMPLICATION WITH THE PERL MODULE INSTALLATION.
 
 ## HERE THE "report", "retrieve" and "merge" FUNCTIONS FOLLOW, CALLED FROM THE MAIN PROGRAM FILE.
+package Sim::OPTS::report;
 
 no strict; 
-use warnings;
+no warnings;
 use lib "../../";
+@ISA = qw(Exporter); # our @ISA = qw(Exporter);
+@EXPORT = qw( &report &merge_reports );
 
 sub report # This function retrieves the results of interest from the text file created by the "retrieve" function
 {

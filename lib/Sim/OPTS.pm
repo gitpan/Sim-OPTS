@@ -9,7 +9,7 @@ use Exporter; # require Exporter;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 use Devel::REPL;
 no strict; # use strict: THIS CAN'T BE DONE SINCE THE PROGRAM USES SYMBOLIC REFERENCES
-use warnings; # use warnings;
+no warnings; # use warnings;
 
 @ISA = qw(Exporter); # our @ISA = qw(Exporter);
 
@@ -24,12 +24,12 @@ use warnings; # use warnings;
 
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-@EXPORT = qw(); # our @EXPORT = qw( );
-$VERSION = '0.24_1'; # our $VERSION = '';
+@EXPORT = qw(opts prepare); # our @EXPORT = qw( );
+$VERSION = '0.25'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 
-use lib "./SIM/scripts/opts_prepare.pl"; # HERE IS THE FUNCTION 'prepare', a text interface to the function 'opts'.
+use Sim::OPTS::prepare; # HERE IS THE FUNCTION 'prepare', a text interface to the function 'opts'.
 
 #################################################################################
 #################################################################################
@@ -45,7 +45,6 @@ Copyright license: GPL.
 -------------------
 
 To use OPTS, an OPTS configuration file and a target ESP-r model should have been prepared.
-This OPTS version is for UNIX systems and UNIX-like systems.
 Insert the name of a configuration file (local path):\n";
 $configfile = <STDIN>;
 chomp $configfile;
@@ -60,17 +59,16 @@ else { die; }
 eval `cat $configfile`; # The file where the program data are
 # require $configfile; # The file where the program data are
 
-# THE MAIN FUNCTION, "morph", FROM THIS FILE (MAIN).
-use lib "./SIM/scripts/opts_morph.pl";
-use lib "./SIM/scripts/opts_sim.pl"; # HERE THERE IS THE FUNCTION "sim" CALLED
-use lib "./SIM/scripts/opts_report.pl"; 
-use lib "./SIM/scripts/opts_format.pl";
-if (-e "./SIM/scripts/opts_search.pl")
+use Sim::OPTS::morph;
+use Sim::OPTS::sim; # HERE THERE IS THE FUNCTION "sim" CALLED
+use Sim::OPTS::report; 
+use Sim::OPTS::format;
+if (-e "./SIM/OPTS/search.pm")
 {
-	require "./scripts/opts_search.pl";
+	use Sim::OPTS::search;
 }
 
-if ($exeonfiles == undef) { $exeonfiles = "y";}
+if ($exeonfiles eq undef) { $exeonfiles = "y";}
 use Math::Trig;
 use Data::Dumper;
 use List::Util qw[min max reduce];
@@ -80,29 +78,9 @@ $Data::Dumper::Terse  = 1;
 
 ###########################################################################################
 # BELOW THE OPTS PROGRAM FOLLOWS.
-my $varprov;
-my $countprov = 1;
-# my $maxstepsvar = 100; # HERE PUT A NUMBER OF YOUR CHOICE SETTING A LIMIT TO
-# THE NUMBER OF TRASFORMATION PHASES TO BE TAKEN INTO ACCOUNT.
-my $casenumber = 1;
-while ($countprov <= $maxstepsvar) # THIS IS BECAUSE A $stepsvar MUST NEVER BE 0.
-{
-	$varprov = ${ "stepsvar" . "$countprov" };
-	if ( $varprov == undef )  { $varprov  = 1; }
-	if ( $varprov == 0 )  { $varprov  = 1; } # HERE THE $stepsvar VARIABLE
-	# IS SET UP ON THE FLY (that's why Perl's symbolic references have been
-	# used) FOR ALL CASES.
-	$casenumber = ( $casenumber * $countprov ); # HERE THE NUMBER OF TEST
-	# INSTANCES IS CALCULATED.
-	$countprov++;
-}
 
-
-print "OPTS IS RUNNING.
+print "OPTS - IS - RUNNING.
 -------------------\n";
-
-#The number of cases set in the configuration file on the whole is $casenumbers.
-#If they are too many, stop OPTS with CONTROL+C.
 if ($outfile ne "" ) 
 { open( OUTFILE, ">$outfile" ) or die "Can't open $outfile: $!"; }
 
@@ -675,9 +653,9 @@ OPTS is a program conceived to manage parametric explorations through the use of
 
 OPTS may modify directories and files in your work directory. So it is necessary to examine how it works before attempting to use it.
 
-To install OPTS it is necessary to issue the following command in the shell as a superuser: < cpanm Sim::OPTS >. This way Perl will take care to install all necessary dependencies. After loading the module, which is made possible by the commands < use Sim::OPTS >, only the command < Sim::OPTS::opts > will be available to the user. That command will activate the OPTS functions following the setting specified in a previously prepared OPTS configuration file.
+To install OPTS it is necessary to issue the following command in the shell as a superuser: < cpanm Sim::OPTS >. This way Perl will take care to install all necessary dependencies. After loading the module, which is made possible by the commands < use Sim::OPTS >, only the command < opts > will be available to the user. That command will activate the OPTS functions following the setting specified in a previously prepared OPTS configuration file.
 
-The command < Sim::OPTS::prepare > would be also present in the capability of the code (file "opts_prepare.pl"), but it is not possible to use it, because it has not been updated to the last several versions of OPTS, so it is no more usable at the moment. The command would open a text interface made to facilitate the preparation of OPTS configuration files. Due to this, currently the OPTS configuration files can only be prepared by example.
+The command < prepare > would be also present in the capability of the code (file "prepare.pm"), but it is not possible to use it, because it has not been updated to the last several versions of OPTS, so it is no more usable at the moment. The command would open a text interface made to facilitate the preparation of OPTS configuration files. Due to this, currently the OPTS configuration files can only be prepared by example.
 
 When it is launched, OPTS will ask for the name of an OPTS configuration file. On that file the instructions for the program will have to be written by the user before launching OPTS. All the activity of preparation to run OPTS will happen in an OPTS configuration file, which has to be applied to an existing ESP-r model.
 
@@ -685,9 +663,9 @@ In the module distribution, there is a template file with explanations and an ex
 
 To run OPTS without having it act on files, you should specify the setting < $exeonfiles = "n"; > in the OPTS configuration file. Then you should specify a path for the  text file that will receive the commands in place of the shell, by setting < $outfilefeedbacktoshell = address_the_text_file >. It is a good idea to always send the OPTS commands to a file also when they are prompted to the shell, to be able to trace what has been done to the model files.
 
-The OPTS configuration file will make, if asked, OPTS give instruction to ESP-r in order to make it modify a model in several different copies; then, if asked, it will run simulations; then, if asked, it will retrieve the results; then, if asked, it will extract some results and order them in a required manner; then, if asked, will format the so obtained results. Those functions are performed by the subroutines contained in "OPTS.pm", which previously were written in the following separate files: "opts_morph.pl", "opts_sim.pl", "opts_report.pl", "opts_format.pl", "opts_prepare.pl". Some functions in "opts_report.pl" and especially in "opts_format.pl" and "opts_prepare.pl" have been used only once and have not been maintained since then. My attention has indeed been mostly directed to the "OPTS.pm" and "opts_morph.pl" files.
+The OPTS configuration file will make, if asked, OPTS give instruction to ESP-r in order to make it modify a model in several different copies; then, if asked, it will run simulations; then, if asked, it will retrieve the results; then, if asked, it will extract some results and order them in a required manner; then, if asked, will format the so obtained results. Those functions are performed by the subroutines contained in "OPTS.pm", which previously were written in the following separate files: "morph.pm", "sim.pm", "report.pm", "format.pm", "prepare.pm". Some functions in "report.pm" and especially "format.pm" and "prepare.pm" have been used only once and have not been maintained since then. My attention has indeed been mostly directed to the things in the "OPTS.pm" and "morph.pm" files.
 
-To run OPTS, you may open Perl in a repl. As a repl, you may use the Devel::Repl module. It is going to be installed when OPTS is installed. To launch it, the command < re.pl > has to be given to the shell. Then you may load the Sim:OPTS module from there (< use Sim:OPTS >). Then you should issue the command < Sim::OPTS::opts > from there. When launched, OPTS will ask you to write the name (with path) of the OPTS configuration file to be considered. After that, the activity of OPTS will start and will not stop until completion.
+To run OPTS, you may open Perl in a repl. As a repl, you may use the Devel::Repl module. It is going to be installed when OPTS is installed. To launch it, the command < re.pl > has to be given to the shell. Then you may load the Sim:OPTS module from there (< use Sim:OPTS >). Then you should issue the command < opts > from there. When launched, OPTS will ask you to write the name (with path) of the OPTS configuration file to be considered. After that, the activity of OPTS will start and will not stop until completion.
 
 OPTS will make ESP-r perform actions on a certain ESP-r model by copying it several times and morphing each copy. A target ESP-r model must also therefore be present in advance and its name (with path) has to be specified in the OPTS configuration file. The OPTS configuration file will also contain information about your work directory. I usually make OPTS work in a "optsworks" folder in my home folder.
 
@@ -700,7 +678,7 @@ The propagation of constraints on which some OPTS operations on models may be ba
 
 OPTS presently only works for UNIX and UNIX-like systems. There would be lots of functionality to add to it and bugs to correct. 
 
-OPTS is a program I have written for my personal use as a side project since 2008, when I was beginning to learn programming. The earlier parts of it are the ones that are coded in the strangest manner. I am not a professional programmer and do several things in a non-standard way. The part of OPTS I wrote for work is that in the file "opts_prepare.pl", which made possible to include the use of the tool in an institutional research I was participating to in 2011-2012.
+OPTS is a program I have written for my personal use as a side project since 2008, when I was beginning to learn programming. The earlier parts of it are the ones that are coded in the strangest manner. I am not a professional programmer and do several things in a non-standard way. The part of OPTS I wrote for work is that in the file "prepare.pm", which made possible to include the use of the tool in an institutional research I was participating to in 2011-2012.
 
 =head2 EXPORT
 

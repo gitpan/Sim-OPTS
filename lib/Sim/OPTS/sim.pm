@@ -16,10 +16,13 @@
 # TO AVOID COMPLICATIONS WITH THE PERL MODULE INSTALLATION.
 
 # HERE FOLLOWS THE "sim" FUNCTION, CALLED FROM THE MAIN PROGRAM FILE.
+package Sim::OPTS::sim;
 
 no strict; 
-use warnings;
+no warnings;
 use lib "../../";
+@ISA = qw(Exporter); # our @ISA = qw(Exporter);
+@EXPORT = qw( &sim );
 
 #____________________________________________________________________________
 # Activate or deactivate the following function calls depending from your needs

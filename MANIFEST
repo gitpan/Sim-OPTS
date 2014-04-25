@@ -4,11 +4,11 @@ MANIFEST
 README
 t/Sim-OPTS.t
 lib/Sim/OPTS.pm
-lib/Sim/scripts/opts_morph.pl
-lib/Sim/scripts/opts_sim.pl
-lib/Sim/scripts/opts_report.pl
-lib/Sim/scripts/opts_format.pl
-lib/Sim/scripts/opts_prepare.pl
+lib/Sim/OPTS/morph.pm
+lib/Sim/OPTS/sim.pm
+lib/Sim/OPTS/report.pm
+lib/Sim/OPTS/format.pm
+lib/Sim/OPTS/prepare.pm
 examples/example-of_opts_configuration_file.pl
 examples/otherexample-of-opts-configuration-file.pl
 examples/template-of_opts_configuration_file.pl
