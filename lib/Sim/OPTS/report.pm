@@ -23,6 +23,7 @@ package Sim::OPTS::report;
 no strict; 
 no warnings;
 use lib "../../";
+
 @ISA = qw(Exporter); # our @ISA = qw(Exporter);
 @EXPORT = qw( &report &merge_reports );
 

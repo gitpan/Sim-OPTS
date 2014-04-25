@@ -20,7 +20,9 @@ package Sim::OPTS::sim;
 
 no strict; 
 no warnings;
+no strict 'refs';
 use lib "../../";
+
 @ISA = qw(Exporter); # our @ISA = qw(Exporter);
 @EXPORT = qw( &sim );
 

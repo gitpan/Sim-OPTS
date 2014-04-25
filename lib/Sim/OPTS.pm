@@ -8,8 +8,9 @@ use 5.008001;
 use Exporter; # require Exporter;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 use Devel::REPL;
-no strict; # use strict: THIS CAN'T BE DONE SINCE THE PROGRAM USES SYMBOLIC REFERENCES
-no warnings; # use warnings;
+no strict; 
+use warnings;
+
 
 @ISA = qw(Exporter); # our @ISA = qw(Exporter);
 
@@ -22,14 +23,16 @@ no warnings; # use warnings;
 # If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
 # will save memory.
 
+
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(opts prepare); # our @EXPORT = qw( );
-$VERSION = '0.25'; # our $VERSION = '';
+$VERSION = '0.26'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 
-use Sim::OPTS::prepare; # HERE IS THE FUNCTION 'prepare', a text interface to the function 'opts'.
+# use Sim::OPTS::prepare; # HERE IS THE FUNCTION 'prepare', a text interface to the function 'opts'.
+# THIS HAS BE DISABLE. THIS COMMAND SHOULD BE GIVEN FROM THE SHELL NOW, TO BEGIN TO RE-DEBUG THE FILE.
 
 #################################################################################
 #################################################################################
@@ -38,6 +41,7 @@ use Sim::OPTS::prepare; # HERE IS THE FUNCTION 'prepare', a text interface to th
 
 sub opts 
 { 
+my ( $configfile, $response1);
 print "THIS IS OPTS.
 Copyright by Gian Luca Brunetti and Politecnico di Milano, 2008-14.
 Dipartimento DAStU, Politecnico di Milano.
@@ -65,7 +69,7 @@ use Sim::OPTS::report;
 use Sim::OPTS::format;
 if (-e "./SIM/OPTS/search.pm")
 {
-	use Sim::OPTS::search;
+	#use Sim::OPTS::search;
 }
 
 if ($exeonfiles eq undef) { $exeonfiles = "y";}
@@ -235,7 +239,6 @@ sub dophase
 					foreach my $zone (@applytype)
 					{
 						my $modification_type = $applytype[$counterzone][0];
-						my $zone_letter = $applytype[$counterzone][3];
 						if ( ( $applytype[$counterzone][1] ne $applytype[$counterzone][2] )
 							 and ( $modification_type ne "changeconfig" ) )
 						{
@@ -294,47 +297,47 @@ sub dophase
 								{ 
 									&propagate_constraints
 									($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype, $zone_letter, \@propagate_constraints); 
+									$counterstep, $exeonfiles, \@applytype, \@propagate_constraints); 
 								}
 								if ($apply_constraints[$counterzone][0] eq "y") 
 								{ 
 									&apply_constraints
 									($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype, $zone_letter, \@constrain_geometry); 
+									$counterstep, $exeonfiles, \@applytype, \@constrain_geometry); 
 								}
 								if ($constrain_geometry[$counterzone][0] eq "y") 
 								{ 
 									&constrain_geometry
 									($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype,  $zone_letter, \@constrain_geometry, $to_do); 
+									$counterstep, $exeonfiles, \@applytype, \@constrain_geometry, $to_do); 
 								}
 								if ($constrain_controls[$counterzone][0] eq "y") 
 								{ 
 									&constrain_controls
 									($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype, $zone_letter, \@constrain_controls, $to_do); 
+									$counterstep, $exeonfiles, \@applytype, \@constrain_controls, $to_do); 
 								}
 								if ($$keep_obstructions[$counterzone][0] eq "y") # TO BE SUPERSEDED BY get_obstructions AND pin_obstructions
 								{ 
 									&bring_obstructions_back($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype, $zone_letter, $keep_obstructions); 
+									$counterstep, $exeonfiles, \@applytype, $keep_obstructions); 
 								}
 								if ($constrain_net[$counterzone][0] eq "y")
 								{ 
 									&constrain_net($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype, $zone_letter, \@constrain_net, $to_do); 
+									$counterstep, $exeonfiles, \@applytype, \@constrain_net, $to_do); 
 								}
 								if ($recalculatenet[0] eq "y") 
 								{ 
 									&recalculatenet
 									($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype, $zone_letter, \@recalculatenet); 
+									$counterstep, $exeonfiles, \@applytype, \@recalculatenet); 
 								}
 								if ($constrain_obstructions[$counterzone][0] eq "y") 
 								{ 
 									&constrain_obstructions
 									($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype, $zone_letter, \@constrain_obstructions, $to_do); 
+									$counterstep, $exeonfiles, \@applytype, \@constrain_obstructions, $to_do); 
 								}
 								#if ( $pin_obstructions[$counterzone][0] eq "y" ) 
 								#{ 
@@ -345,13 +348,13 @@ sub dophase
 								{ 
 									&recalculateish
 									($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype, $zone_letter, \@recalculateish); 
+									$counterstep, $exeonfiles, \@applytype, \@recalculateish); 
 								}
 								if ($daylightcalc[0] eq "y") 
 								{ 
 									&daylightcalc
 									($to, $fileconfig, $stepsvar, $counterzone,  
-									$counterstep, $exeonfiles, \@applytype, $zone_letter, $filedf, \@daylightcalc); 
+									$counterstep, $exeonfiles, \@applytype, $filedf, \@daylightcalc); 
 								}
 							} # END SUB DOTHINGS
 							
@@ -359,126 +362,126 @@ sub dophase
 							{
 								&make_generic_change
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, $exeonfiles,
-								\@applytype, $zone_letter, $generic_change);
+								\@applytype, $generic_change);
 								&dothings;
 							} #
 							elsif ( $modification_type eq "surface_translation_simple" )
 							{
 								&translate_surfaces_simple
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $zone_letter, $translate_surface_simple);
+								$exeonfiles, \@applytype, $translate_surface_simple);
 								&dothings;
 							} 
 							elsif ( $modification_type eq "surface_translation" )
 							{
 								&translate_surfaces
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $zone_letter, $translate_surface);
+								$exeonfiles, \@applytype, $translate_surface);
 								&dothings;
 							} 
 							elsif ( $modification_type eq "surface_rotation" )              #
 							{
 								&rotate_surface
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $zone_letter, $rotate_surface);
+								$exeonfiles, \@applytype, $rotate_surface);
 								&dothings;
 							} 
 							elsif ( $modification_type eq "vertexes_shift" )
 							{
 								&shift_vertexes
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $zone_letter, $shift_vertexes);
+								$exeonfiles, \@applytype, $shift_vertexes);
 								&dothings;
 							}
 							elsif ( $modification_type eq "vertex_translation" )
 							{
 								&translate_vertexes
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $zone_letter, \@translate_vertexes);                         
+								$exeonfiles, \@applytype, \@translate_vertexes);                         
 								&dothings;
 							}  
 							elsif ( $modification_type eq "construction_reassignment" )
 							{
 								&reassign_construction
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $zone_letter, $construction_reassignment);
+								$exeonfiles, \@applytype, $construction_reassignment);
 								&dothings;
 							} 
 							elsif ( $modification_type eq "rotation" )
 							{
 								&rotate
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $zone_letter, $rotate);
+								$exeonfiles, \@applytype, $rotate);
 								&dothings;
 							} 
 							elsif ( $modification_type eq "translation" )
 							{
 								&translate
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $zone_letter, $translate);
+								$exeonfiles, \@applytype, $translate);
 								&dothings;
 							} 
 							elsif ( $modification_type eq "thickness_change" )
 							{
 								&change_thickness
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $zone_letter, $thickness_change);
+								$exeonfiles, \@applytype, $thickness_change);
 								&dothings;
 							} 
 							elsif ( $modification_type eq "rotationz" )
 							{
 								&rotatez
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $zone_letter, $rotatez);
+								$exeonfiles, \@applytype, $rotatez);
 								&dothings;
 							} 
 							elsif ( $modification_type eq "change_config" )
 							{
 								&change_config
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $zone_letter, \@change_config);
+								$exeonfiles, \@applytype, \@change_config);
 								&dothings;
 							}
 							elsif ( $modification_type eq "window_reshapement" ) 
 							{
 								&reshape_windows
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $zone_letter, \@reshape_windows);					
+								$exeonfiles, \@applytype, \@reshape_windows);					
 								&dothings;
 							}
 							elsif ( $modification_type eq "obs_modification" )  # REWRITE FOR NEW GEO FILE?
 							{
 								&obs_modify
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $zone_letter, $obs_modify);
+								$exeonfiles, \@applytype, $obs_modify);
 								&dothings;
 							}
 							elsif ( $modification_type eq "warping" )
 							{
 								&warp
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $zone_letter, $warp);
+								$exeonfiles, \@applytype, $warp);
 								&dothings;
 							}
 							elsif ( $modification_type eq "vary_controls" )
 							{
 								&vary_controls
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $zone_letter, \@vary_controls);
+								$exeonfiles, \@applytype, \@vary_controls);
 								&dothings;
 							}
 							elsif ( $modification_type eq "vary_net" )
 							{
 								&vary_net
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $zone_letter, \@vary_net);
+								$exeonfiles, \@applytype, \@vary_net);
 								&dothings;
 							}
 							elsif ( $modification_type eq "change_climate" )
 							{
 								&change_climate
 								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $zone_letter, \@change_climate);
+								$exeonfiles, \@applytype, \@change_climate);
 								&dothings;
 							} 
 							elsif ( $modification_type eq "constrain_controls" )

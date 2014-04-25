@@ -20,9 +20,10 @@ package Sim::OPTS::morph;
 no strict; 
 no warnings;
 use lib "../../";
+
 @ISA = qw(Exporter); # our @ISA = qw(Exporter);
 @EXPORT = qw( &translate &translate_surfaces_simple &translate_surfaces &rotate_surface &translate_vertexes &shift_vertexes &rotate &rotatez &make_generic_change &reassign_construction &change_thickness &obs_modify &bring_obstructions_back &recalculateish &daylightcalc &daylightcalc_new_proposed &change_config &checkfile &change_climate &recalculatenet &apply_constraints &reshape_windows &warp &constrain_geometry &read_geometry &read_geo_constraints &apply_geo_constraints &vary_controls &constrain_controls &read_controls  &read_control_constraints &apply_loopcontrol_changes &apply_flowcontrol_changes &constrain_obstructions &read_obstructions &read_obs_constraints &apply_obs_constraints &get_obstructions &write_temporary  &pin_obstructions &apply_pin_obstructions &vary_net &read_net &apply_node_changes &apply_component_changes &constrain_net  &read_net_constraints &propagate_constraints );
-
+@EXPORT_OK = qw( );
 
 ##############################################################################
 sub translate
@@ -35,7 +36,7 @@ sub translate
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $translate = shift;
 	
 	if ( $stepsvar > 1 )
@@ -146,7 +147,7 @@ sub translate_surfaces_simple # THIS IS VERSION 1: THE OLD ONE. DISMISSED? IN DO
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $translate_surface_simple = shift;
 	my $yes_or_no_transl_surfs =
 	  $$translate_surface_simple[$counterzone][0];
@@ -330,7 +331,7 @@ sub translate_surfaces
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $translate_surface = shift;
 	my $yes_or_no_transl_surfs = $$translate_surface[$counterzone][0];
 	my $transform_type = $$translate_surface[$counterzone][1];
@@ -520,7 +521,7 @@ sub rotate_surface
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $rotate_surface = shift;
 	my $yes_or_no_rotate_surfs =  $$rotate_surface[$counterzone][0];
 	my @surfs_to_rotate =  @{ $rotate_surface->[$counterzone][1] };
@@ -628,7 +629,7 @@ sub translate_vertexes #STILL UNFINISHED, NOT WORKING. PROBABLY ALMOST FINISHED.
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $swap2 = shift;
 	my @translate_vertexes = @$swap2;
 	my @v;
@@ -804,7 +805,7 @@ sub shift_vertexes
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $shift_vertexes = shift;
 	my $pace;
 	my $movement;
@@ -995,7 +996,7 @@ sub rotate    # generic zone rotation
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $rotate = shift; 
 	my $rotation_degrees; 
 	my $yes_or_no_rotation = "$$rotate[$counterzone][0]";
@@ -1095,7 +1096,7 @@ sub rotatez # PUT THE ROTATION POINT AT POINT 0, 0, 0. I HAVE NOT YET MADE THE F
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $rotatez = shift;
 	my $yes_or_no_rotation = "$$rotatez[0]";
 	my @centerpoints = @{$$rotatez[1]};
@@ -1252,7 +1253,7 @@ sub make_generic_change # WITH THIS FUNCTION YOU TARGET PORTIONS OF A FILE AND Y
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $swap2 = shift;
 	my @generic_change = @$swap2;
 	my $infile = "$to/zones/$applytype[$counterzone][2]";
@@ -1376,7 +1377,7 @@ sub reassign_construction
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $construction_reassignment = shift;
 	my $yes_or_no_reassign_construction = $$construction_reassignment[$counterzone][0];
 	if ( $yes_or_no_reassign_construction eq "y" )
@@ -1479,7 +1480,7 @@ sub change_thickness
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $thickness_change = shift;
 	my $yes_or_no_change_thickness = $$thickness_change[$counterzone][0];
 	my @entries_to_change = @{ $$thickness_change[$counterzone][1] };
@@ -1600,7 +1601,7 @@ sub obs_modify
 		my $exeonfiles = shift;
 		my $swap = shift;
 		my @applytype = @$swap;
-		my $zone_letter = shift;
+		my $zone_letter = $applytype[$counterzone][3];
 		my $obs_modify = shift;
 		my @obs_letters = @{ $$obs_modify[$counterzone][0] };
 		my $modification_type = $$obs_modify[$counterzone][1];
@@ -2109,7 +2110,7 @@ sub bring_obstructions_back # TO BE REWRITTEN BETTER
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $keep_obstructions = shift;
 	my $yes_or_no_keep_some_obstructions = $$keep_obstructions[$counterzone][0];
 	my $yes_or_no_update_radiation_provv = $$keep_obstructions[$counterzone][2];
@@ -2292,7 +2293,6 @@ sub recalculateish
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
 	my $zone_letter = $applytype[$counterzone][3];
 	
 	if ($exeonfiles eq "y") 
@@ -2378,7 +2378,7 @@ sub daylightcalc # IT WORKS ONLY IF THE RAD DIRECTORY IS EMPTY
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $filedf = shift;
 	my $swap2 = shift;
 	my @daylightcalc = @$swap2;
@@ -2497,7 +2497,7 @@ sub daylightcalc_new_proposed # NOT USED. THE DIFFERENCE WITH THE ABOVE IS THAT 
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $filedf = shift;
 	my $swap2 = shift;
 	my @daylightcalc = @$swap;
@@ -2634,7 +2634,7 @@ sub change_config
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $swap2 = shift;
 	my @change_config = @$swap2;
 	my @change_conf = @{$change_config[$countezone]};
@@ -2685,7 +2685,7 @@ sub change_climate ### IT HAS TO BE DEBUGGED. WHY IT BLOCKS IF PRINTED TO THE SH
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $swap = shift;
 	my @change_climate = @$swap;
 	my @climates = @{$change_climate[$counterzone]};
@@ -2747,7 +2747,7 @@ sub recalculatenet
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $swap2 = shift;
 	my @recalculatenet = @$swap2;
 	my $filenet = $recalculatenet[1];
@@ -3222,7 +3222,7 @@ sub apply_constraints
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $swap2 = shift;
 	my @apply_constraints = @$swap2;
 	my $value_reshape;
@@ -3406,7 +3406,7 @@ sub reshape_windows # IT APPLIES CONSTRAINTS
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $swap2 = shift;
 	my @reshape_windows = @$swap2;
 	my @work_letters ;
@@ -3590,7 +3590,7 @@ sub warp #
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $warp = shift;
 	my $yes_or_no_warp =  $$warp[$counterzone][0];
 	my @surfs_to_warp =  @{ $warp->[$counterzone][1] };
@@ -3843,7 +3843,7 @@ sub constrain_geometry # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $swap = shift;
 	my @constrain_geometry = @$swap;
 	my $to_do = shift;
@@ -4089,7 +4089,7 @@ sub vary_controls
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $swap = shift;
 	my @vary_controls = @$swap;
 	# print "FIRST: \$to:$to, \$fileconfig:$fileconfig, \$stepsvar:$stepsvar, \$counterzone:$counterzone, \$counterstep:$counterstep, \@applytype:@applytype, \@vary_controls:@vary_controls\n\n";
@@ -4386,7 +4386,7 @@ sub constrain_controls
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $swap = shift;
 	my @constrain_controls = @$swap;
 	my $to_do = shift;
@@ -4888,7 +4888,7 @@ sub constrain_obstructions # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $swap2 = shift;
 	my @constrain_obstructions = @$swap2;
 	my $to_do = shift;
@@ -5252,7 +5252,7 @@ sub get_obstructions # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY. TO DO. STILL UNU
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $swap2 = shift;
 	my @get_obstructions = @$swap2;
 	my @work_letters ;
@@ -5319,7 +5319,7 @@ sub pin_obstructions  # TO DO. ZZZ
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $swap = shift;
 	my @pin_obstructions = @$swap;
 	my @work_letters ;
@@ -5479,7 +5479,7 @@ sub vary_net
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $swap = shift;
 	my @vary_net = @$swap;
 	#print OUTFILE "VARYNET: \$to:$to, \$fileconfig:$fileconfig, \$stepsvar:$stepsvar, \$counterzone:$counterzone, \$counterstep:$counterstep, \@applytype:@applytype, \@vary_net:@vary_net\n\n";
@@ -6165,7 +6165,7 @@ sub constrain_net
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $swap = shift;
 	my @constrain_net = @$swap;
 	my $to_do = shift;
@@ -6377,7 +6377,7 @@ sub propagate_constraints
 	my $swap = shift;
 	my ($justread, $justwrite);
 	my @applytype = @$swap;
-	my $zone_letter = shift;
+	my $zone_letter = $applytype[$counterzone][3];
 	my $swap = shift;
 	my @propagate_constraints = @$swap;
 	my $zone = $applytype[$counterzone][3];

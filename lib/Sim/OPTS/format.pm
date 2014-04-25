@@ -21,6 +21,7 @@ package Sim::OPTS::format;
 no strict; 
 no warnings;
 use lib "../../";
+
 @ISA = qw(Exporter); # our @ISA = qw(Exporter);
 @EXPORT = qw( &rank_reports &convert_report &filter_reports &convert_filtered_reports &maketable );
 
