@@ -12,7 +12,7 @@
 ##############################################################################
 ##############################################################################
 
-# HERE FOLLOWS THE CONTENT OF THE "opts_format.pl" FILE, WHICH HAS BEEN MERGED HERE
+# HERE FOLLOWS THE CONTENT OF THE "format.pm" FILE, WHICH HAS BEEN MERGED HERE
 # TO AVOID COMPLICATIONS WITH PERL MODULE INSTALLATION.
 
 # HERE FOLLOW THE "rank_reports", "convert_report" , "filter_reports" and "maketable" FUNCTIONS, CALLED FROM THE MAIN PROGRAM FILE.

@@ -9,26 +9,25 @@
 
 # package OPTS;
 
-## HERE FOLLOW THE "report", "retrieve" and "merge" FUNCTIONS, CALLED FROM THE MAIN PROGRAM FILE.
+## HERE FOLLOW THE "report", and "merge" FUNCTIONS, CALLED FROM THE MAIN PROGRAM FILE.
 
 ##############################################################################
 ##############################################################################
 
-# HERE FOLLOWES THE CONTENT OF THE "opts_report.pl" FILE, WHICH HAS BEEN MERGED HERE
+# HERE FOLLOWES THE CONTENT OF THE "report.pm" FILE, WHICH HAS BEEN MERGED HERE
 # TO AVOID COMPLICATION WITH THE PERL MODULE INSTALLATION.
-
 ## HERE THE "report", "retrieve" and "merge" FUNCTIONS FOLLOW, CALLED FROM THE MAIN PROGRAM FILE.
 package Sim::OPTS::report;
 
 no strict; 
 no warnings;
 use lib "../../";
-
 @ISA = qw(Exporter); # our @ISA = qw(Exporter);
 @EXPORT = qw( &report &merge_reports );
 
 sub report # This function retrieves the results of interest from the text file created by the "retrieve" function
 {
+	
 	$" = "";
 
 	sub strip_files_temps

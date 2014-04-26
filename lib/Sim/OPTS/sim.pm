@@ -12,7 +12,7 @@
 ##############################################################################
 ##############################################################################
 
-# HERE FOLLOWES THE CONTENT OF THE "opts_sim.pl" FILE, WHICH HAS BEEN MERGED HERE
+# HERE FOLLOWES THE CONTENT OF THE "sim.pm" FILE, WHICH HAS BEEN MERGED HERE
 # TO AVOID COMPLICATIONS WITH THE PERL MODULE INSTALLATION.
 
 # HERE FOLLOWS THE "sim" FUNCTION, CALLED FROM THE MAIN PROGRAM FILE.
@@ -20,7 +20,6 @@ package Sim::OPTS::sim;
 
 no strict; 
 no warnings;
-no strict 'refs';
 use lib "../../";
 
 @ISA = qw(Exporter); # our @ISA = qw(Exporter);

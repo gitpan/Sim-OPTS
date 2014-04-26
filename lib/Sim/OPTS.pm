@@ -8,7 +8,7 @@ use 5.008001;
 use Exporter; # require Exporter;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 no strict; 
-use warnings;
+no warnings;
 
 
 @ISA = qw(Exporter); # our @ISA = qw(Exporter);
@@ -25,7 +25,7 @@ use warnings;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(opts prepare); # our @EXPORT = qw( );
-$VERSION = '0.27'; # our $VERSION = '';
+$VERSION = '0.28'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 
@@ -34,7 +34,7 @@ $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations throu
 
 #################################################################################
 #################################################################################
-#################################################################################
+
 # BEGINNING OF THE OPTS PROGRAM
 
 sub opts 
@@ -62,7 +62,7 @@ eval `cat $configfile`; # The file where the program data are
 # require $configfile; # The file where the program data are
 
 use Sim::OPTS::morph;
-use Sim::OPTS::sim; # HERE THERE IS THE FUNCTION "sim" CALLED
+use Sim::OPTS::sim; # HERE THE FUNCTIONS "sim" and "retrieve" are.
 use Sim::OPTS::report; 
 use Sim::OPTS::format;
 if (-e "./SIM/OPTS/search.pm")
@@ -70,7 +70,6 @@ if (-e "./SIM/OPTS/search.pm")
 	#use Sim::OPTS::search;
 }
 
-if ($exeonfiles eq undef) { $exeonfiles = "y";}
 use Math::Trig;
 use Data::Dumper;
 use List::Util qw[min max reduce];
@@ -554,10 +553,10 @@ sub dophase
 	}
 
 	if ( $dowhat[4] eq "y" ) 
-	{ &report; }
+	{ &report(); }
 
 	if ( $dowhat[5] eq "y" )
-	{ &merge_reports; }
+	{ &merge_reports(); }
 
 	if ( $dowhat[6] eq "y" )
 	{
