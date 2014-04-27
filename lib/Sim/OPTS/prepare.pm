@@ -29,8 +29,19 @@ use lib "../../";
 sub prepare 
 { 
 
-print "This is OPTS-launch, a program written to prepare configuration files for OPTS.
-OPTS is a program written to manage parametric explorations through the ESP-r building performance simulation program.
+my ( $configfile, $response1);
+print "Please nsert the name of a configuration file to modify:\n";
+$configfile = <STDIN>;
+chomp $configfile;
+if ( $configfile ) { ; }
+else { die; }
+
+eval `cat $configfile`; # The file where the program data are
+# require $configfile; # The file where the program data are
+
+
+
+print "This is OPTS-prepare, a program written to prepare configuration files for OPTS.
 Copyright: Gian Luca Brunetti and Politecnico di Milano, 2008-2014
 (gianluca.brunetti\@polimi.it)
 ";

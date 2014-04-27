@@ -23,13 +23,12 @@ no warnings;
 use lib "../../";
 
 @ISA = qw(Exporter); # our @ISA = qw(Exporter);
-@EXPORT = qw( &sim );
+@EXPORT = qw( &sim &retrieve );
 
 #____________________________________________________________________________
 # Activate or deactivate the following function calls depending from your needs
 sub sim    # This function launch the simulations in ESP-r
 {
-
 	my $to = shift;
 	my $mypath = shift;
 	my $file = shift;
@@ -58,6 +57,11 @@ sub sim    # This function launch the simulations in ESP-r
 	my @retrievedataloads = @$swap;
 	my $swap = shift;
 	my @retrievedatatempsstats = @$swap;
+	my $toshell = shift;
+	my $outfile = shift;
+	my $configfile = shift;
+	open( OUTFILE, ">>$outfile" ) ;
+	open( TOSHELL, ">>$toshell" ) ;
 
 	my $countersimmax = ( ( $#simdata + 1 ) / 4 );
 	@dirs_to_simulate = grep -d, <$mypath/$filenew*>;
@@ -203,23 +207,53 @@ XXX
 			}
 			}
 
-			if ($dowhat[2] eq "y")
+			sub retrieve # This function retrieves the results of the simulations in the res module of ESP-r
 			{
-				sub retrieve # This function retrieves the results of the simulations in the res module of ESP-r
+				my $to = shift;
+				my $mypath = shift;
+				my $file = shift;
+				my $filenew = shift;
+				my $swap = shift;
+				my @dowhat = @$swap;
+				my $swap = shift;
+				my @simdata = @$swap;
+				my $simnetwork = shift;
+				my $swap = shift;
+				my @simtitle = @$swap;
+				my $preventsim = shift;
+				my $exeonfiles = shift;
+				my $fileconfig = shift;
+				my $swap = shift;
+				my @themereports = @$swap;
+				my $swap = shift;
+				my @reportperiods = @$swap;
+				my $swap = shift;
+				my @retrievedata = @$swap;
+				my $swap = shift;
+				my @retrievedatatemps = @$swap;
+				my $swap = shift;
+				my @retrievedatacomfort = @$swap;
+				my $swap = shift;
+				my @retrievedataloads = @$swap;
+				my $swap = shift;
+				my @retrievedatatempsstats = @$swap;
+				my $toshell = shift;
+				my $outfile = shift;
+				my $configfile = shift;
+	
+				my $themereport = $_[0];
+				sub retrieve_temperatures_results
 				{
-					my $themereport = $_[0];
-					sub retrieve_temperatures_results
-					{
-						
-						my $existingfile = "$file_res_retrievedb-temperatures.grt";
-						if (-e $existingfile) { print `chmod 777 $existingfile\n`;} 
-						print TOSHELL "chmod 777 $existingfile\n";
-						if (-e $existingfile) { print `rm $existingfile\n` ;}
-						print TOSHELL "rm $existingfile\n";
-						if ($exeonfiles eq "y") { print `rm -f $existingfile*par\n`; }
-						print TOSHELL "rm -f $existingfile*par\n";
-						
-						if ($exeonfiles eq "y") { print `res -file $file_res_retrievedb -mode script<<YYY
+					
+					my $existingfile = "$file_res_retrievedb-temperatures.grt";
+					if (-e $existingfile) { print `chmod 777 $existingfile\n`;} 
+					print TOSHELL "chmod 777 $existingfile\n";
+					if (-e $existingfile) { print `rm $existingfile\n` ;}
+					print TOSHELL "rm $existingfile\n";
+					if ($exeonfiles eq "y") { print `rm -f $existingfile*par\n`; }
+					print TOSHELL "rm -f $existingfile*par\n";
+					
+					if ($exeonfiles eq "y") { print `res -file $file_res_retrievedb -mode script<<YYY
 
 3
 $retrievedatatemps[0]
@@ -250,9 +284,10 @@ Simulation results $file_res_retrieved-temperatures
 -
 YYY
 
-`;}
-						print TOSHELL
-						  "res -file $file_res_retrievedb -mode script<<YYY
+`;
+						}
+					print TOSHELL
+					"res -file $file_res_retrievedb -mode script<<YYY
 
 3
 $retrievedatatemps[0]
@@ -284,211 +319,212 @@ YYY
 
 ";
 
-						if (-e $existingfile) { print `rm -f $existingfile*par`;}
-						print TOSHELL "rm -f $existingfile*par\n";
-					}
+					if (-e $existingfile) { print `rm -f $existingfile*par`;}
+					print TOSHELL "rm -f $existingfile*par\n";
+				}
 
-					sub retrieve_comfort_results
-					{
-						my $existingfile = "$file_res_retrievedb-comfort.grt"; 
-						if (-e $existingfile) { print `chmod 777 $existingfile\n`;} 
-						print TOSHELL "chmod 777 $existingfile\n";
-						if (-e $existingfile) { print `rm $existingfile\n` ;}
-						print TOSHELL "rm $existingfile\n";
-						if ($exeonfiles eq "y") { print `rm -f $existingfile*par\n`;}
-						print TOSHELL "rm -f $existingfile*par\n";
-						if ($exeonfiles eq "y") { print `res -file $file_res_retrievedb -mode script<<ZZZ
-
-3
-$retrievedatacomf[0]
-$retrievedatacomf[1]
-$retrievedatacomf[2]
-c
-g
-c
-a
-
-b
-
-
-a
->
-a
-$file_res_retrievedb-comfort.grt
-Simulation results $file_res_retrieved-comfort
-!
--
--
--
--
--
--
--
--
-ZZZ
-
-`;}
-						print TOSHELL
-						"res -file $file_res_retrievedb -mode script<<ZZZ
-
-3
-$retrievedatacomf[0]
-$retrievedatacomf[1]
-$retrievedatacomf[2]
-c
-g
-c
-a
-
-b
-
-
-a
->
-a
-$file_res_retrievedb-comfort.grt
-Simulation results $file_res_retrieved-comfort
-!
--
--
--
--
--
--
--
--
-ZZZ
-
-";
-						if (-e $existingfile) { `rm -f $existingfile*par\n`;}
-						print TOSHELL "rm -f $existingfile*par\n";
-			}
-
-					sub retrieve_loads_results
-					{
-						my $existingfile = "$file_res_retrievedb-loads.grt";
-						if (-e $existingfile) { `chmod 777 $existingfile\n`;}
-						print TOSHELL "chmod 777 $existingfile\n";
-						if (-e $existingfile) { `rm $existingfile\n` ;}
-						print TOSHELL "rm $existingfile\n";
-						if (-e $existingfile) { `rm -f $existingfile*par\n`;}
-						print TOSHELL "rm -f $existingfile*par\n";
-						if ($exeonfiles eq "y") { print `res -file $file_res_retrievedb -mode script<<TTT
-
-3
-$retrievedataloads[0]
-$retrievedataloads[1]
-$retrievedataloads[2]
-d
->
-a
-$file_res_retrievedb-loads.grt
-Simulation results $file_res_retrieved-loads
-l
-a
-
--
--
--
--
--
--
--
-TTT
-`;}
-				print TOSHELL
-				  "res -file $file_res_retrievedb -mode script<<TTT
-
-3
-$retrievedataloads[0]
-$retrievedataloads[1]
-$retrievedataloads[2]
-d
->
-a
-$file_res_retrievedb-loads.grt
-Simulation results $file_res_retrieved-loads
-l
-a
-
--
--
--
--
--
--
--
-TTT
-
-";
-					`rm -f $existingfile*par`;
-			}
-
-					sub retrieve_temps_stats
-					{
-						my $existingfile = "$file_res_retrievedb-tempsstats.grt";
-						if (-e $existingfile) { `chmod 777 $existingfile\n`; }
-						print TOSHELL "chmod 777 $existingfile\n";
-						if (-e $existingfile) { `rm $existingfile\n` ;}
-						print TOSHELL "rm $existingfile\n";
-						if (-e $existingfile) { `rm -f $existingfile*par\n`;}
-						print TOSHELL "rm -f $existingfile*par\n";
-						if ($exeonfiles eq "y") { print `res -file $file_res_retrievedb -mode script<<TTT
-
-3
-$retrievedatatempsstats[0]
-$retrievedatatempsstats[1]
-$retrievedatatempsstats[2]
-d
->
-a
-$file_res_retrievedb-tempsstats.grt
-Simulation results $file_res_retrieved-tempsstats.grt
-m
--
--
--
--
--
-TTT
-`;}
-						print TOSHELL
-						  "res -file $file_res_retrievedb -mode script<<TTT
-
-3
-$retrievedatatempsstats[0]
-$retrievedatatempsstats[1]
-$retrievedatatempsstats[2]
-d
->
-a
-$file_res_retrievedb-tempsstats.grt
-Simulation results $file_res_retrieved-tempsstats.grt
-m
--
--
--
--
--
-TTT
-
-";
+				sub retrieve_comfort_results
+				{
+					my $existingfile = "$file_res_retrievedb-comfort.grt"; 
+					if (-e $existingfile) { print `chmod 777 $existingfile\n`;} 
+					print TOSHELL "chmod 777 $existingfile\n";
+					if (-e $existingfile) { print `rm $existingfile\n` ;}
+					print TOSHELL "rm $existingfile\n";
 					if ($exeonfiles eq "y") { print `rm -f $existingfile*par\n`;}
 					print TOSHELL "rm -f $existingfile*par\n";
-						}
-						
-						if ( $themereport eq "temps" ) { retrieve_temperatures_results(); }
-						if ( $themereport eq "comfort"  ) { retrieve_comfort_results(); }
-						if ( $themereport eq "loads" ) 	{ retrieve_loads_results(); }
-						if ( $themereport eq "tempsstats"  ) { retrieve_temps_stats(); }
+					if ($exeonfiles eq "y") { print `res -file $file_res_retrievedb -mode script<<ZZZ
 
-					} # END SUB retrieve;
-					
-					foreach my $themereport (@themereports)
-					{
-						retrieve ($themereport, );
+3
+$retrievedatacomf[0]
+$retrievedatacomf[1]
+$retrievedatacomf[2]
+c
+g
+c
+a
+
+b
+
+
+a
+>
+a
+$file_res_retrievedb-comfort.grt
+Simulation results $file_res_retrieved-comfort
+!
+-
+-
+-
+-
+-
+-
+-
+-
+ZZZ
+
+`;}
+					print TOSHELL
+					"res -file $file_res_retrievedb -mode script<<ZZZ
+
+3
+$retrievedatacomf[0]
+$retrievedatacomf[1]
+$retrievedatacomf[2]
+c
+g
+c
+a
+
+b
+
+
+a
+>
+a
+$file_res_retrievedb-comfort.grt
+Simulation results $file_res_retrieved-comfort
+!
+-
+-
+-
+-
+-
+-
+-
+-
+ZZZ
+
+";
+					if (-e $existingfile) { `rm -f $existingfile*par\n`;}
+					print TOSHELL "rm -f $existingfile*par\n";
+				}
+
+				sub retrieve_loads_results
+				{
+					my $existingfile = "$file_res_retrievedb-loads.grt";
+					if (-e $existingfile) { `chmod 777 $existingfile\n`;}
+					print TOSHELL "chmod 777 $existingfile\n";
+					if (-e $existingfile) { `rm $existingfile\n` ;}
+					print TOSHELL "rm $existingfile\n";
+					if (-e $existingfile) { `rm -f $existingfile*par\n`;}
+					print TOSHELL "rm -f $existingfile*par\n";
+					if ($exeonfiles eq "y") { print `res -file $file_res_retrievedb -mode script<<TTT
+
+3
+$retrievedataloads[0]
+$retrievedataloads[1]
+$retrievedataloads[2]
+d
+>
+a
+$file_res_retrievedb-loads.grt
+Simulation results $file_res_retrieved-loads
+l
+a
+
+-
+-
+-
+-
+-
+-
+-
+TTT
+`;
+				}
+			print TOSHELL
+			  "res -file $file_res_retrievedb -mode script<<TTT
+
+3
+$retrievedataloads[0]
+$retrievedataloads[1]
+$retrievedataloads[2]
+d
+>
+a
+$file_res_retrievedb-loads.grt
+Simulation results $file_res_retrieved-loads
+l
+a
+
+-
+-
+-
+-
+-
+-
+-
+TTT
+
+";
+				`rm -f $existingfile*par`;
+				}
+
+				sub retrieve_temps_stats
+				{
+					my $existingfile = "$file_res_retrievedb-tempsstats.grt";
+					if (-e $existingfile) { `chmod 777 $existingfile\n`; }
+					print TOSHELL "chmod 777 $existingfile\n";
+					if (-e $existingfile) { `rm $existingfile\n` ;}
+					print TOSHELL "rm $existingfile\n";
+					if (-e $existingfile) { `rm -f $existingfile*par\n`;}
+					print TOSHELL "rm -f $existingfile*par\n";
+					if ($exeonfiles eq "y") { print `res -file $file_res_retrievedb -mode script<<TTT
+
+3
+$retrievedatatempsstats[0]
+$retrievedatatempsstats[1]
+$retrievedatatempsstats[2]
+d
+>
+a
+$file_res_retrievedb-tempsstats.grt
+Simulation results $file_res_retrieved-tempsstats.grt
+m
+-
+-
+-
+-
+-
+TTT
+`;}
+					print TOSHELL
+					  "res -file $file_res_retrievedb -mode script<<TTT
+
+3
+$retrievedatatempsstats[0]
+$retrievedatatempsstats[1]
+$retrievedatatempsstats[2]
+d
+>
+a
+$file_res_retrievedb-tempsstats.grt
+Simulation results $file_res_retrieved-tempsstats.grt
+m
+-
+-
+-
+-
+-
+TTT
+
+";
+				if ($exeonfiles eq "y") { print `rm -f $existingfile*par\n`;}
+				print TOSHELL "rm -f $existingfile*par\n";
 					}
-				}    
+					
+					if ( $themereport eq "temps" ) { retrieve_temperatures_results(); }
+					if ( $themereport eq "comfort"  ) { retrieve_comfort_results(); }
+					if ( $themereport eq "loads" ) 	{ retrieve_loads_results(); }
+					if ( $themereport eq "tempsstats"  ) { retrieve_temps_stats(); }
+
+				} # END SUB retrieve;
+				
+				foreach my $themereport (@themereports)
+				{
+					retrieve ($themereport, );
+				}
+    
 
 				if ($dowhat[3] eq "y")
 				{ 

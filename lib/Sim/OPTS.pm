@@ -25,7 +25,7 @@ no warnings;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(opts prepare); # our @EXPORT = qw( );
-$VERSION = '0.28'; # our $VERSION = '';
+$VERSION = '0.29'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 
@@ -40,6 +40,11 @@ $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations throu
 sub opts 
 { 
 my ( $configfile, $response1);
+
+sub start
+
+{
+	###########################
 print "THIS IS OPTS.
 Copyright by Gian Luca Brunetti and Politecnico di Milano, 2008-14.
 Dipartimento DAStU, Politecnico di Milano.
@@ -48,15 +53,13 @@ Copyright license: GPL.
 
 To use OPTS, an OPTS configuration file and a target ESP-r model should have been prepared.
 Insert the name of a configuration file (local path):\n";
-$configfile = <STDIN>;
-chomp $configfile;
-print "You wrote $configfile, is this correct? 
-If it is, OPTS will run. (y or n).\n";
-$response1 = <STDIN>;
-chomp $response1;
-if ( $response1 eq "y" )
-{ ; }
-else { die; }
+	###########################
+	$configfile = <STDIN>;
+	chomp $configfile;
+	if (-e $configfile ) { ; }
+	else { &start; }
+}
+&start;
 
 eval `cat $configfile`; # The file where the program data are
 # require $configfile; # The file where the program data are
@@ -549,30 +552,62 @@ sub dophase
 		&sim( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
 		\@simtitle, $preventsim, $exeonfiles, $fileconfig, \@themereports, 
 		\@reportperiods, \@retrievedata, \@retrievedatatemps, 
-		\@retrievedatacomfort, \@retrievedataloads, \@retrievedatatempsstats );
+		\@retrievedatacomfort, \@retrievedataloads, \@retrievedatatempsstats, $toshell, $outfile, $configfile );
+	}
+	if ( $dowhat[2] eq "y" ) 
+	{ 
+		&retrieve( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+		\@simtitle, $preventsim, $exeonfiles, $fileconfig, \@themereports, 
+		\@reportperiods, \@retrievedata, \@retrievedatatemps, 
+		\@retrievedatacomfort, \@retrievedataloads, \@retrievedatatempsstats, $toshell, $outfile, $configfile );
 	}
 
 	if ( $dowhat[4] eq "y" ) 
-	{ &report(); }
+	{ &report( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+		\@simtitle, $preventsim, $exeonfiles, $fileconfig, \@themereports, 
+		\@reportperiods, \@retrievedata, \@retrievedatatemps, 
+		\@retrievedatacomfort, \@retrievedataloads, \@retrievedatatempsstats, $toshell, $outfile, $configfile, \@rankdata, \@rankcolumn, \@reporttempsdata, \@reportcomfortdata,
+		 \@reportradiationenteringdata, $reportloadsdata, \@reporttempsstats ); }
 
 	if ( $dowhat[5] eq "y" )
-	{ &merge_reports(); }
+	{ &merge_reports( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+		\@simtitle, $preventsim, $exeonfiles, $fileconfig, \@themereports, 
+		\@reportperiods, \@retrievedata, \@retrievedatatemps, 
+		\@retrievedatacomfort, \@retrievedataloads, \@retrievedatatempsstats, $toshell, $outfile, $configfile, \@rankdata, \@rankcolumn, \@reporttempsdata, \@reportcomfortdata,
+		 \@reportradiationenteringdata, $reportloadsdata, \@reporttempsstats ); 
+	}
 
 	if ( $dowhat[6] eq "y" )
 	{
-		&convert_report(); # CONVERT NOT YET FILTERED REPORTS
+		&convert_report( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+		\@simtitle, $preventsim, $exeonfiles, $fileconfig, \@themereports, 
+		\@reportperiods, \@retrievedata, \@retrievedatatemps, 
+		\@retrievedatacomfort, \@retrievedataloads, \@retrievedatatempsstats, $toshell, $outfile, $configfile, \@rankdata, \@rankcolumn, \@reporttempsdata, \@reportcomfortdata,
+		 \@reportradiationenteringdata, $reportloadsdata, \@reporttempsstats  ); # CONVERT NOT YET FILTERED REPORTS
 	}
 	if ( $dowhat[7] eq "y" )
 	{
-		&filter_reports(); # FILTER ALREADY CONVERTED REPORTS
+		&filter_reports( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+		\@simtitle, $preventsim, $exeonfiles, $fileconfig, \@themereports, 
+		\@reportperiods, \@retrievedata, \@retrievedatatemps, 
+		\@retrievedatacomfort, \@retrievedataloads, \@retrievedatatempsstats, $toshell, $outfile, $configfile, \@rankdata, \@rankcolumn, \@reporttempsdata, \@reportcomfortdata,
+		 \@reportradiationenteringdata, $reportloadsdata, \@reporttempsstats ); # FILTER ALREADY CONVERTED REPORTS
 	}
 	if ( $dowhat[8] eq "y" )
 	{
-		&convert_filtered_reports(); # CONVERT ALREADY FILTERED REPORTS
+		&convert_filtered_reports( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+		\@simtitle, $preventsim, $exeonfiles, $fileconfig, \@themereports, 
+		\@reportperiods, \@retrievedata, \@retrievedatatemps, 
+		\@retrievedatacomfort, \@retrievedataloads, \@retrievedatatempsstats, $toshell, $outfile, $configfile, \@rankdata, \@rankcolumn, \@reporttempsdata, \@reportcomfortdata,
+		 \@reportradiationenteringdata, $reportloadsdata, \@reporttempsstats  ); # CONVERT ALREADY FILTERED REPORTS
 	}
 	if ( $dowhat[9] eq "y" )
 	{
-		&maketable(); # CONVERT TO TABLE ALREADY FILTERED REPORTS
+		&maketable( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+		\@simtitle, $preventsim, $exeonfiles, $fileconfig, \@themereports, 
+		\@reportperiods, \@retrievedata, \@retrievedatatemps, 
+		\@retrievedatacomfort, \@retrievedataloads, \@retrievedatatempsstats, $toshell, $outfile, $configfile, \@rankdata, \@rankcolumn, \@reporttempsdata, \@reportcomfortdata,
+		 \@reportradiationenteringdata, $reportloadsdata, \@reporttempsstats ); # CONVERT TO TABLE ALREADY FILTERED REPORTS
 	}
 
 } # END SUB DOPHASE
@@ -664,7 +699,7 @@ To run OPTS without having it act on files, you should specify the setting < $ex
 
 The OPTS configuration file will make, if asked, OPTS give instruction to ESP-r in order to make it modify a model in several different copies; then, if asked, it will run simulations; then, if asked, it will retrieve the results; then, if asked, it will extract some results and order them in a required manner; then, if asked, will format the so obtained results. Those functions are performed by the subroutines contained in "OPTS.pm", which previously were written in the following separate files: "morph.pm", "sim.pm", "report.pm", "format.pm", "prepare.pm". Some functions in "report.pm" and especially "format.pm" and "prepare.pm" have been used only once and have not been maintained since then. My attention has indeed been mostly directed to the things in the "OPTS.pm" and "morph.pm" files.
 
-To run OPTS, you may open Perl in a repl. As a repl, you may use the Devel::Repl module. It is going to be installed when OPTS is installed. To launch it, the command < re.pl > has to be given to the shell. Then you may load the Sim:OPTS module from there (< use Sim:OPTS >). Then you should issue the command < opts > from there. When launched, OPTS will ask you to write the name (with path) of the OPTS configuration file to be considered. After that, the activity of OPTS will start and will not stop until completion.
+To run OPTS, you may open Perl in a repl. As a repl, you may use the Devel::REPL module. You have to install it yourself, with the shell command < cpanm Devel::REPL >. After it is installed, to launch it, the command < re.pl > has to be given to the shell. Then you may load the Sim:OPTS module from there (< use Sim:OPTS >). Then you should issue the command < opts > from there. When launched, OPTS will ask you to write the name (with path) of the OPTS configuration file to be considered. After that, the activity of OPTS will start and will not stop until completion.
 
 OPTS will make ESP-r perform actions on a certain ESP-r model by copying it several times and morphing each copy. A target ESP-r model must also therefore be present in advance and its name (with path) has to be specified in the OPTS configuration file. The OPTS configuration file will also contain information about your work directory. I usually make OPTS work in a "optsworks" folder in my home folder.
 
@@ -677,7 +712,7 @@ The propagation of constraints on which some OPTS operations on models may be ba
 
 OPTS presently only works for UNIX and UNIX-like systems. There would be lots of functionality to add to it and bugs to correct. 
 
-OPTS is a program I have written for my personal use as a side project since 2008, when I was beginning to learn programming. The earlier parts of it are the ones that are coded in the strangest manner. I am not a professional programmer and do several things in a non-standard way. The part of OPTS I wrote for work is that in the file "prepare.pm", which made possible to include the use of the tool in an institutional research I was participating to in 2011-2012.
+OPTS is a program I have written for my personal use as a side project since 2008, when I was beginning to learn programming. From time to time I add some parts to it. The earlier parts are the ones that are coded in the strangest manner. I am not a professional programmer and do several things in a non-standard way.
 
 =head2 EXPORT
 

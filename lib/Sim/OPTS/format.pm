@@ -27,6 +27,40 @@ use lib "../../";
 
 sub rank_reports    # STILL UNUSED. Self-explaining. 
 {
+	my $to = shift;
+	my $mypath = shift;
+	my $file = shift;
+	my $filenew = shift;
+	my $swap = shift;
+	my @dowhat = @$swap;
+	my $swap = shift;
+	my @simdata = @$swap;
+	my $simnetwork = shift;
+	my $swap = shift;
+	my @simtitle = @$swap;
+	my $preventsim = shift;
+	my $exeonfiles = shift;
+	my $fileconfig = shift;
+	my $swap = shift;
+	my @themereports = @$swap;
+	my $swap = shift;
+	my @reportperiods = @$swap;
+	my $swap = shift;
+	my @retrievedata = @$swap;
+	my $swap = shift;
+	my @retrievedatatemps = @$swap;
+	my $swap = shift;
+	my @retrievedatacomfort = @$swap;
+	my $swap = shift;
+	my @retrievedataloads = @$swap;
+	my $swap = shift;
+	my @retrievedatatempsstats = @$swap;
+	my $toshell = shift;
+	my $outfile = shift;
+	my $configfile = shift;
+	eval `cat $configfile`;
+	open( OUTFILE, ">>$outfile" ) ;
+	open( TOSHELL, ">>$toshell" ) ;
 
 	my @dates = @simtitle;
 
@@ -67,8 +101,8 @@ sub rank_reports    # STILL UNUSED. Self-explaining.
 				$counterlines++;
 			}
 			$outfilerank = ">$file_to_rank.ranked.txt";
-			if (-e $outfilerank) { `chmod 777 $outfilerank\n`; `mv -b $outfilerank-bak\n`;};
-			print TOSHELL "chmod 777 $outfilerank\n"; print TOSHELL "mv -b $outfilerank-bak\n";
+			#if (-e $outfilerank) { `chmod 777 $outfilerank\n`; `mv -b $outfilerank-bak\n`;};
+			#print TOSHELL "chmod 777 $outfilerank\n"; print TOSHELL "mv -b $outfilerank-bak\n";
 			open( OUTFILERANK, ">$outfilerank" ) or die "Can't open $outfilerank: $!";
 			my $countercases = 0;
 			my $case;
@@ -185,8 +219,8 @@ sub rank_reports    # STILL UNUSED. Self-explaining.
 				$counterlines = $counterlines + 1;
 			}
 			$outfilerank = ">$file_to_rank.ranked.txt";
-			if (-e $outfilerank) { `chmod 777 $outfilerank\n`; `mv -b $outfilerank-bak\n`;};
-			print TOSHELL "chmod 777 $outfilerank\n"; print TOSHELL "mv -b $outfilerank-bak\n";
+			#if (-e $outfilerank) { `chmod 777 $outfilerank\n`; `mv -b $outfilerank-bak\n`;};
+			#print TOSHELL "chmod 777 $outfilerank\n"; print TOSHELL "mv -b $outfilerank-bak\n";
 			open( OUTFILERANK, ">$outfilerank" )
 			  or die "Can't open $outfilerank: $!";
 			my $countercases = 0;
@@ -284,8 +318,8 @@ sub rank_reports    # STILL UNUSED. Self-explaining.
 			@lines_to_rank = <INFILERANK>;
 			close INFILERANK;
 			my $outfilerank = ">$file_to_rank-ranked-for-loads.txt";
-			if (-e $outfilerank) { `chmod 777 $outfilerank\n`; `mv -b $outfilerank-bak\n`;};
-			print TOSHELL "chmod 777 $outfilerank\n"; print TOSHELL "mv -b $outfilerank-bak\n";
+			#if (-e $outfilerank) { `chmod 777 $outfilerank\n`; `mv -b $outfilerank-bak\n`;};
+			#print TOSHELL "chmod 777 $outfilerank\n"; print TOSHELL "mv -b $outfilerank-bak\n";
 			open( OUTFILERANK, ">$outfilerank" ) or die "Can't open $outfilerank: $!";
 			my $counterlines = 0;
 			my $counterelement;
@@ -320,8 +354,8 @@ sub rank_reports    # STILL UNUSED. Self-explaining.
 			$date = $simtitle[$counterdate];
 			my @files_to_rank = <$mypath/$filenew*$date*tempsstats-sum-up.txt>;
 			$file_to_rank = $files_to_rank[0];
-			if (-e $file_to_rank) { `chmod 777 $file_to_rank\n`; `mv -b $file_to_rank-bak\n`;}
-			print TOSHELL "chmod 777 $file_to_rank\n"; print TOSHELL "mv -b $file_to_rank-bak\n"; 
+			#if (-e $file_to_rank) { `chmod 777 $file_to_rank\n`; `mv -b $file_to_rank-bak\n`;}
+			#print TOSHELL "chmod 777 $file_to_rank\n"; print TOSHELL "mv -b $file_to_rank-bak\n"; 
 			open( INFILERANK, "$file_to_rank" )
 			  or die "Can't open file_to_rank $file_to_rank: $!";
 			@lines_to_rank = <INFILERANK>;
@@ -368,6 +402,39 @@ sub rank_reports    # STILL UNUSED. Self-explaining.
 
 sub convert_report # ZZZ THIS HAS TO BE PUT IN ORDER BECAUSE JUST ONE ITEM WORKS.
 {
+	my $to = shift;
+	my $mypath = shift;
+	my $file = shift;
+	my $filenew = shift;
+	my $swap = shift;
+	my @dowhat = @$swap;
+	my $swap = shift;
+	my @simdata = @$swap;
+	my $simnetwork = shift;
+	my $swap = shift;
+	my @simtitle = @$swap;
+	my $preventsim = shift;
+	my $exeonfiles = shift;
+	my $fileconfig = shift;
+	my $swap = shift;
+	my @themereports = @$swap;
+	my $swap = shift;
+	my @reportperiods = @$swap;
+	my $swap = shift;
+	my @retrievedata = @$swap;
+	my $swap = shift;
+	my @retrievedatatemps = @$swap;
+	my $swap = shift;
+	my @retrievedatacomfort = @$swap;
+	my $swap = shift;
+	my @retrievedataloads = @$swap;
+	my $swap = shift;
+	my @retrievedatatempsstats = @$swap;
+	my $toshell = shift;
+	my $outfile = shift;
+	my $configfile = shift;
+	open( OUTFILE, ">>$outfile" ) ;
+	open( TOSHELL, ">>$toshell" ) ;
 
 	sub do_convert_report
 	{
@@ -414,8 +481,8 @@ sub convert_report # ZZZ THIS HAS TO BE PUT IN ORDER BECAUSE JUST ONE ITEM WORKS
 		my @lines_to_convert = <INFILECONVERT>;
 		close INFILECONVERT;
 		$outfileconvert = "$file_to_convert" . "-converted.txt";
-		if (-e $outfileconvert) { `chmod 777 $outfileconvert\n`; `mv -b $outfileconvert-bak\n`;}
-		print TOSHELL "chmod 777 $outfileconvert\n"; print TOSHELL "mv -b $outfileconvert-bak\n"; 
+		#if (-e $outfileconvert) { `chmod 777 $outfileconvert\n`; `mv -b $outfileconvert-bak\n`;}
+		#print TOSHELL "chmod 777 $outfileconvert\n"; print TOSHELL "mv -b $outfileconvert-bak\n"; 
 		open( OUTFILECONVERT, ">$outfileconvert" ) or die "Can't open $outfileconvert: $!";
 		
 		foreach my $line_to_convert (@lines_to_convert)
@@ -443,8 +510,8 @@ sub convert_report # ZZZ THIS HAS TO BE PUT IN ORDER BECAUSE JUST ONE ITEM WORKS
 		my @new_lines_to_convert = <INFILEPUTCOMMAS>;
 		close INFILEPUTCOMMAS;
 		my $outfileputcommas = "$outfileconvert".".csv";
-		if (-e $outfileputcommas) { `chmod 777 $outfileputcommas\n`; `mv -b $outfileputcommas-bak\n`;}
-		print TOSHELL "chmod 777 $outfileputcommas\n"; print TOSHELL "mv -b $outfileputcommas-bak\n"; 
+		#if (-e $outfileputcommas) { `chmod 777 $outfileputcommas\n`; `mv -b $outfileputcommas-bak\n`;}
+		#print TOSHELL "chmod 777 $outfileputcommas\n"; print TOSHELL "mv -b $outfileputcommas-bak\n"; 
 		open( OUTFILEPUTCOMMAS, ">$outfileputcommas" ) or die "Can't open outfileputcommas $outfileputcommas: $!";
 		foreach my $new_line_to_convert (@new_lines_to_convert)
 		{
@@ -489,7 +556,39 @@ sub convert_report # ZZZ THIS HAS TO BE PUT IN ORDER BECAUSE JUST ONE ITEM WORKS
 
 sub filter_reports
 {
-	
+	my $to = shift;
+	my $mypath = shift;
+	my $file = shift;
+	my $filenew = shift;
+	my $swap = shift;
+	my @dowhat = @$swap;
+	my $swap = shift;
+	my @simdata = @$swap;
+	my $simnetwork = shift;
+	my $swap = shift;
+	my @simtitle = @$swap;
+	my $preventsim = shift;
+	my $exeonfiles = shift;
+	my $fileconfig = shift;
+	my $swap = shift;
+	my @themereports = @$swap;
+	my $swap = shift;
+	my @reportperiods = @$swap;
+	my $swap = shift;
+	my @retrievedata = @$swap;
+	my $swap = shift;
+	my @retrievedatatemps = @$swap;
+	my $swap = shift;
+	my @retrievedatacomfort = @$swap;
+	my $swap = shift;
+	my @retrievedataloads = @$swap;
+	my $swap = shift;
+	my @retrievedatatempsstats = @$swap;
+	my $toshell = shift;
+	my $outfile = shift;
+	open( OUTFILE, ">>$outfile" ) ;
+	open( TOSHELL, ">>$toshell" ) ;
+
 	sub do_filter_reports
 	{
 		my $themereport = $_[0];
@@ -513,8 +612,8 @@ sub filter_reports
 				my @fixed_values        = @{ $filter_reports[$counterfilter][2] };
 				my $filtered_filetitle = $files_to_filter[$counterfilter];
 				$outfilefilter = "$file_source-$filtered_filetitle"."-filtered.txt";
-				if (-e $outfilefilter) { `chmod 777 $outfilefilter\n`; `mv -b $outfilefilter-bak\n`;}
-				print TOSHELL "chmod 777 $outfilefilter\n"; print TOSHELL "mv -b $outfilefilter-bak\n"; 
+				#if (-e $outfilefilter) { `chmod 777 $outfilefilter\n`; `mv -b $outfilefilter-bak\n`;}
+				#print TOSHELL "chmod 777 $outfilefilter\n"; print TOSHELL "mv -b $outfilefilter-bak\n"; 
 				open( OUTFILEFILTER, ">$outfilefilter" ) or die "Can't open $outfilefilter: $!";
 				foreach my $line_to_filter (@lines_to_filter)
 				{
@@ -564,6 +663,40 @@ sub filter_reports
 
 sub convert_filtered_reports
 {
+	my $to = shift;
+	my $mypath = shift;
+	my $file = shift;
+	my $filenew = shift;
+	my $swap = shift;
+	my @dowhat = @$swap;
+	my $swap = shift;
+	my @simdata = @$swap;
+	my $simnetwork = shift;
+	my $swap = shift;
+	my @simtitle = @$swap;
+	my $preventsim = shift;
+	my $exeonfiles = shift;
+	my $fileconfig = shift;
+	my $swap = shift;
+	my @themereports = @$swap;
+	my $swap = shift;
+	my @reportperiods = @$swap;
+	my $swap = shift;
+	my @retrievedata = @$swap;
+	my $swap = shift;
+	my @retrievedatatemps = @$swap;
+	my $swap = shift;
+	my @retrievedatacomfort = @$swap;
+	my $swap = shift;
+	my @retrievedataloads = @$swap;
+	my $swap = shift;
+	my @retrievedatatempsstats = @$swap;
+	my $toshell = shift;
+	my $outfile = shift;
+	my $configfile = shift;
+	open( OUTFILE, ">>$outfile" ) ;
+	open( TOSHELL, ">>$toshell" ) ;
+
 	sub do_convert_filtered_reports
 	{
 		my $themereport = $_[0];
@@ -618,8 +751,8 @@ sub convert_filtered_reports
 		my @lines_to_convert = <INFILECONVERT>;
 		close INFILECONVERT;
 		my $outfileconvert = "$file_to_convert" . "-converted.txt";
-		if (-e $outfileconvert) { `chmod 777 $outfileconvert\n`; `mv -b $outfileconvert-bak\n`;}
-		print TOSHELL "chmod 777 $outfileconvert\n"; print TOSHELL "mv -b $outfileconvert-bak\n"; 
+		#if (-e $outfileconvert) { `chmod 777 $outfileconvert\n`; `mv -b $outfileconvert-bak\n`;}
+		#print TOSHELL "chmod 777 $outfileconvert\n"; print TOSHELL "mv -b $outfileconvert-bak\n"; 
 		open( OUTFILECONVERT, ">$outfileconvert" ) or die "Can't open $outfileconvert: $!";
 		
 		foreach my $line_to_convert (@lines_to_convert)
@@ -649,8 +782,8 @@ sub convert_filtered_reports
 		my @new_lines_to_convert = <INFILE2PUTCOMMAS>;
 		close INFILE2PUTCOMMAS;
 		my $outfile2putcommas = "$outfileconvert".".csv";
-		if (-e $outfile2putcommas) { `chmod 777 $outfile2putcommas\n`; `mv -b $outfile2putcommas-bak\n`;}
-		print TOSHELL "chmod 777 $outfile2putcommas\n"; print TOSHELL "mv -b $outfile2putcommas-bak\n"; 
+		#if (-e $outfile2putcommas) { `chmod 777 $outfile2putcommas\n`; `mv -b $outfile2putcommas-bak\n`;}
+		#print TOSHELL "chmod 777 $outfile2putcommas\n"; print TOSHELL "mv -b $outfile2putcommas-bak\n"; 
 		open( OUTFILE2PUTCOMMAS, ">$outfile2putcommas" ) or die "Can't open outfile2putcommas $outfile2putcommas: $!";
 		foreach my $new_line_to_convert (@new_lines_to_convert)
 		{
@@ -690,6 +823,40 @@ sub convert_filtered_reports
 
 sub maketable
 {
+	my $to = shift;
+	my $mypath = shift;
+	my $file = shift;
+	my $filenew = shift;
+	my $swap = shift;
+	my @dowhat = @$swap;
+	my $swap = shift;
+	my @simdata = @$swap;
+	my $simnetwork = shift;
+	my $swap = shift;
+	my @simtitle = @$swap;
+	my $preventsim = shift;
+	my $exeonfiles = shift;
+	my $fileconfig = shift;
+	my $swap = shift;
+	my @themereports = @$swap;
+	my $swap = shift;
+	my @reportperiods = @$swap;
+	my $swap = shift;
+	my @retrievedata = @$swap;
+	my $swap = shift;
+	my @retrievedatatemps = @$swap;
+	my $swap = shift;
+	my @retrievedatacomfort = @$swap;
+	my $swap = shift;
+	my @retrievedataloads = @$swap;
+	my $swap = shift;
+	my @retrievedatatempsstats = @$swap;
+	my $toshell = shift;
+	my $outfile = shift;
+	my $configfile = shift;
+	open( OUTFILE, ">>$outfile" ) ;
+	open( TOSHELL, ">>$toshell" ) ;
+
 	sub do_maketable
 	{
 		$themereport = $_;
@@ -762,8 +929,8 @@ sub maketable
 				}
 				
 				my $outfile = "$file_to_maketable"."-madetable.txt";
-				if (-e $outfile) { `chmod 777 $outfile\n`; `mv -b $outfile-bak\n`;}
-				print TOSHELL "chmod 777 $outfile\n"; print TOSHELL "mv -b $outfile-bak\n"; 
+				#if (-e $outfile) { `chmod 777 $outfile\n`; `mv -b $outfile-bak\n`;}
+				#print TOSHELL "chmod 777 $outfile\n"; print TOSHELL "mv -b $outfile-bak\n"; 
 				open(OUTFILE, ">$outfile") or die "Can't open $outfile: $!\n";
 				foreach my $line (@array)
 				{

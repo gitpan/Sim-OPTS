@@ -20,14 +20,61 @@
 package Sim::OPTS::report;
 
 no strict; 
-no warnings;
+use warnings;
 use lib "../../";
 @ISA = qw(Exporter); # our @ISA = qw(Exporter);
 @EXPORT = qw( &report &merge_reports );
 
 sub report # This function retrieves the results of interest from the text file created by the "retrieve" function
 {
+	my $to = shift;
+	my $mypath = shift;
+	my $file = shift;
+	my $filenew = shift;
+	my $swap = shift;
+	my @dowhat = @$swap;
+	my $swap = shift;
+	my @simdata = @$swap;
+	my $simnetwork = shift;
+	my $swap = shift;
+	my @simtitle = @$swap;
+	my $preventsim = shift;
+	my $exeonfiles = shift;
+	my $fileconfig = shift;
+	my $swap = shift;
+	my @themereports = @$swap;
+	my $swap = shift;
+	my @reportperiods = @$swap;
+	my $swap = shift;
+	my @retrievedata = @$swap;
+	my $swap = shift;
+	my @retrievedatatemps = @$swap;
+	my $swap = shift;
+	my @retrievedatacomfort = @$swap;
+	my $swap = shift;
+	my @retrievedataloads = @$swap;
+	my $swap = shift;
+	my @retrievedatatempsstats = @$swap;
+	my $toshell = shift;
+	my $outfile = shift;
+	my $configfile = shift;
+	my $swap = shift;
+	my @rankdata = @$swap;
+	my $swap = shift;
+	my @rankcolumn = @$swap;
+	my $swap = shift;
+	my @reporttempsdata = @$swap;
+	my $swap = shift;
+	my @reportcomfortdata = @$swap;
+	my $swap = shift;
+	my @reportradiationenteringdata = @$swap;
+	my $reportloadsdata = shift;
+	my $swap = shift;
+	my @reporttempsstats = @$swap;
 	
+	open( OUTFILE, ">>$outfile" ) ;
+	open( TOSHELL, ">>$toshell" ) ;
+	#print "@themereports\n";
 	$" = "";
 
 	sub strip_files_temps
@@ -110,9 +157,9 @@ sub report # This function retrieves the results of interest from the text file 
 	sub strip_files_comfort
 	{
 		my $themereport = $_[0];
-		my @measurements_to_report      = @{ reportcomfortdata->[0] };
-		my @columns_to_report           = @{ reportcomfortdata->[1] };
-		my $number_of_columns_to_report = $#{ reportcomfortdata->[1] };
+		my @measurements_to_report      = @{ $reportcomfortdata[0] };
+		my @columns_to_report           = @{ $reportcomfortdata[1] };
+		my $number_of_columns_to_report = $#{ $reportcomfortdata[1] };
 		my $counterreport               = 0;
 
 		#
@@ -184,14 +231,12 @@ sub report # This function retrieves the results of interest from the text file 
 		close(OUTFILEREPORT);
 	}
 
-	sub strip_files_loads_no_transpose
+	sub strip_files_loads
 	{
 		my $themereport = $_[0];
-		my @measurements_to_report = @{ reportloadsdata->[0] };
-		my @rows_to_report =
-		  @{ reportloadsdata->[1] };    # in this case, they are rows
-		my $number_of_rows_to_report =
-		  ( 1 + $#{ reportloadsdata->[1] } );    # see above: rows
+		my @measurements_to_report = @{ $reportloadsdata[0] };
+		my @rows_to_report = @{ $reportloadsdata[1] };    # in this case, they are rows
+		my $number_of_rows_to_report = ( 1 + $#{ $reportloadsdata[1] } );    # see above: rows
 		                                         #
 		my $dates_to_report = $simtitle[$counterreport];
 		my @files_to_report = <$mypath/$filenew*loads.grt>;
@@ -210,13 +255,9 @@ sub report # This function retrieves the results of interest from the text file 
 			$" = " ";
 			foreach my $line_to_report (@lines_to_report)
 			{
-				my @roww = split( /\s+/, $line_to_report );
-				foreach my $roww (@roww)
+				if ($line =~ $tofilter )
 				{
-					if ($roww eq $tofilter )
-					{
-						print OUTFILEREPORT  "$file_to_report @roww\n";
-					}
+					print OUTFILEREPORT  "$file_to_report $line\n";
 				}
 			}
 
@@ -277,10 +318,10 @@ sub report # This function retrieves the results of interest from the text file 
 		close(RESULT);
 	}
 
-	sub strip_files_tempsstats_no_transpose
+	sub strip_files_tempsstats
 	{
 		my $themereport = $_[0];
-		my @measurements_to_report = @{ reporttempsstats->[0] };
+		my @measurements_to_report = @{ $reporttempsstats[0] };
 		my @rows_to_report =
 		  @{ reporttempsstats->[1] };    # in this case, they are rows
 		my $number_of_rows_to_report =
@@ -300,29 +341,11 @@ sub report # This function retrieves the results of interest from the text file 
 			my $counterzones    = 0;
 			my @lines_to_report = <INFILEREPORT>;
 
-			foreach $line_to_report (@lines_to_report)
+			foreach my $line_to_report (@lines_to_report)
 			{
-				$line_to_report =~ s/\:\s/\:/g;
-				my @roww = split( /\s+/, $line_to_report );
-				if (    $roww[1] eq "1"
-					 or "2"
-					 or "3"
-					 or "4"
-					 or "5"
-					 or "6"
-					 or "6"
-					 or "7"
-					 or "8"
-					 or "9" )
+				if ($line =~ $tofilter )
 				{
-					$counterzones = $counterzones + 1;
-				}
-				if ( $roww[1] eq $tofilter
-				  )
-				{
-					$" = " ";
-					print OUTFILEREPORT
-					  "$file_to_report\t @roww\n";
+					print OUTFILEREPORT  "$file_to_report $line\n";
 				}
 			}
 			close(INFILEREPORT);
@@ -386,18 +409,7 @@ sub report # This function retrieves the results of interest from the text file 
 		close(RESULT);
 	}
 
-	sub strip_files_loads
-	{
-		my $themereport = $_[0];
-		strip_files_loads_no_transpose($themereport);
-	}
 
-	sub strip_files_tempsstats
-	{
-		my $themereport = $_[0];
-		strip_files_tempsstats_no_transpose($themereport);
-	}
-	
 	foreach my $themereport (@themereports)
 	{
 		if ( $themereport eq "temps" ) { strip_files_temps($themereport); }
@@ -412,10 +424,57 @@ sub report # This function retrieves the results of interest from the text file 
 
 sub merge_reports    # Self-explaining
 {
-	my @columns_to_report           = @{ reporttempsdata->[1] };
-	my $number_of_columns_to_report = $#{ reporttempsdata->[1] };
+	my $to = shift;
+	my $mypath = shift;
+	my $file = shift;
+	my $filenew = shift;
+	my $swap = shift;
+	my @dowhat = @$swap;
+	my $swap = shift;
+	my @simdata = @$swap;
+	my $simnetwork = shift;
+	my $swap = shift;
+	my @simtitle = @$swap;
+	my $preventsim = shift;
+	my $exeonfiles = shift;
+	my $fileconfig = shift;
+	my $swap = shift;
+	my @themereports = @$swap;
+	my $swap = shift;
+	my @reportperiods = @$swap;
+	my $swap = shift;
+	my @retrievedata = @$swap;
+	my $swap = shift;
+	my @retrievedatatemps = @$swap;
+	my $swap = shift;
+	my @retrievedatacomfort = @$swap;
+	my $swap = shift;
+	my @retrievedataloads = @$swap;
+	my $swap = shift;
+	my @retrievedatatempsstats = @$swap;
+	my $toshell = shift;
+	my $outfile = shift;
+	my $configfile = shift;
+	my $swap = shift;
+	my @rankdata = @$swap;
+	my $swap = shift;
+	my @rankcolumn = @$swap;
+	my $swap = shift;
+	my @reporttempsdata = @$swap;
+	my $swap = shift;
+	my @reportcomfortdata = @$swap;
+	my $swap = shift;
+	my @reportradiationenteringdata = @$swap;
+	my $reportloadsdata = shift;
+	my $swap = shift;
+	my @reporttempsstats = @$swap;
+	open( OUTFILE, ">>$outfile" ) ;
+	open( TOSHELL, ">>$toshell" ) ;
+
+	my @columns_to_report           = @{ $reporttempsdata[1] };
+	my $number_of_columns_to_report = scalar(@columns_to_report);
 	my $counterlines;
-	my $number_of_dates_to_merge = $#simtitle;
+	my $number_of_dates_to_merge = scalar(@simtitle);
 	my @dates                    = @simtitle;
 
 	sub merge_reports_temps
@@ -461,8 +520,8 @@ sub merge_reports    # Self-explaining
 			}
 
 			my $outfile = "$mypath/$filenew-$date-temperatures-sum-up.txt";
-			if (-e $outfile) { `chmod 777 $outfile\n`; `mv -b $outfile-bak\n`;};
-			print TOSHELL "chmod 777 $outfile\n"; print TOSHELL "mv -b $outfile-bak\n";
+			#if (-e $outfile) { `chmod 777 $outfile\n`; `mv $outfile $outfile-bak\n`;};
+			#print TOSHELL "chmod 777 $outfile\n"; print TOSHELL "mv $outfile $outfile-bak\n";
 			open( OUTFILEMERGE, ">$outfile" ) or die "Can't open $outfile: $!";
 			my $newcounterlines = 0;
 			my $numberrow       = $#resultingfile;
@@ -526,8 +585,8 @@ sub merge_reports    # Self-explaining
 			}
 
 			my $outfile = "$mypath/$filenew-$date-comfort-sum-up.txt";
-			if (-e $outfile) { `chmod 777 $outfile\n`; `mv -b $outfile-bak\n`;}
-			print TOSHELL "chmod 777 $outfile\n"; print TOSHELL "mv -b $outfile-bak\n"; 
+			#if (-e $outfile) { `chmod 777 $outfile\n`; `mv $outfile $outfile-bak\n`;}
+			#print TOSHELL "chmod 777 $outfile\n"; print TOSHELL "mv $outfile $outfile-bak\n"; 
 			open( OUTFILEMERGE, ">$outfile" ) or die "Can't open $outfile: $!";
 			my $newcounterlines = 0;
 			my $numberrow       = $#resultingfile;
@@ -595,8 +654,8 @@ sub merge_reports    # Self-explaining
 
 			#
 			my $outfile0 = "$mypath/$filenew-$date-loads-sum-up-transient.txt";
-			if (-e $outfile) { `chmod 777 $outfile\n`; `mv -b $outfile-bak\n`;};
-			print TOSHELL "chmod 777 $outfile\n"; print TOSHELL "mv -b $outfile-bak\n";
+			#if (-e $outfile) { `chmod 777 $outfile\n`; `mv $outfile $outfile-bak\n`;};
+			#print TOSHELL "chmod 777 $outfile\n"; print TOSHELL "mv $outfile $outfile-bak\n";
 			open( OUTFILEMERGE0, ">$outfile0" )
 			  or die "Can't open outfile0 $outfile0: $!";
 			my $newcounterlines = 0;
@@ -684,8 +743,8 @@ sub merge_reports    # Self-explaining
 
 			#
 			my $outfile0 = "$mypath/$filenew-$date-tempsstats-sum-up-transient.txt";
-			if (-e $outfile) { `chmod 777 $outfile\n`; `mv -b $outfile-bak\n`;};
-			print TOSHELL "chmod 777 $outfile\n"; print TOSHELL "mv -b $outfile-bak\n";
+			#if (-e $outfile) { `chmod 777 $outfile\n`; `mv $outfile $outfile-bak\n`;};
+			#print TOSHELL "chmod 777 $outfile\n"; print TOSHELL "mv $outfile $outfile-bak\n";
 			open( OUTFILEMERGE0, ">$outfile0" ) or die "Can't open $outfile: $!";
 			my $newcounterlines = 0;
 			my $numberrow = $#resultingfile;
