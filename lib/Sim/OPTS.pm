@@ -27,9 +27,23 @@ no warnings;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(opts prepare); # our @EXPORT = qw( );
-$VERSION = '0.30'; # our $VERSION = '';
+$VERSION = '0.31'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
+use Math::Trig;
+use List::Util qw[min max reduce];
+use List::AllUtils qw(sum);
+use Statistics::Basic qw(:all);
+use Set::Intersection;
+use List::Compare;
+use List::MoreUtils qw(uniq);
+use Statistics::Basic qw(:all);
+use POSIX qw(floor ceil);
+use Text::ParseWords;
+use Data::Dumper;
+$Data::Dumper::Indent = 0;
+$Data::Dumper::Useqq  = 1;
+$Data::Dumper::Terse  = 1;
 
 # use Sim::OPTS::prepare; # HERE IS THE FUNCTION 'prepare', a text interface to the function 'opts'.
 # THIS HAS BE DISABLE. THIS COMMAND SHOULD BE GIVEN FROM THE SHELL NOW, TO BEGIN TO RE-DEBUG THE FILE.
@@ -88,13 +102,6 @@ Insert the name of a configuration file (local path):\n";
 	{
 		#use Sim::OPTS::search;
 	}
-
-	use Math::Trig;
-	use Data::Dumper;
-	use List::Util qw[min max reduce];
-	$Data::Dumper::Indent = 0;
-	$Data::Dumper::Useqq  = 1;
-	$Data::Dumper::Terse  = 1;
 
 	###########################################################################################
 	# BELOW THE OPTS PROGRAM FOLLOWS.
@@ -7986,9 +7993,9 @@ sub merge_reports    # Self-explaining
 				{
 					my $simtitle = $simtitles[$counterouter];
 					my $reporttitle = $reporttitles[$counterouter][$counterinner];
-					print "FILE: $file, SIMTITLE: $simtitle, REPORTTITLE!: $reporttitle, THEME: $theme\n";
+					#print "FILE: $file, SIMTITLE: $simtitle, REPORTTITLE!: $reporttitle, THEME: $theme\n";
 					my $case = "$morphcase-$simtitle.res-$reporttitle-$theme.grt-";
-					print "$case\n";
+					#print "$case\n";
 					open(OPENTEMP, $case) or die;
 					my @linez = <OPENTEMP>;
 					close OPENTEMP;
@@ -8046,7 +8053,7 @@ sub merge_reports    # Self-explaining
 				my $counterinner = 0;
 				foreach my $elm (@cols)
 				{
-					print  SELECTMERGED "$elts[$elm] ";
+					print  SELECTMERGED "$elts[$elm]";
 					if ( ( $counterouter < $#keepcolumns  ) or ( $counterinner < $#cols) )
 					{
 						print  SELECTMERGED ",";
@@ -8061,39 +8068,212 @@ sub merge_reports    # Self-explaining
 	} # END. CLEANS THE MERGED FILE AND SELECTS SOME COLUMNS AND COPIES THEM IN ANOTHER FILE
 	&cleanselect();
 	
-	my $weightmerged = "$selectmerged-weigth";
-	
+	my $weight = "$selectmerged-weight"; # THIS WILL HOST PARTIALLY SCALED VALUES, MADE POSITIVE AND WITH A CELING OF 1
 	sub weight
 	{
 		open (SELECTMERGED, $selectmerged) or die;
 		my @lines = <SELECTMERGED>;
 		close SELECTMERGED;
-
+		# print "FIRST LINE: $lines[0]\n";
 		my $counterline = 0;
-		unless (-e $weightmerged)
+		unless (-e $weight) 
 		{
-			open (WEIGHTMERGED, ">$weightmerged");
+			#print "I OPEN\n";
+			open (WEIGHT, ">$weight");
 		}
+		
+		my @containerone;
 		foreach my $line (@lines)
 		{
+			$line =~ s/^[\n]//;
+			#print "I SPLIT\n";
 			my @elts = split(/\s+|,/, $line);
-			my $counterelt = 0;
+			my $countcol = 0;
+			my $countel = 0;
 			foreach my $elt (@elts)
 			{
-				if ( odd($counterelt) )
+				#print "I CHECK\n";
+				if ( odd($countel) )
 				{
-					push (@elts, $elt);
+					# print "I PUSH\n";
+					push ( @{$containerone[$countcol]}, $elt);
+					#print "ELT: $elt\n";
+					$countcol++;
+				}
+				$countel++;
+			}
+		}
+		print "CONTAINERONE " . Dumper(@containerone) . "\n";
+			
+		my @containertwo;
+		my @containerthree;
+		$countcolm = 0;
+		my @optimals;
+		foreach my $colref (@containerone)
+		{
+			my @column = @{$colref}; # DEREFERENCE
+			
+			if ( $weights[$countcolm] < 0 ) # TURNS EVERYTHING POSITIVE
+			{
+				foreach $el (@column)
+				{
+					$el = ($el * -1);
+				}
+			}
+			
+			if ( max(@column) != 0) # FILLS THE UNTRACTABLE VALUES
+			{
+				push (@maxes, max(@column));
+			}
+			else
+			{
+				push (@maxes, "NOTHING1");
+			}
+					
+			#print "MAXES: " . Dumper(@maxes) . "\n";
+			#print "DUMPCOLUMN: " . Dumper(@column) . "\n";
+			
+			foreach my $el (@column)
+			{
+				my $eltrans;
+				if ( $maxes[$countcolm] != 0 )
+				{
+					#print "\$weights[\$countcolm]: $weights[$countcolm]\n";
+					$eltrans = ( $el / $maxes[$countcolm] ) ;
+				}
+				else
+				{
+					$eltrans = "NOTHING2" ;
+				}
+				push ( @{$containertwo[$countcolm]}, $eltrans) ;
+				#print "ELTRANS: $eltrans\n";
+			}
+			$countcolm++;
+		}
+		print "CONTAINERTWO " . Dumper(@containertwo) . "\n";
+		
+		
+		my $countline = 0;
+		foreach my $line (@lines)
+		{
+			$line =~ s/^[\n]//;
+			my @elts = split(/\s+|,/, $line);
+			
+			my $countcolm = 0;
+			foreach $eltref (@containertwo)
+			{
+				my @col =  @{$eltref};
+				my $max = max(@col);
+				#print "MAX: $max\n";
+				my $min = min(@col);
+				#print "MIN: $min\n";
+				my $floordistance = ($max - $min);
+				my $range = ( $min / $max);
+				my $el = $col[$countline];
+				my $rescaledel;
+				if ( $floordistance != 0 )
+				{
+					$rescaledel = ( ( $el - $min ) / $floordistance ) ;
+				}
+				else
+				{
+					$rescaledel = 1;
+				}
+				if ( $weightsaim[$countcolm] < 0)
+				{
+					$rescaledel = ( 1 - $rescaledel);
+				}
+				push (@elts, $rescaledel);
+				$countcolm++;
+			}
+
+			
+			$countline++;
+			
+			my $counter = 0;
+			foreach my $el (@elts)
+			{		
+				print WEIGHT "$el";
+				if ($counter < $#elts)
+				{ 
+					print WEIGHT ",";
+				}
+				else
+				{
+					print WEIGHT "\n";
+				}
+				$containerthree[$counterline][$counter] = $el;
+				$counter++;
+			}
+			$counterline++;
+		}
+		close WEIGHT;
+		print "CONTAINERTHREE: " . Dumper(@containerthree) . "\n";
+		
+	}
+	&weight(); #
+	
+	my $weighttwo = "$selectmerged-weighttwo"; # THIS WILL HOST PARTIALLY SCALED VALUES, MADE POSITIVE AND WITH A CELING OF 1
+	sub weighttwo
+	{
+		open (WEIGHT, $weight) or die;
+		my @lines = <WEIGHT>;
+		close WEIGHT;
+		unless (-e $weighttwo) 
+		{
+			open (WEIGHTTWO, ">$weighttwo");
+		}
+		
+		my $counterline;
+		foreach my $line (@lines)
+		{
+			$line =~ s/^[\n]//;
+			my @elts = split(/\s+|,/, $line);
+			my $counterelt = 0;
+			my $counterin = 0;
+			my $sum = 0;
+			my $avg;
+			my $numberels = scalar(@keepcolumns);
+			foreach my $elt (@elts)
+			{
+				my $newelt;
+				if ($counterelt > ( $#elts - $numberels ))
+				{
+					#print "ELT: $elt\n";
+					$newelt = ( $elt * abs($weights[$counterin]) );
+					print "ABS" . abs($weights[$counterin]) . "\n";
+					print "NEWELT: $newelt\n";
+					$sum = ( $sum + $newelt ) ;
+					print "SUM: $sum\n";
+					$counterin++;
 				}
 				$counterelt++;
 			}
-			print WEIGHTMERGED Dumper(@elts) . "\n";
-			$counterline++;
+			$avg = ($sum / scalar(@keepcolumns) );
+			push ( @elts, $avg);
+			
+			my $counter = 0;
+			foreach my $elt (@elts)
+			{		
+				print WEIGHTTWO "$elt";
+				if ($counter < $#elts)
+				{ 
+					print WEIGHTTWO ",";
+				}
+				else
+				{
+					print WEIGHTTWO "\n";
+				}
+				$counter++;
+			}
+			$counterline++
 		}
-		close WEIGHTMERGED;
 	}
-	# &weight(); # WRONG. TO BE COMPLETED ZZZ
-	
+	&weighttwo();	
 }    # END SUB merge_reports
+
+
+
 sub rank_reports    # STILL UNUSED. Self-explaining. 
 {
 	my $to = shift;

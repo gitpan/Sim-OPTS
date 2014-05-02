@@ -114,8 +114,12 @@ $simnetwork =
 # COLUMNS TO KEEP FROM THE FILE OF RESULTS. THEY ARE WRITTEN IN PAIRS. 
 # THE FIRST ITEM OF EACH PAIR IS THE OBJECTIVE FUNCTION NAME AND THE SECOND IS THE OBJECTIVE FUNCTION.
 
-@objectiveweights = ( 0.5, 0.5); 
+@weights = ( 0.5, 0.5); 
 # RATIO OF EACH OBJECTIVE FUNCTION OVER THE TOTAL OF ONE.
+
+@weightsaim = (1, -1); 
+# THERE IS A POINT TO POINT CORRENSPONDENCE WITH THE ABOVE ARRAY. A (-1) VALUE TELLS THE PROGRAM THAT THE OBJECTIVE FOR THAT OBJECTIVE FUNCTION IS MINIMIZATION. 
+# A (+1) VALUE TELLS THE PROGRAM THAT THE OBJECTIVE IS MAXIMIZATION. 
 
 @varthemes_report = (
 "rotation_zy", "rotation_xy","albedo_terrace", "albedo_side_wall"
@@ -128,7 +132,6 @@ $simnetwork =
 @varthemes_steps = (
 5, 5, 5, 5, 5
 );  ######### Number of steps allowed for each variables. In the same order above. (NOTE: THIS OPERATION MAY OFTEN  BE UNUSED.)
-
 
 
 @rankdata = (
