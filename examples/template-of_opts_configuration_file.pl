@@ -82,6 +82,41 @@ $toshell =
 
 $exeonfiles = “y”; # say “y” if you want OPTS's work be executed on files and directories. As an alternative, you may want to say “no” because you may want to output to a shell file that you can study and make executable afterwards.
 
+
+$simnetwork = 
+"y"; 
+# is there a mass/flow network? This information regards the simulation settings.
+
+@themereports = 
+([ "loads", "tempsstats"], [ "loads", "tempsstats"]); 
+# possibilities: "loads", "temps" , "comfort", "tempsstats" ######### General themes regarding the simulation.  This piece of information go to compose the result name files.
+
+@simtitles = 
+("mar1-apr30", "mar1-apr30" ); 
+# write here the name of the time periods will be taken into account in the simulations.
+
+@reporttitles = 
+( ["march1-31", "march1-31"], ["april1-30", "april1-30"] ); 
+# THESE ARE THE PERIODS TO BE REPORTED. THERE IS A POINT TO POINT CORRENSPONDENCE WITH @simtitles
+
+@simdata = (["1 3", "30 4", "20", "1"],["1 3", "30 4", "20", "1"]); 
+# Here put the data this way: "starting-month_1 starting-day_1", "ending-month_1 ending-day_1", "start-up-period-duration_1", "time/steps-hour_1", "starting-month_2"starting-day_2", "ending-month_2 ending-day_2", "start-up-period-duration_2", "time/steps-hour_2", ..., "starting-month_n starting-day_n", "ending-month_n ending-day_n", "start-up-period-duration_n", "time/steps-hour_n"
+# THESE ARE THE PERIODS TO BE REPORTED. THERE IS A POINT TO POINT CORRENSPONDENCE WITH @simdata
+
+
+@retrievedata = ( 
+[["1 3 1", "31 3 24", "1"] , ["1 3 1", "31 3 24", "1"]], [["1 4 1", "30 4 24", "1"] , ["1 4 1", "30 4 24", "1"]]
+); 
+# start data to retrieve for temps; end data to retrieve for temps.
+# THESE ARE THE PERIODS TO BE REPORTED. THERE IS A POINT TO POINT CORRENSPONDENCE WITH @reporttiles# THESE ARE THE PERIODS TO BE REPORTED. THERE IS A POINT TO POINT CORRENSPONDENCE WITH @simdata# THESE ARE THE PERIODS TO BE REPORTED. THERE IS A POINT TO POINT CORRENSPONDENCE WITH @simdata
+
+@keepcolumns = ( [1, 6], [16, 18] ); 
+# COLUMNS TO KEEP FROM THE FILE OF RESULTS. THEY ARE WRITTEN IN PAIRS. 
+# THE FIRST ITEM OF EACH PAIR IS THE OBJECTIVE FUNCTION NAME AND THE SECOND IS THE OBJECTIVE FUNCTION.
+
+@objectiveweights = ( 0.5, 0.5); 
+# RATIO OF EACH OBJECTIVE FUNCTION OVER THE TOTAL OF ONE.
+
 @varthemes_report = (
 "rotation_zy", "rotation_xy","albedo_terrace", "albedo_side_wall"
 ); ########## Definitions that are going to substitute the variable numbers in the tables. (THIS OPERATION MAY OFTEN BE UNUSED.)
@@ -94,50 +129,7 @@ $exeonfiles = “y”; # say “y” if you want OPTS's work be executed on file
 5, 5, 5, 5, 5
 );  ######### Number of steps allowed for each variables. In the same order above. (NOTE: THIS OPERATION MAY OFTEN  BE UNUSED.)
 
-@themereports = (
-"tempsstats"
-); # possibilities:  "temps", "comfort", "loads", or "tempsstats" ######### General themes regarding the simulation.  This piece of information go to compose the result name files.
 
-@simtitle = (
-"aug01-aug31"
-); # write here the name of the time periods to be taken into account in the simulations.
-
-@simdata=(
-"01 08", "31 8", "20", "1"
-); # Time data for simulations. Here put the data this way: "starting-month_1 starting-day_1", "ending-month_1 ending-day_1", "start-up-period-duration_1", "time/steps-hour_1"
-
-$simnetwork = 
-"y"; 
-# is there a mass/flow network? This information regards the simulation settings.
-
-@retrievedata = ( # CHOOSE ONE. [NOW UNTESTED?]
-"n", 
-# retrieve temperature results?
-
-"n", 
-# retrieve comfort results?
-
-"n", 
-# retrieve loads results? 
-
-"y"); 
-# retrieve temp-stats results?
-
-@retrievedatatemps = (
-"1 08 1", "31 08 24", "1"
-); # start data to retrieve for temperature reports; end data to retrieve for temperature reports.
-
-@retrievedatacomfort = (
-"1 08 1", "31 08 24" , "1"
-); # start data to retrieve for comfort reports; end data to retrieve for comfort reports.
-
-@retrievedataloads = (
-"01 02 1", "28 2 24", "1"
-); # start data to retrieve for load-stats reports; end data to retrieve for load-stats reports.
-
-@retrievedatatempsstats = (
-"1 08 1", "31 08 24", "1"
-); # start data to retrieve for temp-stats reports; end data to retrieve for temp-stats reports.
 
 @rankdata = (
 "n", "n", "n", "y"
