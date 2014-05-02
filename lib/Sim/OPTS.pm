@@ -5,16 +5,14 @@ package Sim::OPTS;
 # This is free software.  You can redistribute it and/or modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, version 2.
 
-use 5.008001;
+use 5.010001;
 use Exporter; # require Exporter;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 use feature 'say';
 no strict; 
 no warnings;
 
-
 @ISA = qw(Exporter); # our @ISA = qw(Exporter);
-
 
 # Items to export into callers namespace by default. Note: do not export
 # names by default without a very good reason. Use EXPORT_OK instead.
@@ -27,23 +25,8 @@ no warnings;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(opts prepare); # our @EXPORT = qw( );
-$VERSION = '0.31'; # our $VERSION = '';
+$VERSION = '0.32'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
-
-use Math::Trig;
-use List::Util qw[min max reduce];
-use List::AllUtils qw(sum);
-use Statistics::Basic qw(:all);
-use Set::Intersection;
-use List::Compare;
-use List::MoreUtils qw(uniq);
-use Statistics::Basic qw(:all);
-use POSIX qw(floor ceil);
-use Text::ParseWords;
-use Data::Dumper;
-$Data::Dumper::Indent = 0;
-$Data::Dumper::Useqq  = 1;
-$Data::Dumper::Terse  = 1;
 
 # use Sim::OPTS::prepare; # HERE IS THE FUNCTION 'prepare', a text interface to the function 'opts'.
 # THIS HAS BE DISABLE. THIS COMMAND SHOULD BE GIVEN FROM THE SHELL NOW, TO BEGIN TO RE-DEBUG THE FILE.
@@ -102,6 +85,13 @@ Insert the name of a configuration file (local path):\n";
 	{
 		#use Sim::OPTS::search;
 	}
+	
+	use Math::Trig;
+	use List::Util qw[min max reduce];
+	use Data::Dumper;
+	$Data::Dumper::Indent = 0;
+	$Data::Dumper::Useqq  = 1;
+	$Data::Dumper::Terse  = 1;
 
 	###########################################################################################
 	# BELOW THE OPTS PROGRAM FOLLOWS.
@@ -8209,7 +8199,6 @@ sub merge_reports    # Self-explaining
 		}
 		close WEIGHT;
 		print "CONTAINERTHREE: " . Dumper(@containerthree) . "\n";
-		
 	}
 	&weight(); #
 	
@@ -8270,8 +8259,25 @@ sub merge_reports    # Self-explaining
 		}
 	}
 	&weighttwo();	
+	
+	my $sortmerged = "$selectmerged-sortmerged";
+	sub sortmerged
+	{
+		open (WEIGHTTWO, $weighttwo) or die;
+		unless (-e $sortmerged)
+		{	open (SORTMERGED, ">$sortmerged") or die;
+			my @lines = <WEIGHTTWO>;
+			close WEIGHTTWO;
+			my $line = $lines[0];
+			$line =~ s/^[\n]//;
+			my @eltstemp = split(/\s+|,/, $line);
+			my $numberelts = scalar(@eltstemp);
+			print SORTMERGED `sort -n -k$numberelts,$numberelts -t , $weighttwo`;
+		}
+		close SORTMERGED;
+	}
+	&sortmerged();
 }    # END SUB merge_reports
-
 
 
 sub rank_reports    # STILL UNUSED. Self-explaining. 
@@ -8773,8 +8779,6 @@ sub convert_report # ZZZ THIS HAS TO BE PUT IN ORDER BECAUSE JUST ONE ITEM WORKS
 	{	
 		do_convert_report($themereport);
 	}
-	
-		
 } # END sub convert_report
 
 
