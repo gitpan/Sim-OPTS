@@ -25,7 +25,7 @@ no warnings;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(opts prepare); # our @EXPORT = qw( );
-$VERSION = '0.32_1'; # our $VERSION = '';
+$VERSION = '0.32_2'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 # use Sim::OPTS::prepare; # HERE IS THE FUNCTION 'prepare', a text interface to the function 'opts'.
@@ -170,6 +170,7 @@ sub exec
 			my $caselistfile = "$mypath/$file-caselist.txt";
 			my (@v, @obs, @node, @component, @loopcontrol, @flowcontrol); # THINGS GLOBAL AS REGARDS COUNTER ZONE CYCLES
 			my (@myv, @myobs, @mynode, @mycomponent, @myloopcontrol, @myflowcontrol); # THINGS LOCAL AS REGARDS COUNTER ZONE CYCLES
+			my (@dov, @doobs, @donode, @docomponent, @doloopcontrol, @doflowcontrol); # THINGS LOCAL AS REGARDS COUNTER ZONE CYCLES
 			open (CASELIST, ">$caselistfile") or die;
 			
 			if ( ( $counter_countervar == $#varnumbers ) and ($$general_variables[0] eq "y") )
@@ -4220,7 +4221,7 @@ sub constrain_geometry # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY
 		
 		unless ($to_do eq "justread")
 		{
-			apply_geo_constraints(\@v, \@vertexletters, \@work_letters, $exeonfiles, $zone_letter);
+			apply_geo_constraints(\@dov, \@vertexletters, \@work_letters, $exeonfiles, $zone_letter);
 		}
 		# print "\@v: " . Dumper(@v) . "\n\n";
 	}
@@ -4304,8 +4305,8 @@ sub read_geo_constraints
 		eval `cat $configaddress`; # HERE AN EXTERNAL FILE FOR PROPAGATION OF CONSTRAINTS IS EVALUATED.
 		# THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE DIRECTLY 
 		# WRITTEN IN THE CALLING FILE.
-		@v = @{$v[$#v]}; # ;) SUPER-DESTRUCTIVE
-		shift (@v); # UGLY
+		@dov = @{$v[$#v]}; # ;)
+		shift (@dov); # UGLY
 	}
 } # END SUB read_geo_constraints
 
@@ -4316,7 +4317,7 @@ sub apply_geo_constraints
 	# IT HAS TO BE CALLED WITH: 
 	# apply_geo_constraints(\@v, \@vertexletters, \@work_letters, \$exeonfiles, \$zone_letter);
 	my $swap = shift;
-	my @v = @$swap;
+	my @dov = @$swap;
 	my $swap = shift;
 	my @vertexletters = @$swap;
 	# print "\@vertexletters: " . Dumper(@vertexletters) . "\n\n";
@@ -4336,7 +4337,7 @@ sub apply_geo_constraints
 	my $countervertex = 0;
 	
 	# print "\@v: " . Dumper(@v) . "\n\n";
-	foreach my $v (@v)
+	foreach my $dov (@dov)
 	{
 		my $vertexletter = $vertexletters[$countervertex];
 		if ( ( @work_letters eq "") or ($vertexletter  ~~ @work_letters) )
@@ -4982,17 +4983,17 @@ sub read_control_constraints
 		# THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE DIRECTLY 
 		# WRITTEN IN THE CALLING FILE.		
 		
-		@v = @{$loopcontrol[$#loopcontrol]}; # ;)
-		@v = @{$flowcontrol[$#flowcontrol]}; # ;)
+		@doloopcontrol = @{$loopcontrol[$#loopcontrol]}; # ;)
+		@doflowcontrol = @{$flowcontrol[$#flowcontrol]}; # ;)
 		# print "BEFORE loopcontrol: " . Dumper(@loopcontrol) . "\n\n";
 		# print "BEFORE flowcontrol: " . Dumper(@flowcontrol) . "\n\n";
 
-		shift (@loopcontrol);
-		shift (@flowcontrol);
+		shift (@doloopcontrol);
+		shift (@doflowcontrol);
 		
 		sub flatten_loopcontrol_constraints
 		{
-			my @looptemp = @loopcontrol;
+			my @looptemp = @doloopcontrol;
 			@new_loopcontrol = "";
 			foreach my $elm (@looptemp)
 			{
@@ -5008,7 +5009,7 @@ sub read_control_constraints
 				
 		sub flatten_flowcontrol_constraints
 		{
-			my @flowtemp = @flowcontrol;
+			my @flowtemp = @doflowcontrol;
 			@new_flowcontrol = "";
 			foreach my $elm (@flowtemp)
 			{
@@ -5280,7 +5281,7 @@ sub constrain_obstructions # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY
 		
 		unless ($to_do eq "justread")
 		{
-			apply_obs_constraints(\@obs, \@obs_letters, \@work_letters, $exeonfiles, $zone_letter, $actonmaterials, $exeonfiles);
+			apply_obs_constraints(\@doobs, \@obs_letters, \@work_letters, $exeonfiles, $zone_letter, $actonmaterials, $exeonfiles);
 		}
 	}
 } # END SUB constrain_obstructions
@@ -5416,8 +5417,8 @@ sub read_obs_constraints
 		eval `cat $configaddress`; # HERE AN EXTERNAL FILE FOR PROPAGATION OF CONSTRAINTS IS EVALUATED.
 		# THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE DIRECTLY 
 		# WRITTEN IN THE CALLING FILE.
-		@obs = @{$obs[$#obs]}; # ;)
-		shift @obs;
+		@doobs = @{$obs[$#obs]}; # ;)
+		shift @doobs;
 	}
 } # END SUB read_geo_constraints
 
@@ -5611,6 +5612,7 @@ YYY
 } # END SUB apply_obs_constraints
 
 
+############################################################## BEGINNING OF GROUP GET AND PIN OBSTRUCTIONS
 sub get_obstructions # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY. TO DO. STILL UNUSED. ZZZ
 {
 	# THIS CONSTRAINS OBSTRUCTION FILES. IT HAS TO BE CALLED FROM THE MAIN FILE WITH:
@@ -5840,7 +5842,7 @@ YYY
 	}
 	$countervertex++;
 } # END SUB apply_pin_obstructions
-
+############################################################## END OF GROUP GET AND PIN OBSTRUCTIONS
 
 
 ##############################################################################
@@ -5866,7 +5868,6 @@ sub vary_net
 	my $zone_letter = $applytype[$counterzone][3];
 	my $swap = shift;
 	my @vary_net = @$swap;
-	
 	
 	#print OUTFILE "VARYNET: \$to:$to, \$fileconfig:$fileconfig, \$stepsvar:$stepsvar, \$counterzone:$counterzone, \$counterstep:$counterstep, \@applytype:@applytype, \@vary_net:@vary_net\n\n";
 	my $activezone = $applytype[$counterzone][3];
@@ -5904,7 +5905,6 @@ sub vary_net
 		read_net($sourceaddress, $targetaddress, \@node_letters, \@component_letters);
 	}
 	# print "NODES: " . Dumper(@node) . "\n\n";
-	calc_newnet($to, $fileconfig, $stepsvar, $counterzone, $counterstep, \@nodebulk, \@componentbulk, \@node, \@component);	# PLURAL
 	
 	
 	sub calc_newnet
@@ -5928,9 +5928,6 @@ sub vary_net
 		my $outfile = shift;
 		my $configfile = shift;
 		
-		
-	
-	
 		# print "NODES: " . Dumper(@node) . "\n\n";
 		# print "NODEBULK: " . Dumper(@nodebulk) . "\n\n";
 		# print "COMPONENTS " . Dumper(@component) . "\n\n";
@@ -6070,6 +6067,8 @@ sub vary_net
 		#print "IN3: \@new_components: " . Dumper(@new_components) . "\n\n";
 	} # END SUB calc_newnet
 
+	calc_newnet($to, $fileconfig, $stepsvar, $counterzone, $counterstep, \@nodebulk, \@componentbulk, \@node, \@component);	# PLURAL
+
 	# print  "OUT: \@new_nodes: " . Dumper(@new_nodes) . "\n\n";
 	# print OUTFILE "OUT: \@new_components: " . Dumper(@new_components) . "\n\n";
 	
@@ -6089,7 +6088,6 @@ sub read_net
 	my $swap = shift;
 	my @component_letters = @$swap;
 		
-	
 	# print "CALLED WITH: read_net, \$sourceaddress:$sourceaddress, \$targetaddress:$targetaddress, \@node_letters:@node_letters, \@component_letters:@component_letters)\n\n";
 	open( SOURCEFILE, $sourceaddress ) or die "Can't open $sourcefile : $!\n";
 	my @lines = <SOURCEFILE>;
@@ -6620,8 +6618,8 @@ sub constrain_net
 		
 	unless ($to_do eq "justread")
 	{
-		apply_node_changes($exeonfiles, \@node); #PLURAL
-		apply_component_changes($exeonfiles, \@component);
+		apply_node_changes($exeonfiles, \@donode); #PLURAL
+		apply_component_changes($exeonfiles, \@docomponent);
 	}
 } # END SUB constrain_net.
 
@@ -6694,11 +6692,11 @@ sub read_net_constraints
 		# print "BEFORE nodes: " . Dumper(@node) . "\n\n";
 		# print "BEFORE components " . Dumper(@component) . "\n\n";
 
-		@node = @{$node[$#node]}; # ;) 
-		@component = @{$component[$#component]}; # ;) 
+		@donode = @{$node[$#node]}; # ;) 
+		@docomponent = @{$component[$#component]}; # ;) 
 
-		shift (@node);
-		shift (@component);
+		shift (@donode);
+		shift (@docomponent);
 		
 		# print "AFTER loopcontrol: " . Dumper(@new_loopcontrol) . "\n\n";
 		# print "AFTER flowcontrol: " . Dumper(@new_flowcontrol) . "\n\n";
@@ -8829,7 +8827,7 @@ sub convert_report # ZZZ THIS HAS TO BE PUT IN ORDER BECAUSE JUST ONE ITEM WORKS
 
 
 
-sub filter_reports
+sub filter_reports # STALE. TO BE RE-CHECKED. 
 {
 	my $to = shift;
 	my $mypath = shift;
@@ -8925,7 +8923,7 @@ sub filter_reports
 } # END sub filter_reports
 
 
-sub convert_filtered_reports
+sub convert_filtered_reports  # STALE. TO BE RE-CHECKED. 
 {
 	my $to = shift;
 	my $mypath = shift;
@@ -9073,7 +9071,7 @@ sub convert_filtered_reports
 }### END SUB convert_reports. THIS IS NOT WORKING. IT IS NOT MODIFYING THE FILTERED FILES.
 
 
-sub maketable
+sub maketable  # STALE. TO BE RE-CHECKED. 
 {
 	my $to = shift;
 	my $mypath = shift;
@@ -9226,28 +9224,28 @@ sub maketable
 		&convert_report( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
 		\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
 		\@rankdata, \@rankcolumn, \@reporttempsdata, 
-		\@reportcomfortdata, \@reportradiationenteringdata, $stripcheck  ); # CONVERT NOT YET FILTERED REPORTS
+		\@reportcomfortdata, \@reportradiationenteringdata, $stripcheck  ); # CONVERTS NOT YET FILTERED REPORTS
 	}
 	if ( $dowhat[7] eq "y" )
 	{
 		&filter_reports( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
 		\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
 		\@rankdata, \@rankcolumn, \@reporttempsdata, \@reportcomfortdata,
-		\@reportradiationenteringdata, $stripcheck ); # FILTER ALREADY CONVERTED REPORTS
+		\@reportradiationenteringdata, $stripcheck ); # FILTERS ALREADY CONVERTED REPORTS
 	}
 	if ( $dowhat[8] eq "y" )
 	{
 		&convert_filtered_reports( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
 		\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
 		\@rankdata, \@rankcolumn, \@reporttempsdata, \@reportcomfortdata,
-		\@reportradiationenteringdata, $stripcheck ); # CONVERT ALREADY FILTERED REPORTS
+		\@reportradiationenteringdata, $stripcheck ); # CONVERTS ALREADY FILTERED REPORTS
 	}
 	if ( $dowhat[9] eq "y" )
 	{
 		&maketable( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
 		\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
 		\@rankdata, \@rankcolumn, \@reporttempsdata,
-		\@reportcomfortdata, \@reportradiationenteringdata, $stripcheck ); # CONVERT TO TABLE ALREADY FILTERED REPORTS
+		\@reportcomfortdata, \@reportradiationenteringdata, $stripcheck ); # CONVERTS TO TABLE ALREADY FILTERED REPORTS
 	}
 
 } # END SUB exec
@@ -9267,15 +9265,15 @@ if ( (@bundlesgroup) and (-e "./scripts/opts_search.pl") )
 	foreach my $el (@bundlesgroup)
 	{
 		my @bundleref = @{$el};
-		#print "I ENTER 1 @bundleref\n";
+
 		foreach my $el (@bundleref)
 		{
 			my @sequence = @{$el};
-			#print "I ENTER 2 @sequence\n";
+
 			foreach my $el (@sequence)
 			{
 				my @block = @{$el};
-				#print "I ENTER 3 @block\n";
+
 
 				if (-e $chanchefile)
 				{
@@ -9298,12 +9296,10 @@ if ( (@bundlesgroup) and (-e "./scripts/opts_search.pl") )
 else
 {  &exec; }
 
-# END OF THE OPTS LAUNCH PROGRAM
+# END OF THE PROGRAM THAT LAUNCHES OPTS.
 ##########################################################################################
 ##########################################################################################
 
-
-### ZZZZ REQUIRE SEARCH PROGRAM. IF PRESENT, REQUIRE.
 
 close(OUTFILE);
 close(TOSHELL);
@@ -9330,16 +9326,15 @@ Sim::OPTS manages parametric esplorations through the use of the ESP-r building 
 
 =head1 DESCRIPTION
 
-OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform. 
+OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.
+
 (Information about ESP-r is available at the web address http://www.esru.strath.ac.uk/Programs/ESP-r.htm.)
 
-OPTS may modify directories and files in your work directory. So it is necessary to examine how it works before attempting to use it.
-
-To install OPTS it is necessary to issue the following command in the shell as a superuser: < cpanm Sim::OPTS >. This way Perl will take care to install all necessary dependencies. After loading the module, which is made possible by the commands < use Sim::OPTS >, only the command < opts > will be available to the user. That command will activate the OPTS functions following the setting specified in a previously prepared OPTS configuration file.
+OPTS may modify directories and files in your work directory. So it is necessary to examine how it works before attempting to use it. To install OPTS it is necessary to issue the following command in the shell as a superuser: < cpanm Sim::OPTS >. This way Perl will take care to install all necessary dependencies. After loading the module, which is made possible by the commands < use Sim::OPTS >, only the command < opts > will be available to the user. That command will activate the OPTS functions following the setting specified in a previously prepared OPTS configuration file.
 
 The command < prepare > would be also present in the capability of the code, but it is not possible to use it, because it has not been updated to the last several versions of OPTS, so it is no more usable at the moment. The command would open a text interface made to facilitate the preparation of OPTS configuration files. Due to this, currently the OPTS configuration files can only be prepared by example.
 
-When it is launched, OPTS will ask for the name of an OPTS configuration file. On that file the instructions for the program will have to be written by the user before launching OPTS. All the activity of preparation to run OPTS will happen in an OPTS configuration file, which has to be applied to an existing ESP-r model.
+When it is launched, OPTS will ask for the name of an OPTS configuration file. On that file the instructions for the program will have to be written by the user before launching OPTS. All the activity of preparation to run OPTS will happen in an OPTS configuration file, which has to point to an existing ESP-r model.
 
 In the module distribution, there is a template file with explanations and an example of an OPTS configuration file.
 
@@ -9347,7 +9342,7 @@ To run OPTS without having it act on files, you should specify the setting < $ex
 
 The OPTS configuration file will make, if asked, OPTS give instruction to ESP-r in order to make it modify a model in several different copies; then, if asked, it will run simulations; then, if asked, it will retrieve the results; then, if asked, it will extract some results and order them in a required manner; then, if asked, will format the so obtained results.
 
-To run OPTS, you may open Perl in a repl. As a repl, you may use the Devel::REPL module. You have to install it yourself, with the shell command < cpanm Devel::REPL >. After it is installed, to launch it, the command < re.pl > has to be given to the shell. Then you may load the Sim:OPTS module from there (< use Sim:OPTS >). Then you should issue the command < opts > from there. When launched, OPTS will ask you to write the name (with path) of the OPTS configuration file to be considered. After that, the activity of OPTS will start and will not stop until completion. As an alternative, you may copy the batch file "opt" into your work directory. It can be found in the "example" folder in this distribution. To lauch the program you then should issue < perl opt >.
+To run OPTS, you may copy the batch file "opt" into your work directory. It can be found in the "example" folder in this distribution. To lauch the program you then should issue < perl opt >. This batch file lauches Perl and loads the Sim:OPTS module (< use Sim:OPTS >), then issues the < opts > command. When launched, OPTS will ask you to write the name (with path) of the OPTS configuration file to be considered. After that, its activity will start and will not stop until completion.
 
 OPTS will make ESP-r perform actions on a certain ESP-r model by copying it several times and morphing each copy. A target ESP-r model must also therefore be present in advance and its name (with path) has to be specified in the OPTS configuration file. The OPTS configuration file will also contain information about your work directory. I usually make OPTS work in a "optsworks" folder in my home folder.
 
