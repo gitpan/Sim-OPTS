@@ -25,7 +25,7 @@ no warnings;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(opts prepare); # our @EXPORT = qw( );
-$VERSION = '0.32_2'; # our $VERSION = '';
+$VERSION = '0.32_3'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 # use Sim::OPTS::prepare; # HERE IS THE FUNCTION 'prepare', a text interface to the function 'opts'.
@@ -170,6 +170,7 @@ sub exec
 			my $caselistfile = "$mypath/$file-caselist.txt";
 			my (@v, @obs, @node, @component, @loopcontrol, @flowcontrol); # THINGS GLOBAL AS REGARDS COUNTER ZONE CYCLES
 			my (@myv, @myobs, @mynode, @mycomponent, @myloopcontrol, @myflowcontrol); # THINGS LOCAL AS REGARDS COUNTER ZONE CYCLES
+			my (@tempv, @tempobs, @tempnode, @tempcomponent, @temploopcontrol, @tempflowcontrol); # THINGS LOCAL AS REGARDS COUNTER ZONE CYCLES
 			my (@dov, @doobs, @donode, @docomponent, @doloopcontrol, @doflowcontrol); # THINGS LOCAL AS REGARDS COUNTER ZONE CYCLES
 			open (CASELIST, ">$caselistfile") or die;
 			
@@ -4216,12 +4217,12 @@ sub constrain_geometry # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY
 		{
 			checkfile($sourceaddress, $targetaddress);
 			read_geometry($to, $sourcefile, $targetfile, $configfile, \@work_letters, $longmenus);
-			read_geo_constraints($to, $fileconfig, $stepsvar, $counterzone, $counterstep, $configaddress, \@v);
+			read_geo_constraints($to, $fileconfig, $stepsvar, $counterzone, $counterstep, $configaddress, \@v, \@tempv);
 		}
 		
 		unless ($to_do eq "justread")
 		{
-			apply_geo_constraints(\@dov, \@vertexletters, \@work_letters, $exeonfiles, $zone_letter);
+			apply_geo_constraints(\@dov, \@vertexletters, \@work_letters, $exeonfiles, $zone_letter, $toshell, $outfile, $configfile, \@tempv);
 		}
 		# print "\@v: " . Dumper(@v) . "\n\n";
 	}
@@ -4261,6 +4262,7 @@ sub read_geometry
 		}
 		$counterlines++;
 	}
+	@dov = @v;
 } # END SUB read_geometry
 
 
@@ -4292,7 +4294,7 @@ sub read_geo_constraints
 	my $configaddress = shift;
 	my $swap = shift;
 	my @myv = @$swap;
-
+	@tempv = @myv;
 	
 	my $x = 0;
 	my $y = 1;
@@ -4301,12 +4303,12 @@ sub read_geo_constraints
 	
 	if (-e $configaddress)
 	{	
-		push (@v, [@myv]); # ;)			
+		push (@v, [@myv]); #
 		eval `cat $configaddress`; # HERE AN EXTERNAL FILE FOR PROPAGATION OF CONSTRAINTS IS EVALUATED.
 		# THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE DIRECTLY 
 		# WRITTEN IN THE CALLING FILE.
-		@dov = @{$v[$#v]}; # ;)
-		shift (@dov); # UGLY
+		@dov = @{$v[$#v]}; #
+		shift (@dov); #
 	}
 } # END SUB read_geo_constraints
 
@@ -4317,7 +4319,7 @@ sub apply_geo_constraints
 	# IT HAS TO BE CALLED WITH: 
 	# apply_geo_constraints(\@v, \@vertexletters, \@work_letters, \$exeonfiles, \$zone_letter);
 	my $swap = shift;
-	my @dov = @$swap;
+	my @v = @$swap;
 	my $swap = shift;
 	my @vertexletters = @$swap;
 	# print "\@vertexletters: " . Dumper(@vertexletters) . "\n\n";
@@ -4332,15 +4334,27 @@ sub apply_geo_constraints
 	my $toshell = shift;
 	my $outfile = shift;
 	my $configfile = shift;
+	my $swap = shift;
+	my @tempv = @$swap;
 	
 	
 	my $countervertex = 0;
 	
 	# print "\@v: " . Dumper(@v) . "\n\n";
-	foreach my $dov (@dov)
+	foreach my $v (@v)
 	{
 		my $vertexletter = $vertexletters[$countervertex];
-		if ( ( @work_letters eq "") or ($vertexletter  ~~ @work_letters) )
+		if 
+		(
+			( 
+				( @work_letters eq "") or ($vertexletter  ~~ @work_letters) 
+			)
+			unless
+			( 
+				( @{$v[$countervertex] ~~ @{$tempv[$countervertex] )
+			)
+		)
+
 		{ 
 			if ($exeonfiles eq "y") 
 			{
@@ -4788,15 +4802,15 @@ sub constrain_controls
 			checkfile($sourceaddress, $targetaddress);
 			read_controls($sourceaddress, $targetaddress, \@letters, \@period_letters);
 			read_control_constraints($to, $fileconfig, $stepsvar, 
-			$counterzone, $counterstep, $configaddress, \@loopcontrol, \@flowcontrol);
+			$counterzone, $counterstep, $configaddress, \@loopcontrol, \@flowcontrol, \@temploopcontrol, \@tempflowcontrol);
 		}
 	}
 	
 	unless ($to_do eq "justread")
 	{
 		print "THAT\n";
-		apply_loopcontrol_changes($exeonfiles, \@new_loopcontrol);
-		apply_flowcontrol_changes($exeonfiles, \@new_flowcontrol);
+		apply_loopcontrol_changes($exeonfiles, \@new_loopcontrol, \@temploopcontrol);
+		apply_flowcontrol_changes($exeonfiles, \@new_flowcontrol, \@tempflowcontrol);
 	}
 	
 } # END SUB constrain_controls.
@@ -4971,6 +4985,10 @@ sub read_control_constraints
 	@loopcontrol = @$swap;
 	my $swap = shift;
 	@flowcontrol = @$swap;
+	my $swap = shift;
+	@temploopcontrol = @$swap;
+	my $swap = shift;
+	@tempflowcontrol = @$swap;
 
 	if (-e $configaddress) # TEST THIS, DDD
 	{	# THIS APPLIES CONSTRAINST, THE FLATTEN THE HIERARCHICAL STRUCTURE OF THE RESULTS,
@@ -5039,10 +5057,11 @@ sub apply_loopcontrol_changes
 	# print OUTFILE "\$exeonfileshere:$exeonfiles\n\n";
 	my $swap = shift;
 	my @new_loop_ctls = @$swap;
-	
+	my $swap = shift;
+	my @temploopcontrol = @$swap;
 	
 	# print OUTFILE "\@new_loop_ctls at \$counterstep $counterstep:" . Dumper(@new_loop_ctls) . "\n\n";
-	my $counter = 0;
+	my $counterloop = 0;
 	
 	foreach my $elm (@new_loop_ctls)
 	{
@@ -5057,11 +5076,14 @@ sub apply_loopcontrol_changes
 		$new_min_cooling_power = $loop[6];
 		$new_heating_setpoint = $loop[7];
 		$new_cooling_setpoint = $loop[8];
-		#print "PRINTONE\n";
-		if ($exeonfiles eq "y") 
+		unless ( @{$new_loop_ctls[$counterloop]} ~~ @{$temploopcontrol[$counterloop]} )
 		{
-			print 
-#########################
+			#print "PRINTONE\n";
+
+			if ($exeonfiles eq "y") 
+			{
+				print 
+	#########################
 `prj -file $to/cfg/$fileconfig -mode script<<YYY
 
 m
@@ -5100,10 +5122,10 @@ y
 YYY
 \n`;
 
-#########################
-		}
-		print TOSHELL 
-#################
+	#########################
+			}
+			print TOSHELL 
+	#################
 "prj -file $to/cfg/$fileconfig -mode script<<YYY
 
 m
@@ -5144,7 +5166,9 @@ y
 -
 YYY
 \n";
-#################
+	#################
+		}
+		$counterloop++;
 	}
 } # END SUB apply_loopcontrol_changes();
 	
@@ -5157,10 +5181,11 @@ sub apply_flowcontrol_changes
 	my $exeonfiles = shift;
 	my $swap = shift;
 	my @new_flowcontrols = @$swap;
-	
+	my $swap = shift;
+	my @tempflowcontrol = @$swap;
 	
 	# print "\@new_flowcontrols at \$counterstep $counterstep:" . Dumper(@new_flowcontrols) . "\n\n";
-	my $counter = 0;
+	my $counterflow = 0;
 	
 	foreach my $elm (@new_flowcontrols)
 	{
@@ -5171,10 +5196,12 @@ sub apply_flowcontrol_changes
 		$new_flow_setpoint = $flow[3];
 		$new_flow_onoff = $flow[4];
 		$new_flow_fraction = $flow[5];
-		if ($exeonfiles eq "y") # if ($exeonfiles eq "y") 
-		{ 
-			print 
-#################################
+		unless ( @{$new_flowcontrols[$counterflow]} ~~ @{$tempflowcontrol[$counterflow]} )
+		{
+			if ($exeonfiles eq "y") # if ($exeonfiles eq "y") 
+			{ 
+				print 
+	#################################
 `prj -file $to/cfg/$fileconfig -mode script<<YYY
 
 m
@@ -5195,11 +5222,11 @@ y
 -
 YYY
 \n`; 
-#################################
-		}
+	#################################
+			}
 
-		print TOSHELL 
-#########################
+			print TOSHELL 
+	#########################
 "prj -file $to/cfg/$fileconfig -mode script<<YYY
 
 m
@@ -5220,7 +5247,9 @@ y
 -
 YYY
 \n";
-#########################
+	#########################
+		}
+		$counterflow++;
 	}
 } # END SUB apply_flowcontrol_changes;
 
@@ -5236,7 +5265,7 @@ YYY
 ##############################################################################
 # BEGINNING OF SECTION DEDICATED TO FUNCTIONS FOR CONSTRAINING OBSTRUCTIONS	
 
-sub constrain_obstructions # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY
+sub constrain_obstructions # IT APPLIES CONSTRAINTS TO OBSTRUCTIONS
 {
 	# THIS CONSTRAINS OBSTRUCTION FILES. IT HAS TO BE CALLED FROM THE MAIN FILE WITH:
 	# constrain_obstruction($to, $fileconfig, $stepsvar, $counterzone, $counterstep, $exeonfiles, \@applytype, \@constrain_obstructions);
@@ -5276,12 +5305,12 @@ sub constrain_obstructions # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY
 		{
 			checkfile($sourceaddress, $targetaddress);
 			read_obstructions($to, $sourceaddress, $targetaddress, $configaddress, \@work_letters, $actonmaterials, $exeonfiles);
-			read_obs_constraints($to, $fileconfig, $stepsvar, $counterzone, $counterstep, $configaddress, $actonmaterials, $exeonfiles); # IT WORKS ON THE VARIABLE @obs, WHICH IS GLOBAL.
+			read_obs_constraints($to, $fileconfig, $stepsvar, $counterzone, $counterstep, $configaddress, $actonmaterials, $exeonfiles, \@tempobs); # IT WORKS ON THE VARIABLE @obs, WHICH IS GLOBAL.
 		}
 		
 		unless ($to_do eq "justread")
 		{
-			apply_obs_constraints(\@doobs, \@obs_letters, \@work_letters, $exeonfiles, $zone_letter, $actonmaterials, $exeonfiles);
+			apply_obs_constraints(\@doobs, \@obs_letters, \@work_letters, $exeonfiles, $zone_letter, $actonmaterials, $exeonfiles, \@tempobs);
 		}
 	}
 } # END SUB constrain_obstructions
@@ -5395,7 +5424,8 @@ sub read_obs_constraints
 	my $configaddress = shift;
 	my $actonmaterials = shift;
 	my $exeonfiles = shift;
-	
+	my $swap = shift;
+	@tempobs = @$swap;
 	
 	my $obs_letter = 13;
 	my $x = 1;
@@ -5439,6 +5469,8 @@ sub apply_obs_constraints
 	#print "ZONE LETTER: $zone_letter\n\n";
 	my $actonmaterials = shift;
 	my $exeonfiles = shift;
+	my $swap = shift;
+	my @tempobs = @$swap;
 	
 	
 	my $counterobs = 0;
@@ -5451,14 +5483,14 @@ sub apply_obs_constraints
 		#print "WORK LETTERS: " . Dumper(@work_letters) . "\n\n";
 		#print "OBS_LETTERS " . Dumper(@obs_letters) . "\n\n";
 		#print "OBS_LETTER " . Dumper($obs_letter) . "\n\n";
-		if ( ( @work_letters eq "") or ($obs_letter  ~~ @work_letters) )
+		if ( ( @work_letters eq "") or ($obs_letter  ~~ @work_letters))
 		{
 			#print "WORK LETTERS IN " . Dumper(@work_letters) . "\n\n";
 			#print "OBS_LETTERS IN " . Dumper(@obs_letters) . "\n\n";
-			my @obs = @{$ob};
-			my $x = $obs[0];
-			my $y = $obs[1];
-			my $z = $obs[2];
+			my @obstr = @{$ob};
+			my $x = $obstr[0];
+			my $y = $obstr[1];
+			my $z = $obstr[2];
 			my $width = $obs[3];
 			my $depth = $obs[4];
 			my $height = $obs[5];
@@ -5468,91 +5500,15 @@ sub apply_obs_constraints
 			my $opacity = $obs[9];
 			my $name = $obs[10];
 			my $material = $obs[11];
+			unless
+			( 
+				( @{$obs[$counterobs]} ~~ @{$tempobs[$counterobs]} ) 
+			)
+
 			if ($exeonfiles eq "y") 
-			{
-				print
-#################################
-`prj -file $to/cfg/$fileconfig -mode script<<YYY
-
-m
-c
-a
-$zone_letter
-h
-a
-$obs_letter
-a
-a
-$x $y $z
-b
-$width $depth $height
-c
-$z_rotation
-d
-$y_rotation
-e # HERE THE DATUM IS STILL UNUSED. WHEN IT WILL, A LINE MUST BE ADDED WITH THE VARIABLE $tilt.
-h
-$opacity
--
--
-c
--
-c
--
--
--
--
-YYY
-\n`; 
-#################################
-			}
-
-			print TOSHELL 
-#########################
-"prj -file $to/cfg/$fileconfig -mode script<<YYY
-
-m
-c
-a
-$zone_letter
-h
-a
-$obs_letter
-a
-a
-$x $y $z
-b
-$width $depth $height
-c
-$z_rotation
-d
-$y_rotation
-e # HERE THE DATUM IS STILL UNUSED. WHEN IT WILL, A LINE MUST BE ADDED WITH THE VARIABLE $tilt.
-h
-$opacity
--
--
-c
--
-c
--
--
--
--
-YYY
-\n";
-#########################
-		}
-			
-		my $obs_letter = $obs_letters[$counterobs];
-		if ($obs_letter  ~~ @work_letters)
-		{
-			if ($actonmaterials eq "y")
-			{			
-				if ($exeonfiles eq "y") 
 				{
 					print
-#########################################
+	#################################
 `prj -file $to/cfg/$fileconfig -mode script<<YYY
 
 m
@@ -5562,9 +5518,18 @@ $zone_letter
 h
 a
 $obs_letter
-g
-$material
--
+a
+a
+$x $y $z
+b
+$width $depth $height
+c
+$z_rotation
+d
+$y_rotation
+e # HERE THE DATUM IS STILL UNUSED. WHEN IT WILL, A LINE MUST BE ADDED WITH THE VARIABLE $tilt.
+h
+$opacity
 -
 -
 c
@@ -5576,10 +5541,82 @@ c
 -
 YYY
 \n`; 
-#########################################
+	#################################
 				}
 
 				print TOSHELL 
+	#########################
+"prj -file $to/cfg/$fileconfig -mode script<<YYY
+
+m
+c
+a
+$zone_letter
+h
+a
+$obs_letter
+a
+a
+$x $y $z
+b
+$width $depth $height
+c
+$z_rotation
+d
+$y_rotation
+e # HERE THE DATUM IS STILL UNUSED. WHEN IT WILL, A LINE MUST BE ADDED WITH THE VARIABLE $tilt.
+h
+$opacity
+-
+-
+c
+-
+c
+-
+-
+-
+-
+YYY
+\n";
+	#########################
+			}
+			
+			my $obs_letter = $obs_letters[$counterobs];
+			if ($obs_letter  ~~ @work_letters)
+			{
+				if ($actonmaterials eq "y")
+				{			
+					if ($exeonfiles eq "y") 
+					{
+						print
+	#########################################
+`prj -file $to/cfg/$fileconfig -mode script<<YYY
+
+m
+c
+a
+$zone_letter
+h
+a
+$obs_letter
+g
+$material
+-
+-
+-
+c
+-
+c
+-
+-
+-
+-
+YYY
+\n`; 
+	#########################################
+					}
+
+					print TOSHELL 
 #################################
 "prj -file $to/cfg/$fileconfig -mode script<<YYY
 
@@ -5604,7 +5641,8 @@ c
 -
 YYY
 \n";
-#################################
+	#################################
+				}
 			}
 		}
 		$counterobs++;
@@ -5613,7 +5651,8 @@ YYY
 
 
 ############################################################## BEGINNING OF GROUP GET AND PIN OBSTRUCTIONS
-sub get_obstructions # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY. TO DO. STILL UNUSED. ZZZ
+sub get_obstructions # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY. TO DO. STILL UNUSED. 
+# NOTE THAT THE SAME FUNCTIONALITIES CAN BE OBTAINED THROUGH APPROPRIATE SETTINGS IN THE OPTS CONFIG FILE.
 {
 	# THIS CONSTRAINS OBSTRUCTION FILES. IT HAS TO BE CALLED FROM THE MAIN FILE WITH:
 	# constrain_obstruction($to, $fileconfig, $stepsvar, $counterzone, $counterstep, $exeonfiles, \@applytype, \@constrain_obstructions);
@@ -6189,11 +6228,12 @@ sub apply_node_changes
 	# print OUTFILE "\$exeonfileshere:$exeonfiles\n\n";
 	my $swap = shift;
 	my @new_nodes = @$swap;
-
+	my $swap = shift;
+	my @tempnodes = @$swap;
+	
 	
 	# print  "\@new_nodes at \$counterstep $counterstep:" . Dumper(@new_nodes) . "\n\n";
-	my $counter = 0;
-	
+	my $counternode = 0;
 	foreach my $elm (@new_nodes)
 	{
 		my @node_ = @{$elm};
@@ -6209,7 +6249,7 @@ sub apply_node_changes
 		
 		# print "\$new_node_letter:$new_node_letter, \$new_fluid:$new_fluid, \$new_type:$new_type, \$new_zone:$new_zone, \$new_height:$new_height, \$new_data_2:$new_data_2, \$new_surface:$new_surface, \$new_cp:$new_cp\n\n";
 		# print "NEW_TYPE: $new_type\n\n";
-		
+		unless ( @{$new_nodes[$counternode] ~~ @{$tempnodes[$counternode] )
 		if ($new_type eq "a" ) # IF NODES ARE INTERNAL
 		{
 			if ($exeonfiles eq "y") 
@@ -6347,6 +6387,7 @@ YYY
 \n";
 #########################
 		}
+		$counternode++;
 	}
 } # END SUB apply_node_changes;
 	
@@ -6359,11 +6400,13 @@ sub apply_component_changes
 	# print OUTFILE "\$exeonfileshere:$exeonfiles\n\n";
 	my $swap = shift;
 	my @new_components = @$swap; # [ $new_component_letter, $new_type, $new_data_1, $new_data_2, $new_data_3, $new_data_4 ] 
+	my $swap = shift;
+	my @tempcomponents = @$swap;
 	
 	
 	# print  "\@new_components at \$counterstep $counterstep:" . Dumper(@new_components) . "\n\n";
 	# my $counter = 0;
-	
+	my $countercomponent = 0;
 	foreach my $elm (@new_components)
 	{
 		my @component_ = @{$elm};
@@ -6375,12 +6418,16 @@ sub apply_component_changes
 		my $new_data_3 = $component_[5];
 		my $new_data_4 = $component_[6];
 		# print  "\@new_components at \$counterstep $counterstep:" . Dumper(@new_components) . "\n\n";
-		if ($new_type eq "k" ) # IF THE COMPONENT IS A GENERIC OPENING
+		
+		unless
+		( @{$new_components[$countercomponents]} ~~ @{$tempcomponents[$countercomponents]} )
 		{
-			if ($exeonfiles eq "y") 
+			if ($new_type eq "k" ) # IF THE COMPONENT IS A GENERIC OPENING
 			{
-				print 
-#################################
+				if ($exeonfiles eq "y") 
+				{
+					print 
+	#################################
 `prj -file $to/cfg/$fileconfig -mode script<<YYY
 
 m
@@ -6404,10 +6451,10 @@ y
 YYY
 \n`;
 
-################################
-			}
-			print TOSHELL 
-#########################
+	################################
+				}
+				print TOSHELL 
+	#########################
 "prj -file $to/cfg/$fileconfig -mode script<<YYY
 
 m
@@ -6430,15 +6477,15 @@ y
 -
 YYY
 \n";
-#########################
-		}
+	#########################
+			}
 		
-		if ($new_type eq "l" ) # IF THE COMPONENT IS A CRACK
-		{
-			if ($exeonfiles eq "y") 
+			if ($new_type eq "l" ) # IF THE COMPONENT IS A CRACK
 			{
-				print 
-#################################
+				if ($exeonfiles eq "y") 
+				{
+					print 
+	#################################
 `prj -file $to/cfg/$fileconfig -mode script<<YYY
 
 m
@@ -6462,10 +6509,10 @@ y
 YYY
 \n`;
 
-################################
-			}
-			print TOSHELL 
-#########################
+	################################
+				}
+				print TOSHELL 
+	#########################
 "prj -file $to/cfg/$fileconfig -mode script<<YYY
 
 m
@@ -6488,15 +6535,15 @@ y
 -
 YYY
 \n";
-#########################
-		}
+	#########################
+			}
 		
-		if ($new_type eq "m" ) # IF THE COMPONENT IS A DOOR
-		{
-			if ($exeonfiles eq "y") 
+			if ($new_type eq "m" ) # IF THE COMPONENT IS A DOOR
 			{
-				print 
-#################################
+				if ($exeonfiles eq "y") 
+				{
+					print 
+	#################################
 `prj -file $to/cfg/$fileconfig -mode script<<YYY
 
 m
@@ -6520,10 +6567,10 @@ y
 YYY
 \n`;
 
-################################
-			}
-			print TOSHELL 
-#########################
+	################################
+				}
+				print TOSHELL 
+	#########################
 "prj -file $to/cfg/$fileconfig -mode script<<YYY
 
 m
@@ -6546,8 +6593,10 @@ y
 -
 YYY
 \n";
-#########################
+	#########################
+			}
 		}
+		$countercomponent++;
 	}
 } # END SUB apply_component_changes;
 
@@ -6612,14 +6661,14 @@ sub constrain_net
 		{
 			read_net($sourceaddress, $targetaddress, \@node_letters, \@component_letters);
 			read_net_constraints
-			($to, $fileconfig, $stepsvar, $counterzone, $counterstep, $configaddress, \@node, \@component); # PLURAL
+			($to, $fileconfig, $stepsvar, $counterzone, $counterstep, $configaddress, \@node, \@component, \@tempnode, \@tempcomponent); # PLURAL
 		}
 	}
 		
 	unless ($to_do eq "justread")
 	{
-		apply_node_changes($exeonfiles, \@donode); #PLURAL
-		apply_component_changes($exeonfiles, \@docomponent);
+		apply_node_changes($exeonfiles, \@donode, \@tempnode); #PLURAL
+		apply_component_changes($exeonfiles, \@docomponent, \@tempcomponent);
 	}
 } # END SUB constrain_net.
 
@@ -6636,6 +6685,10 @@ sub read_net_constraints
 	@node = @$swap; # PLURAL
 	my $swap = shift;
 	@component = @$swap;
+	my $swap = shift;
+	@tempnode = @$swap;
+	my $swap = shift;
+	@tempcomponent = @$swap;
 	
 	
 	unshift (@node, []); # PLURAL
@@ -6908,6 +6961,8 @@ sub propagate_constraints
 ##############################################################################
 ##############################################################################
 # END OF SECTION DEDICATED TO GENERIC FUNCTIONS FOR PROPAGATING CONSTRAINTS
+
+
 
 # END OF THE CONTENT OF THE "opts_morph.pl" FILE.
 #########################################################################################
