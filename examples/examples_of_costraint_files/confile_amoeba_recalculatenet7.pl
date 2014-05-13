@@ -2,10 +2,10 @@
 							
 # TO DO: CHECK THE VICINITY of  windows' centres TO @obstacledata							
 										
-my @centerfront = ( ( $v[0][11][0] + ($v[0][12][0] - $v[0][11][0] ) / 2) , ( $v[0][11][1] + ($v[0][12][1] - $v[0][11][1] ) / 2) , ($v[0][14][2] / 2) );
-my @centereast = ( ( $v[0][15][0] + ($v[0][16][0] - $v[0][15][0] ) / 2) , ( $v[0][15][1] + ($v[0][16][1] - $v[0][15][1] ) / 2) , ($v[0][18][2] / 2) );
-my @centerback = ( ( $v[0][20][0] + ($v[0][19][0] - $v[0][20][0] ) / 2) , ( $v[0][20][1] + ($v[0][19][1] - $v[0][20][1] ) / 2) , ($v[0][22][2] / 2) );
-my @centerwest = ( ( $v[0][24][0] + ($v[0][23][0] - $v[0][24][0] ) / 2) , ( $v[0][24][1] + ($v[0][23][1] - $v[0][24][1] ) / 2) , ($v[0][25][2] / 2) );
+my @centerfront = ( ( $v[11][0] + ($v[12][0] - $v[11][0] ) / 2) , ( $v[11][1] + ($v[12][1] - $v[11][1] ) / 2) , ($v[14][2] / 2) );
+my @centereast = ( ( $v[15][0] + ($v[16][0] - $v[15][0] ) / 2) , ( $v[15][1] + ($v[16][1] - $v[15][1] ) / 2) , ($v[18][2] / 2) );
+my @centerback = ( ( $v[20][0] + ($v[19][0] - $v[20][0] ) / 2) , ( $v[20][1] + ($v[19][1] - $v[20][1] ) / 2) , ($v[22][2] / 2) );
+my @centerwest = ( ( $v[24][0] + ($v[23][0] - $v[24][0] ) / 2) , ( $v[24][1] + ($v[23][1] - $v[24][1] ) / 2) , ($v[25][2] / 2) );
 
 
 push ( @winpoints , [@centerfront] );
@@ -28,14 +28,14 @@ foreach my $winpoint (@winpoints)
 	}
 }
 		
-$windimxfront =  sqrt( ( ($v[0][12][0] - $v[0][11][0]) ** 2) + ( ($v[0][12][1] - $v[0][11][1]) ** 2) ); $windimxfront = sprintf ("%.3f", $windimxfront );
-$windimyfront = ($v[0][14][2] - $v[0][11][2])  ; $windimyfront = sprintf ("%.3f", $windimyfront );
-$windimxback =  sqrt( ( ($v[0][19][0] - $v[0][20][0]) ** 2) + ( ($v[0][19][1] - $v[0][20][1]) ** 2) ) ; $windimxback = sprintf ("%.3f", $windimxback );
-$windimyback = ($v[0][22][2] - $v[0][19][2])  ; $windimyback = sprintf ("%.3f", $windimyback );
+$windimxfront =  sqrt( ( ($v[12][0] - $v[11][0]) ** 2) + ( ($v[12][1] - $v[11][1]) ** 2) ); $windimxfront = sprintf ("%.3f", $windimxfront );
+$windimyfront = ($v[14][2] - $v[11][2])  ; $windimyfront = sprintf ("%.3f", $windimyfront );
+$windimxback =  sqrt( ( ($v[19][0] - $v[20][0]) ** 2) + ( ($v[19][1] - $v[20][1]) ** 2) ) ; $windimxback = sprintf ("%.3f", $windimxback );
+$windimyback = ($v[22][2] - $v[19][2])  ; $windimyback = sprintf ("%.3f", $windimyback );
 $windimxeast =  sqrt( ( ($v[16][0] - $v[15][0]) ** 2) + ( ($v[16][1] - $v[15][1]) ** 2) ) ; $windimxeast = sprintf ("%.3f", $windimxeast );
-$windimyeast = ($v[0][18][2] - $v[0][15][2])  ; $windimxeast = sprintf ("%.3f", $windimxeast );
-$windimxwest =  sqrt( ( ($v[0][23][0] - $v[0][24][0]) ** 2) + ( ($v[0][23][1] - $v[0][24][1]) ** 2) ) ; $windimxwest = sprintf ("%.3f", $windimxwest );
-$windimywest = ($v[0][26][2] - $v[0][23][2])  ; $windimywest = sprintf ("%.3f", $windimywest );
+$windimyeast = ($v[18][2] - $v[15][2])  ; $windimxeast = sprintf ("%.3f", $windimxeast );
+$windimxwest =  sqrt( ( ($v[23][0] - $v[24][0]) ** 2) + ( ($v[23][1] - $v[24][1]) ** 2) ) ; $windimxwest = sprintf ("%.3f", $windimxwest );
+$windimywest = ($v[26][2] - $v[23][2])  ; $windimywest = sprintf ("%.3f", $windimywest );
 
 @windimsfront = ( $windimxfront , $windimyfront ) ; 
 @windimsback = ( $windimxback , $windimyback ) ;

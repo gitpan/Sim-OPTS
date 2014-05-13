@@ -1,12 +1,12 @@
 # THIS MODULE USES THE PERCENTAGE OF WINDOWS CALCULATED IN THE MAIN BLOCK OF CODE: $value_reshape_window
 
 														
-								$x_wall_base =  (  $v[0][2][0] - $v[0][1][0] )  ; # YOU CAN MAKE THIS MORE GENERAL
-								$y_wall_base = (  $v[0][2][1] - $v[0][1][1] )  ; # YOU CAN MAKE THIS MORE GENERAL
-								$z_wall_height =  ( $v[0][5][2] - $v[0][1][2]) ; # YOU CAN MAKE THIS MORE GENERAL
-								$x_base_centre = (( abs( $v[0][2][0] - $v[0][1][0])  / 2 ) +  min( $v[0][2][0], $v[0][1][0] ) ); # YOU CAN MAKE THIS MORE GENERAL
-								$y_base_centre = ( ( abs(  $v[0][2][1] - $v[0][1][1] ) / 2 ) + min( $v[0][2][1], $v[0][1][1] ) ); # YOU CAN MAKE THIS MORE GENERAL
-								$height_centre = ( ( abs( $v[0][5][2] - $v[0][1][2]) / 2 ) +  $v[0][1][2] ); # YOU CAN MAKE THIS MORE GENERAL
+								$x_wall_base =  (  $v[2][0] - $v[1][0] )  ; # YOU CAN MAKE THIS MORE GENERAL
+								$y_wall_base = (  $v[2][1] - $v[1][1] )  ; # YOU CAN MAKE THIS MORE GENERAL
+								$z_wall_height =  ( $v[5][2] - $v[1][2]) ; # YOU CAN MAKE THIS MORE GENERAL
+								$x_base_centre = (( abs( $v[2][0] - $v[1][0])  / 2 ) +  min( $v[2][0], $v[1][0] ) ); # YOU CAN MAKE THIS MORE GENERAL
+								$y_base_centre = ( ( abs(  $v[2][1] - $v[1][1] ) / 2 ) + min( $v[2][1], $v[1][1] ) ); # YOU CAN MAKE THIS MORE GENERAL
+								$height_centre = ( ( abs( $v[5][2] - $v[1][2]) / 2 ) +  $v[1][2] ); # YOU CAN MAKE THIS MORE GENERAL
 								
 								
 								$wall_base = sqrt( ($x_wall_base ** 2) + ($y_wall_base ** 2 ));
@@ -26,18 +26,18 @@
 								$window_y_2 = $y_base_centre + ( $y_window_base_component / 2 );			$window_y_2 = sprintf("%.5f", $window_y_2);								
 								$window_z_1 = $height_centre - ( $window_height / 2 ); 					$window_z_1 = sprintf("%.5f", $window_z_1);
 								$window_z_2 = $height_centre + ( $window_height / 2 );					$window_z_2 = sprintf("%.5f", $window_z_2);				
-								$v[0][11][0] = $window_x_1; 
-								$v[0][14][0] = $window_x_1;
-								$v[0][13][0] = $window_x_2;
-								$v[0][12][0] = $window_x_2;
-								$v[0][11][1] = $window_y_1; 
-								$v[0][14][1] = $window_y_1;
-								$v[0][13][1] = $window_y_2;
-								$v[0][12][1] = $window_y_2;
-								$v[0][11][2] = $window_z_1;
-								$v[0][14][2] = $window_z_2;
-								$v[0][13][2] = $window_z_2;
-								$v[0][12][2] = $window_z_1;
+								$v[11][0] = $window_x_1; 
+								$v[14][0] = $window_x_1;
+								$v[13][0] = $window_x_2;
+								$v[12][0] = $window_x_2;
+								$v[11][1] = $window_y_1; 
+								$v[14][1] = $window_y_1;
+								$v[13][1] = $window_y_2;
+								$v[12][1] = $window_y_2;
+								$v[11][2] = $window_z_1;
+								$v[14][2] = $window_z_2;
+								$v[13][2] = $window_z_2;
+								$v[12][2] = $window_z_1;
 								
 								
 								# END BLOCK

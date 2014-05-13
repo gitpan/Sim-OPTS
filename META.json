@@ -34,6 +34,6 @@
          "requires" : {}
       }
    },
-   "release_status" : "testing",
-   "version" : "0.32_3"
+   "release_status" : "stable",
+   "version" : "0.32"
 }
