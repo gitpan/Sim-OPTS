@@ -2,13 +2,13 @@
 
 
 					
-$x_wall_base =  (  $v[3][0] - $v[2][0] )  ; # YOU CAN MAKE THIS MORE GENERAL
-$y_wall_base = (  $v[3][1] - $v[2][1] )  ; # YOU CAN MAKE THIS MORE GENERAL
-$z_wall_height =  ( $v[6][2] - $v[2][2]) ; # YOU CAN MAKE THIS MORE GENERAL
+$x_wall_base =  (  $v[0][3][0] - $v[0][2][0] )  ; # YOU CAN MAKE THIS MORE GENERAL
+$y_wall_base = (  $v[0][3][1] - $v[0][2][1] )  ; # YOU CAN MAKE THIS MORE GENERAL
+$z_wall_height =  ( $v[0][6][2] - $v[0][2][2]) ; # YOU CAN MAKE THIS MORE GENERAL
 
-$x_base_centre = (( abs( $v[3][0] - $v[2][0])  / 2 ) +  min( $v[3][0], $v[2][0] ) ); # YOU CAN MAKE THIS MORE GENERAL
-$y_base_centre = ( ( abs(  $v[3][1] - $v[2][1] ) / 2 ) + min( $v[3][1], $v[2][1] ) ); # YOU CAN MAKE THIS MORE GENERAL
-$height_centre = ( ( abs( $v[6][2] - $v[2][2]) / 2 ) +  $v[2][2] ); # YOU CAN MAKE THIS MORE GENERAL
+$x_base_centre = (( abs( $v[0][3][0] - $v[0][2][0])  / 2 ) +  min( $v[3][0], $v[2][0] ) ); # YOU CAN MAKE THIS MORE GENERAL
+$y_base_centre = ( ( abs(  $v[0][3][1] - $v[0][2][1] ) / 2 ) + min( $v[3][1], $v[2][1] ) ); # YOU CAN MAKE THIS MORE GENERAL
+$height_centre = ( ( abs( $v[0][6][2] - $v[0][2][2]) / 2 ) +  $v[2][2] ); # YOU CAN MAKE THIS MORE GENERAL
 
 $wall_base = sqrt( ($x_wall_base ** 2) + ($y_wall_base ** 2 ));
 $wall_area = $z_wall_height * $wall_base;
@@ -27,18 +27,18 @@ $window_y_1 = $y_base_centre + ( $y_window_base_component / 2 ); 			$window_y_1 
 $window_y_2 = $y_base_centre - ( $y_window_base_component / 2 );			$window_y_2 = sprintf("%.5f", $window_y_2);								
 $window_z_1 = $height_centre - ( $window_height / 2 ); 					$window_z_1 = sprintf("%.5f", $window_z_1);
 $window_z_2 = $height_centre + ( $window_height / 2 );					$window_z_2 = sprintf("%.5f", $window_z_2);				
-$v[15][0] = $window_x_2; 
-$v[16][0] = $window_x_1;
-$v[17][0] = $window_x_1;
-$v[18][0] = $window_x_2;
-$v[15][1] = $window_y_2; 
-$v[16][1] = $window_y_1;
-$v[17][1] = $window_y_1;
-$v[18][1] = $window_y_2;
-$v[15][2] = $window_z_1;
-$v[16][2] = $window_z_1;
-$v[17][2] = $window_z_2;
-$v[18][2] = $window_z_2;
+$v[0][15][0] = $window_x_2; 
+$v[0][16][0] = $window_x_1;
+$v[0][17][0] = $window_x_1;
+$v[0][18][0] = $window_x_2;
+$v[0][15][1] = $window_y_2; 
+$v[0][16][1] = $window_y_1;
+$v[0][17][1] = $window_y_1;
+$v[0][18][1] = $window_y_2;
+$v[0][15][2] = $window_z_1;
+$v[0][16][2] = $window_z_1;
+$v[0][17][2] = $window_z_2;
+$v[0][18][2] = $window_z_2;
 
 
 # END BLOCK
