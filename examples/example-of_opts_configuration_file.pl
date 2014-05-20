@@ -4,22 +4,22 @@
 #######################################################################################################
 # BELOW FOLLOWS A SECTION TO CONFIGURE BLOCK SEARCH
 $blocksearch = "y"; # say yes of you want to perform a block search optimization. Say "no" if you want to make a brute force optimization.
-$ordercolumn = 10; # FOR SUB GETDATA
-$comparecolumn = 13; # FOR SUB GETDATA
-$number_of_bests = 5;
+$ordercolumn = ""; # FOR SUB GETDATA
+$comparecolumn = ""; # FOR SUB GETDATA
+$number_of_bests = "";
 $parnumber = 10; #number of parameters.
 $wholeresultsfile = "";
 $take_column_inresults = 14; # UNUSED
-$absmax = 1;
-$absmin = 0;
+$absmax = "";
+$absmin = "";
 # $varsnum;
-$chancefile = ""; 
+$chancefile; 
 @varn = (1, 2, 3, 4);
-$reportfile = "/home/luca/optsworks/reportblockopt.txt";
+$reportfile = "";
 $steps = 3;
-@midvalues = (2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2); 
+@midvalues = (2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2); 
 
-@bundlesgroup = ( [ [[4, 2, 2]]]);
+@bundlesgroup = ( [ [[4, 1, 3]]]);
 # my @bundlesgroup = ( [ [[4, 2, 2], [5, 2, 2] [6, 2, 2]]] );
 # END OF THE SECTION TO CONFIGURE BLOCK SEARCH
 #######################################################################################################
@@ -27,13 +27,13 @@ $steps = 3;
 $file = "ame";  # Write here the root model directory.  This will remain unchanged. THIS NOW IS DONE VIA KEYBOARD THROUGH THE EXECUTABLE.
 $filenew = "$file"."_"; # Write here the work model directory.  The program will copy the root model directory into this one.  Afterwards changes may be made to it
 $configfileinsert = ""; # "./erase_first_ams2e.pl";
-@dowhat = ( "n", # 1) Create cases for simulation: morph.
-"n", # 2) simulate
-"n", # 3) retrieve
+@dowhat = ( "y", # 1) Create cases for simulation: morph.
+"y", # 2) simulate
+"y", # 3) retrieve
 "n", # 4) erase res and .fl file as they are created or not
-"n", # 5) report
+"n", # 5) report. OBSOLETE. DON'T USE.
 "y", # 6) merge reports
-"n", # 7) substitute names (convert) in non-filtered reports
+"y", # 7) name variables in non-filtered reports (convert reports)
 "n", # 8) filter already converted reports
 "n", # 9) make table to be plotted in 3D
 "n"); # 10) convert filtered and make-tabled reports
@@ -54,9 +54,9 @@ $outfile = "/home/luca/optsworks/$file-$fileconfig.feedback.txt"; # Write here t
 $toshell = "/home/luca/optsworks/$file-$fileconfig.feedbacktoshell.txt"; # Write here the name of the files in which the output to the shell will be printed in order to check the inner working of the program.  In order to do this, you'll have to mess up with the code to specify what you want to be printed.
 
 @themereports = ([ "loads", "tempsstats"], [ "loads", "tempsstats"]); # possibilities: "loads", "temps" , "comfort", "tempsstats" ######### General themes regarding the simulation.  This piece of information go to compose the result name files.
-@simtitles = ("mar1-apr30", "mar1-apr30" ); # write here the name of the time periods will be taken into account in the simulations.
+@simtitles = ("mar1-apr30"); # write here the name of the time periods will be taken into account in the simulations.
 @reporttitles = ( ["march1-31", "march1-31"], ["april1-30", "april1-30"] ); # THESE ARE THE PERIODS TO BE REPORTED. THERE IS A POINT TO POINT CORRENSPONDENCE WITH @simtitles
-@simdata=(["1 3", "30 4", "20", "1"],["1 3", "30 4", "20", "1"]
+@simdata=(["1 3", "30 4", "20", "1"]
 #, ["1 4", "30 4", "20", "1"]
 ); # Here put the data this way: "starting-month_1 starting-day_1", "ending-month_1 ending-day_1", "start-up-period-duration_1", "time/steps-hour_1", "starting-month_2"starting-day_2", "ending-month_2 ending-day_2", "start-up-period-duration_2", "time/steps-hour_2", ..., "starting-month_n starting-day_n", "ending-month_n ending-day_n", "start-up-period-duration_n", "time/steps-hour_n"
 # THESE ARE THE PERIODS TO BE REPORTED. THERE IS A POINT TO POINT CORRENSPONDENCE WITH @simdata
@@ -77,8 +77,8 @@ $simnetwork = "y"; # "n" id there is no mass/flow network. This information rega
 @varthemes_report = (
 "rotation_zy", "rotation_xy","albedo_terrace", "albedo_side_wall"
 ); ########## Definitions that are going to substitute the variable numbers in the tables. (THIS OPERATION MAY OFTEN BE UNUSED.)
-@varthemes_variations = ([-1, 1], [-1, 1],[-36, 36] , [-30, 30],[-30, 30],[-30, 30],[-30, 30], [-1, 1]); ######### Minimum and maximum values regarding the variables, in the same order above.
-@varthemes_steps = (5, 5, 5, 5, 5);  #########(3, 1, 1, 1, 1, 1);   (7, 5, 5, 5, 5, 3); The number of steps allowed for each variables. In the same order above.
+@varthemes_variations = ([-9, 9], [-6, 6],[-2, 2] , [-30, 30],[-30, 30],[-30, 30],[-30, 30], [-1, 1]); ######### Minimum and maximum values regarding the variables, in the same order above.
+@varthemes_steps = (3, 3);  #########(3, 1, 1, 1, 1, 1);   (7, 5, 5, 5, 5, 3); The number of steps allowed for each variables. In the same order above.
 
 @reporttempsdata = ([$simtitle[0], $simtitle[1]], ["UNUSED"], ["Time", "AmbientdbTmp(degC)", "zonedbT(degC)", "zoneMRT(degC)", "zoneResT(degC)"]); # This is for temperatures.  [$simtitle[0] refers to the first @simtitle, [$simtitle[1] refers to the second @simtitle.  If you have more or less $simtitle(s), you'll have to add or subtract them to this line.  In the last set of square parentheses ("[]") the names of the columns in the report files have to be specified.
 @reportcomfortdata = ([$simtitle[0], $simtitle[1]], ["UNUSED"], ["Time", "zonePMV(-)"]); # This is for comfort.  Here in the last set of square parentheses ("[]") the names of the columns in the report files have to be specified.
@@ -107,11 +107,11 @@ $simnetwork = "y"; # "n" id there is no mass/flow network. This information rega
 
 # $counterstep = 1;
 
-@varnumbers = ( 1, 2 );   # (5, 6, 2, 3, 1, 4); (8, 9, 10, 1, 2, 3, 4, 5, 6, 7);  THESE IS DATUM OF THE GREATEST IMPORTANCE. IT TELLS THE SEQUENCE OF THE CICLES OF TRIES.
+@varnumbers = ( 1, 2 );   # (5, 6, 2, 3, 1, 4); (8, 9, 10, 1, 2, 3, 4, 5, 6, 7);  THESE IS DATUM OF THE GREATEST IMPORTANCE. IT TELLS THE SEQUENCE OF THE CICLES OF TRIALS. IT IS THE LIST OF THE VARIABLES IN PLAY.
 
+@vars = (1, 2, 3, 4);
 
-
-$stepsvar1 = 2; # 5; 7 $stepsvar(n) = numer_of_steps_for_this_variable.  This shoulld always better be an odd number since one number is the central one, the default one supplied;
+$stepsvar1 = 3; # 5; 7 $stepsvar(n) = numer_of_steps_for_this_variable.  This shoulld always better be an odd number since one number is the central one, the default one supplied;
 @applytype1 = ( ["translation", "zone.cfg", "zone.cfg", "a"]); #  @applytype(n) = (["type_of_change", "your_test_file", "file_name_to_which_the_former_will_be_copied_to", "zone_letter"]), 
 $general_variables1 = [
 "y", # $generate(n) eq "n" # (if the models deriving from this runs will not be generating new models) or y (if they will be generating new models).
@@ -126,7 +126,7 @@ $translate1 = [ ["y", #yes_or_no_translate # @applytype111 = (["translation", "z
 
 
 
-$stepsvar2 = 2; # 5; 7 $stepsvar(n) = numer_of_steps_for_this_variable.  This shoulld always better be an odd number since one number is the central one, the default one supplied;
+$stepsvar2 = 3; # 5; 7 $stepsvar(n) = numer_of_steps_for_this_variable.  This shoulld always better be an odd number since one number is the central one, the default one supplied;
 @applytype2 = ( ["translation", "zone.cfg", "zone.cfg", "a"]); #  @applytype(n) = (["type_of_change", "your_test_file", "file_name_to_which_the_former_will_be_copied_to", "zone_letter"]), 
 $general_variables2 = [
 "y", # $generate(n) eq "n" # (if the models deriving from this runs will not be generating new models) or y (if they will be generating new models).
@@ -139,7 +139,7 @@ $translate2 = [ ["y", #yes_or_no_translate # @applytype111 = (["translation", "z
 "" # configuration file for conditions
 ] ];
 
-$stepsvar3 = 2; # 5; 7 $stepsvar(n) = numer_of_steps_for_this_variable.  This shoulld always better be an odd number since one number is the central one, the default one supplied;
+$stepsvar3 = 3; # 5; 7 $stepsvar(n) = numer_of_steps_for_this_variable.  This shoulld always better be an odd number since one number is the central one, the default one supplied;
 @applytype3 = ( ["translation", "zone.cfg", "zone.cfg", "a"]); #  @applytype(n) = (["type_of_change", "your_test_file", "file_name_to_which_the_former_will_be_copied_to", "zone_letter"]), 
 $general_variables3 = [
 "y", # $generate(n) eq "n" # (if the models deriving from this runs will not be generating new models) or y (if they will be generating new models).
@@ -152,10 +152,10 @@ $translate3 = [ ["y", #yes_or_no_translate # @applytype111 = (["translation", "z
 "" # configuration file for conditions
 ] ];
 
-$stepsvar4 = 5; # 5; 7 $stepsvar(n) = numer_of_steps_for_this_variable.  This shoulld always better be an odd number since one number is the central one, the default one supplied;
+$stepsvar4 = 1; # 5; 7 $stepsvar(n) = numer_of_steps_for_this_variable.  This shoulld always better be an odd number since one number is the central one, the default one supplied;
 @applytype4 = ( ["rotation", "zone.cfg", "zone.cfg", "a"]); #  @applytype(n) = (["type_of_change", "your_test_file", "file_name_to_which_the_former_will_be_copied_to", "zone_letter"]), 
 $general_variables4 = [
-"y", # $generate(n) eq "n" # (if the models deriving from this runs will not be generating new models) or y (if they will be generating new models).
+"n", # $generate(n) eq "n" # (if the models deriving from this runs will not be generating new models) or y (if they will be generating new models).
 "n" #if $sequencer eq "y", or "last" (of a sequence) iteration between non-continuous cases wanted.  The first gets appended to the middle(s) and to he last. Otherwise, "n".
 ];
 $rotate4 = [ ["y",  # yes or no rotate # @applytype111 = (["rotation", "zone.geo", "zone.geo", "a"]);
@@ -166,6 +166,8 @@ $rotate4 = [ ["y",  # yes or no rotate # @applytype111 = (["rotation", "zone.geo
 "undef" # configuration file for conditions. UNUSED FOR NOW.
 ] ];
 $recalculateish4 = "n"; # "y" or "n". This way ish is launched just at the end of a whole morphing operation, and not at every suboperations componing it.
+
+1;
 
 
 

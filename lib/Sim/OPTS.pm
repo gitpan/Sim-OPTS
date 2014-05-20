@@ -25,7 +25,7 @@ no warnings;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(opts prepare); # our @EXPORT = qw( );
-$VERSION = '0.32_4'; # our $VERSION = '';
+$VERSION = '0.33_0'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 # use Sim::OPTS::prepare; # HERE IS THE FUNCTION 'prepare', a text interface to the function 'opts'.
@@ -49,10 +49,10 @@ sub even
     return odd ($number - 1);
 }
         
-
+	
 sub opts 
 { 
-	my ( $configfile, $response1);
+	my ( $configfile, $response1, $dumpfile, $simlistfile, $sortmerged);
 
 	sub start
 
@@ -83,7 +83,7 @@ Insert the name of a configuration file (local path):\n";
 	# use Sim::OPTS::format;
 	if (-e "./SIM/OPTS/search.pm")
 	{
-		#use Sim::OPTS::search;
+		; #use Sim::OPTS::search;
 	}
 	
 	use Math::Trig;
@@ -100,158 +100,228 @@ Insert the name of a configuration file (local path):\n";
 -------------------\n";
 	if ($outfile ne "" ) { open( OUTFILE, ">$outfile" ) or die "Can't open $outfile: $!"; }
 	if ($toshell ne "" ) { open( TOSHELL, ">$toshell" ) or die "Can't open $toshell: $!"; }
+	
+	my $counterfn = 0;
+	my $filenew = "$mypath/$file" . "_";
+	#print "FILENAMEOUT: $filename\n";
+	#print "SCALAR @ VARNUMBERS: " . scalar(@varnumbers) . "\n";
+	#print "SCALAR @ VARS: " . scalar(@vars) . "\n";
+	foreach my $el (@vars)
+	{
+		#print "COUNTERFN: " . "$counterfn\n";
+		#print "\$FILENAMEIN: $filename\n";
+		#print "\$vars[\$counterfn]: $vars[$counterfn]\n";
+		$filenew = "$filenew" . "$vars[$counterfn]" . "-" . "0" . "_" ;
+		$counterfn++;
+		#print "DOING \$filenew: $filenew\n\n";
+	}
+	#print "OUT \$filenew: $filenew\n\n";
 
 	#################################################################################
 #################################################################################
-
+#my $filename;
+my $countsweep = 1;
 sub exec
 {
+	my $swap = shift;
+	my @arrayarrived = @$swap;
+	if (@arrayarrived) { @varnumbers = @arrayarrived; }
+	$dumpfile = "$mypath/" . "morphfile-" . "$countsweep";
+	$simlistfile = "$mypath/$file-simlist-$countsweep";
+	
+	open (DUMPFILE, ">>$dumpfile") or die;
 
-	sub morph    # This function generates the test case variables 
-	# and modifies them.
-	# HERE THE VARIABLES ARE ASSIGNED A 
-	# NUMBERED NAME ON THE FLY AT EACH SEARCH ITERATION (PHASE).
-	# THE VARIABLE $countervar COUNTS THE MORPHING PHASE.
-	# THE VARIABLE DESIGNING THE MORHING PHASE IS $stepsvar.
-	# THE VARIABLE $counterzone DOES NOT EXACTLY COUNT A ZONE (IT 
-	# JUST MAY. IT COUNTS A MORPHING PHASE NESTED INTO ANOTHER
-	# ONE: A MORPHING SUB-PHASE.
+sub morph    # This function generates the test case variables 
+# and modifies them.
+# HERE THE VARIABLES ARE ASSIGNED A 
+# NUMBERED NAME ON THE FLY AT EACH SEARCH ITERATION (PHASE).
+# THE VARIABLE $varnumber COUNTS THE MORPHING PHASE.
+# THE VARIABLE DESIGNING THE MORHING PHASE IS $stepsvar.
+# THE VARIABLE $counterzone DOES NOT EXACTLY COUNT A ZONE (IT 
+# JUST MAY. IT COUNTS A MORPHING PHASE NESTED INTO ANOTHER
+# ONE: A MORPHING SUB-PHASE.
+{
+	my $countvar = 0;
+	
+	foreach $varnumber (@varnumbers)
 	{
-		my $swap = shift;
-		my @arrayarrived = @$swap;
-		if (@arrayarrived) { @varnumbers = @arrayarrived; }
-		
-		my $counter_countervar = 0;
-
-		foreach $countervar (@varnumbers)
+		if ( $countvar == $#varnumbers )
 		{
-			$stepsvar = ${ "stepsvar" . "$countervar" };
-			@applytype = @{ "applytype" . "$countervar" };
-			@generic_change = @{ "generic_change" . "$countervar" };
-			$rotate = ${ "rotate" . "$countervar" };
-			$rotatez = ${ "rotatez" . "$countervar" };
-			$general_variables = ${ "general_variables" . "$countervar" };
-			$translate = ${ "translate" . "$countervar" };
-			$translate_surface_simple = ${ "translate_surface_simple" . "$countervar" };
-			$translate_surface = ${ "translate_surface" . "$countervar" };
-			$keep_obstructions = ${ "keep_obstructions" . "$countervar" };
-			$shift_vertexes = ${ "shift_vertexes" . "$countervar" };
-			$construction_reassignment = ${ "construction_reassignment" . "$countervar" };
-			$thickness_change = ${ "thickness_change" . "$countervar" };
-			$recalculateish = ${ "recalculateish" . "$countervar" };
-			@recalculatenet = @{ "recalculatenet" . "$countervar" };
-			$obs_modify = ${ "obs_modify" . "$countervar" };
-			$netcomponentchange = ${ "netcomponentchang" . "$countervar" };
-			$changecontrol = ${ "changecontrol" . "$countervar" };
-			@apply_constraints = @{ "apply_constraints" . "$countervar" }; # NOW SUPERSEDED BY @constrain_geometry
-			$rotate_surface = ${ "rotate_surface" . "$countervar" };
-			@reshape_windows = @{ "reshape_windows" . "$countervar" };
-			@apply_netconstraints = @{ "apply_netconstraints" . "$countervar" };
-			@apply_windowconstraints = @{ "apply_windowconstraints" . "$countervar" };
-			@translate_vertexes = @{ "translate_vertexes" . "$countervar" };
-			$warp = ${ "warp" . "$countervar" };
-			@daylightcalc = @{ "daylightcalc" . "$countervar" };
-			@change_config = @{ "change_config" . "$countervar" };
-			@constrain_geometry = @{ "constrain_geometry" . "$countervar" };
-			@vary_controls = @{ "vary_controls" . "$countervar" };
-			@constrain_controls =  @{ "constrain_controls" . "$countervar" };
-			@constrain_geometry = @{ "constrain_geometry" . "$countervar" };
-			@constrain_obstructions = @{ "constrain_obstructions" . "$countervar" };
-			@get_obstructions = @{ "get_obstructions" . "$countervar" };
-			@pin_obstructions = @{ "pin_obstructions" . "$countervar" };
-			$checkfile = ${ "checkfile" . "$countervar" };
-			@vary_net = @{ "vary_net" . "$countervar" };
-			@constrain_net = @{ "constrain_net" . "$countervar" };
-			@propagate_constraints = @{ "propagate_constraints" . "$countervar" };
-			@change_climate = @{ "change_climate" . "$countervar" };
+			$$general_variables[0] = "n";
+		}
+		
+		print "VARNUMBER: $varnumber\n\n";
+		$stepsvar = ${ "stepsvar" . "$varnumber" };
+		@applytype = @{ "applytype" . "$varnumber" };
+		@generic_change = @{ "generic_change" . "$varnumber" };
+		$rotate = ${ "rotate" . "$varnumber" };
+		$rotatez = ${ "rotatez" . "$varnumber" };
+		$general_variables = ${ "general_variables" . "$varnumber" };
+		$translate = ${ "translate" . "$varnumber" };
+		$translate_surface_simple = ${ "translate_surface_simple" . "$varnumber" };
+		$translate_surface = ${ "translate_surface" . "$varnumber" };
+		$keep_obstructions = ${ "keep_obstructions" . "$varnumber" };
+		$shift_vertexes = ${ "shift_vertexes" . "$varnumber" };
+		$construction_reassignment = ${ "construction_reassignment" . "$varnumber" };
+		$thickness_change = ${ "thickness_change" . "$varnumber" };
+		$recalculateish = ${ "recalculateish" . "$varnumber" };
+		@recalculatenet = @{ "recalculatenet" . "$varnumber" };
+		$obs_modify = ${ "obs_modify" . "$varnumber" };
+		$netcomponentchange = ${ "netcomponentchang" . "$varnumber" };
+		$changecontrol = ${ "changecontrol" . "$varnumber" };
+		@apply_constraints = @{ "apply_constraints" . "$varnumber" }; # NOW SUPERSEDED BY @constrain_geometry
+		$rotate_surface = ${ "rotate_surface" . "$varnumber" };
+		@reshape_windows = @{ "reshape_windows" . "$varnumber" };
+		@apply_netconstraints = @{ "apply_netconstraints" . "$varnumber" };
+		@apply_windowconstraints = @{ "apply_windowconstraints" . "$varnumber" };
+		@translate_vertexes = @{ "translate_vertexes" . "$varnumber" };
+		$warp = ${ "warp" . "$varnumber" };
+		@daylightcalc = @{ "daylightcalc" . "$varnumber" };
+		@change_config = @{ "change_config" . "$varnumber" };
+		@constrain_geometry = @{ "constrain_geometry" . "$varnumber" };
+		@vary_controls = @{ "vary_controls" . "$varnumber" };
+		@constrain_controls =  @{ "constrain_controls" . "$varnumber" };
+		@constrain_geometry = @{ "constrain_geometry" . "$varnumber" };
+		@constrain_obstructions = @{ "constrain_obstructions" . "$varnumber" };
+		@get_obstructions = @{ "get_obstructions" . "$varnumber" };
+		@pin_obstructions = @{ "pin_obstructions" . "$varnumber" };
+		$checkfile = ${ "checkfile" . "$varnumber" };
+		@vary_net = @{ "vary_net" . "$varnumber" };
+		@constrain_net = @{ "constrain_net" . "$varnumber" };
+		@propagate_constraints = @{ "propagate_constraints" . "$varnumber" };
+		@change_climate = @{ "change_climate" . "$varnumber" };
 
-			my @cases_to_sim;
-			my @files_to_convert;
-			my $caselistfile = "$mypath/$file-caselist.txt";
-			my (@v, @obs, @node, @component, @loopcontrol, @flowcontrol); # THINGS GLOBAL AS REGARDS COUNTER ZONE CYCLES
-			my (@myv, @myobs, @mynode, @mycomponent, @myloopcontrol, @myflowcontrol); # THINGS LOCAL AS REGARDS COUNTER ZONE CYCLES
-			my (@tempv, @tempobs, @tempnode, @tempcomponent, @temploopcontrol, @tempflowcontrol); # THINGS LOCAL AS REGARDS COUNTER ZONE CYCLES
-			my (@dov, @doobs, @donode, @docomponent, @doloopcontrol, @doflowcontrol); # THINGS LOCAL AS REGARDS COUNTER ZONE CYCLES
-			open (CASELIST, ">$caselistfile") or die;
-			
-			if ( ( $counter_countervar == $#varnumbers ) and ($$general_variables[0] eq "y") )
-			{
-				$$general_variables[0] = "n";
-			} # THIS TELLS THAT IF THE SEARCH IS ENDING (LAST SUBSEARCH CYCLE) GENERATION OF CASES HAS TO BE TURNED OFF
-			
-			my $generate  = $$general_variables[0];
-			my $sequencer = $$general_variables[1];
-			my $dffile = "df-$file.txt";
+		my @cases_to_sim;
+		my @files_to_convert;
+		my $caselistfile = "$mypath/$file-caselist.txt";
+		my (@v, @obs, @node, @component, @loopcontrol, @flowcontrol); # THINGS GLOBAL AS REGARDS COUNTER ZONE CYCLES
+		my (@myv, @myobs, @mynode, @mycomponent, @myloopcontrol, @myflowcontrol); # THINGS LOCAL AS REGARDS COUNTER ZONE CYCLES
+		my (@tempv, @tempobs, @tempnode, @tempcomponent, @temploopcontrol, @tempflowcontrol); # THINGS LOCAL AS REGARDS COUNTER ZONE CYCLES
+		my (@dov, @doobs, @donode, @docomponent, @doloopcontrol, @doflowcontrol); # THINGS LOCAL AS REGARDS COUNTER ZONE CYCLES
+		open (CASELIST, ">$caselistfile") or die;
+		
+		if ( ( $countvar == $#varnumbers ) and ($$general_variables[0] eq "y") )
+		{
+			$$general_variables[0] = "n";
+		} # THIS TELLS THAT IF THE SEARCH IS ENDING (LAST SUBSEARCH CYCLE) GENERATION OF CASES HAS TO BE TURNED OFF
+		
+		my $generate  = $$general_variables[0];
+		my $sequencer = $$general_variables[1];
+		my $dffile = "df-$file.txt";
 
-			if ( $counter_countervar == 0 )
+		if ( $countvar == 0 )
+		{
+			if ($exeonfiles eq "y") { print `cp -r $mypath/$file $filenew`; }
+			print TOSHELL "cp -r $mypath/$file $filenew\n\n";
+		}
+		if ( ( $sequencer eq "n" ) and not( $countvar == 0 ) )
+		{
+			my @files_to_convert = grep -d, <$mypath/$file*£>;
+			foreach $file_to_convert (@files_to_convert)
 			{
-				if ($exeonfiles eq "y") { print `cp -r $mypath/$file $mypath/$filenew`; }
-				print TOSHELL "cp -r $mypath/$file $mypath/$filenew\n\n";
-			}
-			if ( ( $sequencer eq "n" ) and not( $counter_countervar == 0 ) )
-			{
-				my @files_to_convert = grep -d, <$mypath/$file*£>;
-				foreach $file_to_convert (@files_to_convert)
+				$file_converted = "$file_to_convert" . "_";
+				unless (-e $file_converted)
 				{
-					$file_converted = "$file_to_convert" . "_";
 					if ($exeonfiles eq "y") { print `mv $file_to_convert $file_converted\n`; }
 					print TOSHELL "mv $file_to_convert $file_converted\n\n";
 				}
 			}
-			#eval `cat $configfileinsert`;
-			
-			@cases_to_sim = grep -d, <$mypath/$file*_>;
-			foreach $case_to_sim (@cases_to_sim)
+		}
+		#eval `cat $configfileinsert`;
+
+		@cases_to_sim = grep -d, <$mypath/$file*_>;
+		print "DUMP CASES TO SIM: " . Dumper(@cases_to_sim) . "\n";
+		foreach $case_to_sim (@cases_to_sim)
+		{
+			print "\$case_to_sim: $case_to_sim\n";
+			$counterstep = 1;
+		
+			while ( $counterstep <= $stepsvar )
 			{
-				$counterstep = 1;
-				while ( $counterstep <= $stepsvar )
+				my $from = "$case_to_sim";
+				my $almost_to = $from;
+				$almost_to =~ s/$varnumber-\d+/$varnumber-$counterstep/ ;
+				print "\$varnumber:$varnumber, \$counterstep:$counterstep, \$stepsvar: $stepsvar, \$from: $from, \$almost_to: $almost_to\n";
+				#print "DECIDING: \$varnumber-\$counterstep: $varnumber-$counterstep\n";
+				if (     ( $generate eq "n" )
+					 and ( ( $sequencer eq "y" ) or ( $sequencer eq "last" ) ) )
 				{
-					my $from = "$case_to_sim";
-					if (     ( $generate eq "n" )
-						 and ( ( $sequencer eq "y" ) or ( $sequencer eq "last" ) ) )
+					if ( $almost_to =~ m/§$/ ) { $to = "$almost_to" ; }
+					else
 					{
-						$to = "$case_to_sim$countervar-$counterstep§";
-					} elsif ( ( $generate eq "y" ) and ( $sequencer eq "n" ) )
-					{
-						$to = "$case_to_sim$countervar-$counterstep" . "_";
-						if ( $counterstep == $stepsvar )
-						{
-							if ($exeonfiles eq "y") { print `chmod -R 777 $from\n`; }
-							print TOSHELL "chmod -R 777 $from\n\n";
-						}
-					} elsif ( ( $generate eq "y" ) and ( $sequencer eq "y" ) )
-					{
-						$to = "$case_to_sim$countervar-$counterstep" . "£";
-					} elsif ( ( $generate eq "y" ) and ( $sequencer eq "last" ) )
-					{
-						$to = "$case_to_sim$countervar-$counterstep" . "£";
-						if ( $counterstep == $stepsvar )
-						{
-							if ($exeonfiles eq "y") { print `chmod -R 777 $from\n`; }
-							print TOSHELL "chmod -R 777 $from\n\n";
-						}
-					} elsif ( ( $generate eq "n" ) and ( $sequencer eq "n" ) )
-					{
-						$to = "$case_to_sim$countervar-$counterstep";
+						#$to = "$case_to_sim$varnumber-$counterstep§";
+						$to = "$almost_to" . "§";
 					}
+				} 
+				elsif ( ( $generate eq "y" ) and ( $sequencer eq "n" ) )
+				{
+					if ( $almost_to =~ m/_$/ ) { $to = "$almost_to" ; }
+					else
+					{
+						#$to = "$case_to_sim$varnumber-$counterstep" . "_";
+						$to = "$almost_to" . "_";
+						#if ( $counterstep == $stepsvar )
+						#{
+						#	if ($exeonfiles eq "y") { print `chmod -R 777 $from\n`; }
+						#	print TOSHELL "chmod -R 777 $from\n\n";
+						#}
+					}
+				} 
+				elsif ( ( $generate eq "y" ) and ( $sequencer eq "y" ) )
+				{
+					#$to = "$case_to_sim$varnumber-$counterstep" . "£";
+					$to = "$almost_to" . "£";
+				} 
+				elsif ( ( $generate eq "y" ) and ( $sequencer eq "last" ) )
+				{
+					if ( $almost_to =~ m/£$/ ) { $to = "$almost_to" ; }
+					else
+					{
+						#$to = "$case_to_sim$varnumber-$counterstep" . "£";
+						$to = "$almost_to" . "£";
+						#if ( $counterstep == $stepsvar )
+						#{
+						#	if ($exeonfiles eq "y") { print `chmod -R 777 $from\n`; }
+						#	print TOSHELL "chmod -R 777 $from\n\n";
+						#}
+					}
+				} 
+				elsif ( ( $generate eq "n" ) and ( $sequencer eq "n" ) )
+				{
+					 $almost_to =~ s/[§|_|£]$// ;
+					#$to = "$case_to_sim$varnumber-$counterstep";
+					$to = "$almost_to";
+				}
+
+				print "TO: $to\n";
+				if ($countvar == $#varnumbers)
+				{
+					print DUMPFILE "$to\n";
+				}
+				
+				unless (-e $something)
+				{
 					if (     ( $generate eq "y" )
 						 and ( $counterstep == $stepsvar )
 						 and ( ( $sequencer eq "n" ) or ( $sequencer eq "last" ) ) )
 					{
 						if ($exeonfiles eq "y") { print `mv $from $to\n`; }
 						print TOSHELL "mv $from $to\n\n";
-						if ($exeonfiles eq "y") { print `chmod -R 777 $to\n`; }
-						print TOSHELL "chmod -R 777 $to\n\n";
+						#if ($exeonfiles eq "y") { print `chmod -R 777 $to\n`; }
+						#print TOSHELL "chmod -R 777 $to\n\n";
 					} else
 					{
 						if ($exeonfiles eq "y") { print `cp -R $from $to\n`; }
 						print TOSHELL "cp -R $from $to\n\n";
-						if ($exeonfiles eq "y") { print `chmod -R 777 $to\n`; }
-						print TOSHELL "chmod -R 777 $to\n\n";
+						#if ($exeonfiles eq "y") { print `chmod -R 777 $to\n`; }
+						#print TOSHELL "chmod -R 777 $to\n\n";
 					}
-					$counterzone = 0;
+				}
+				$counterzone = 0;
+				unless (-e $somethingZZZ)###ZZZ
+				{	
 					foreach my $zone (@applytype)
-					{
+					{#DDD1
 						my $modification_type = $applytype[$counterzone][0];
 						if ( ( $applytype[$counterzone][1] ne $applytype[$counterzone][2] )
 							 and ( $modification_type ne "changeconfig" ) )
@@ -291,7 +361,7 @@ sub exec
 						
 						
 						print CASELIST "$to\n";
-
+						
 						
 						
 						#########################################################################################
@@ -6976,11 +7046,11 @@ sub propagate_constraints
 						# WHY $BRING_CONSTRUCTION_BACK DOES NOT WORK IF THESE TWO VARIABLES ARE PRIVATE?
 						my $yes_or_no_keep_some_obstructions = "$$keep_obstructions[$counterzone][0]";    
 						# WHY?
-
+						
 						my $countercycles_transl_surfs = 0;				
 						
 						if ( $stepsvar > 1)
-						{
+						{	
 							sub dothings
 							{	# THIS CONTAINS FUNCTIONS THAT APPLY CONSTRAINTS AND UPDATE CALCULATIONS.							
 								#if ( $get_obstructions[$counterzone][0] eq "y" )
@@ -7223,24 +7293,26 @@ sub propagate_constraints
 							}
 						}
 						$counterzone++;
-					}
-					$counterstep++ ; 
+					}#DDD1
 				}
+				$counterstep++ ; 
 			}
-			$counter_countervar++;
 		}
-		my @files_to_clean = grep -d, <$mypath/$file*_>;
-		foreach my $file_to_clean (@files_to_clean)
-		{
-			if ($exeonfiles eq "y") { `rm -rf $file_to_clean`; }
-			print TOSHELL
-			  "rm -rf $file_to_clean\n";
-		}
-		close CASELIST;
-	}    # END SUB morph
-	
-	
-	
+		$countvar++;
+	}
+	close DUMPFILE;
+	my @files_to_clean = grep -d, <$mypath/$file*_>;
+	foreach my $file_to_clean (@files_to_clean)
+	{
+		if ($exeonfiles eq "y") { `rm -rf $file_to_clean`; }
+		print TOSHELL
+		  "rm -rf $file_to_clean\n";
+	}
+	close CASELIST;
+}    # END SUB morph
+##############################################################################
+##############################################################################
+##############################################################################	
 	
 	
 	
@@ -7281,15 +7353,25 @@ sub sim    # This function launch the simulations in ESP-r
 	my @retrievedata = @$swap;
 
 	my $countersimmax = ( ( $#simdata + 1 ) / 4 );
-	@dirs_to_simulate = grep -d, <$mypath/$filenew*>;
-	my $countersim;
+	open(DUMPFILE, $dumpfile) or die "Can't open  $dumpfile $!";
+	#@dirs_to_simulate = grep -d, <$mypath/$filenew*>;
+	@dirs_to_simulate = <DUMPFILE>;
+	close DUMPFILE;
+	print "\$dumpfile: $dumpfile. \@dirs_to_simulate: " . Dumper(@dirs_to_simulate) . "\n";
 	my @ress;
-	my $simlistfile = "$mypath/$file-simlist.txt";
-	open (SIMLIST, ">>$simlistfile") or die;
+	my @flfs;
+	
+	open (SIMLIST, ">$simlistfile") or die;
+	
+	#foreach my $dir_to_simulate (@dirs_to_simulate)
+	#{
+	#	print "\$dir_to_simulate: $dir_to_simulate";
+	#}
 	
 	my $countdir = 0;
 	foreach my $dir_to_simulate (@dirs_to_simulate)
 	{
+		chomp($dir_to_simulate);
 		my $countersim = 0;	
 		foreach my $date_to_sim (@simtitles)
 		{
@@ -7300,14 +7382,15 @@ sub sim    # This function launch the simulations in ESP-r
 			{
 				my $resfile = "$dir_to_simulate-$date_to_sim.res";
 				my $flfile = "$dir_to_simulate-$date_to_sim.fl";
-				push (@ress, $resfile); 		
+				push (@ress, $resfile); 
+				push (@flfs, $flfile);
 					
 				unless ( -e $resfile )
 				{
 					if ( $simnetwork eq "n" )
 					{
 						if ($exeonfiles eq "y") 
-						{ 
+						{
 							print `bps -file $dir_to_simulate/cfg/$fileconfig -mode script<<XXX
 
 c
@@ -7357,13 +7440,13 @@ XXX
 
 ";
 						print SIMLIST "$resfile\n";
+						#print "ONE, $resfile\n";
 					}
-						
-						
+											
 					if ( $simnetwork eq "y" )
 					{
 						if ($exeonfiles eq "y") 
-						{ 
+						{
 							print `bps -file $dir_to_simulate/cfg/$fileconfig -mode script<<XXX
 
 c
@@ -7415,387 +7498,16 @@ XXX
 
 ";
 					print SIMLIST "$resfile\n";
+					print "TWO, $resfile\n";
 					}						
 				}			
-					
-					
-				########## BEGINNING OF SUBS RETRIEVE
-				
-				sub retrieve_temperatures_results 
-				{
-					my $resfile = shift;
-					my $swap = shift;
-					my @retrievedatatemps = @$swap;
-					my $reporttitle = shift;
-					my $stripcheck = shift;
-					my $existingfile = "$resfile-temperatures.grt";
-					if (-e $existingfile) { print `chmod 777 $existingfile\n`;} 
-					print TOSHELL "chmod 777 $existingfile\n";
-					#if (-e $existingfile) { print `rm $existingfile\n` ;}
-					#print TOSHELL "rm $existingfile\n";
-					#if ($exeonfiles eq "y") { print `rm -f $existingfile*par\n`; }
-					#print TOSHELL "rm -f $existingfile*par\n";
-						
-					if ($exeonfiles eq "y")
-					{ 
-						print `res -file $resfile -mode script<<YYY
-
-3
-$retrievedatatemps[0]
-$retrievedatatemps[1]
-$retrievedatatemps[2]
-c
-g
-a
-a
-b
-a
-b
-e
-b
-f
->
-a
-$resfile-$reporttitle-temperatures.grt
-Simulation results $resfile-$reporttitle-temperatures
-!
--
--
--
--
--
--
--
--
-YYY
-
-`;
-					}
-					print TOSHELL
-					"res -file $resfile -mode script<<YYY
-
-3
-$retrievedatatemps[0]
-$retrievedatatemps[1]
-$retrievedatatemps[2]
-c
-g
-a
-a
-b
-a
-b
-e
-b
-f
->
-a
-$resfile-$reporttitle-temperatures.grt
-Simulation results $resfile-$reporttitle-temperatures
-!
--
--
--
--
--
--
--
-YYY
-
-";
-
-				#if (-e $existingfile) { print `rm -f $existingfile*par`;}
-				#print TOSHELL "rm -f $existingfile*par\n";
-				}
-
-				sub retrieve_comfort_results
-				{
-					my $resfile = shift;
-					my $swap = shift;
-					my @retrievedatacomf = @$swap;
-					my $reporttitle = shift;
-					my $stripcheck = shift;
-					my $existingfile = "$resfile-comfort.grt"; 
-					if (-e $existingfile) { print `chmod 777 $existingfile\n`;} 
-					print TOSHELL "chmod 777 $existingfile\n";
-					#if (-e $existingfile) { print `rm $existingfile\n` ;}
-					#print TOSHELL "rm $existingfile\n";
-					#if ($exeonfiles eq "y") { print `rm -f $existingfile*par\n`;}
-					#print TOSHELL "rm -f $existingfile*par\n";
-					if ($exeonfiles eq "y") 
-					{ 
-						print `res -file $resfile -mode script<<ZZZ
-
-3
-$retrievedatacomf[0]
-$retrievedatacomf[1]
-$retrievedatacomf[2]
-c
-g
-c
-a
-
-b
-
-
-a
->
-a
-$resfile-$reporttitle-comfort.grt
-Simulation results $resfile-$reporttitle-comfort
-!
--
--
--
--
--
--
--
--
-ZZZ
-
-`;
-					}
-					print TOSHELL
-					"res -file $resfile -mode script<<ZZZ
-
-3
-$retrievedatacomf[0]
-$retrievedatacomf[1]
-$retrievedatacomf[2]
-c
-g
-c
-a
-
-b
-
-
-a
->
-a
-$resfile-$reporttitle-comfort.grt
-Simulation results $resfile-$reporttitle-comfort
-!
--
--
--
--
--
--
--
--
-ZZZ
-
-";
-				#if (-e $existingfile) { `rm -f $existingfile*par\n`;}
-				#print TOSHELL "rm -f $existingfile*par\n";
-				}
-
-				sub retrieve_loads_results
-				{
-					my $resfile = shift;
-					my $swap = shift;
-					my @retrievedataloads = @$swap;
-					my $reporttitle = shift;
-					my $stripcheck = shift;
-					my $existingfile = "$resfile-loads.grt";
-					if (-e $existingfile) { `chmod 777 $existingfile\n`;}
-					print TOSHELL "chmod 777 $existingfile\n";
-					#if (-e $existingfile) { `rm $existingfile\n` ;}
-					#print TOSHELL "rm $existingfile\n";
-
-					if ($exeonfiles eq "y") 
-					{ 
-						print `res -file $resfile -mode script<<TTT
-
-3
-$retrievedataloads[0]
-$retrievedataloads[1]
-$retrievedataloads[2]
-d
->
-a
-$resfile-$reporttitle-loads.grt
-Simulation results $resfile-$reporttitle-loads
-l
-a
-
--
--
--
--
--
--
--
-TTT
-`;
-					}
-					print TOSHELL
-					"res -file $resfile -mode script<<TTT
-
-3
-$retrievedataloads[0]
-$retrievedataloads[1]
-$retrievedataloads[2]
-d
->
-a
-$resfile-$reporttitle-loads.grt
-Simulation results $resfile-$reporttitle-loads
-l
-a
-
--
--
--
--
--
--
--
-TTT
-
-";
-					print RETRIEVELIST "$resfile-$reporttitle-loads.grt ";
-					
-					if ($stripcheck)
-					{
-						open (CHECKDATUM, "$resfile-$reporttitle-loads.grt");
-						open (STRIPPED, ">$resfile-$reporttitle-loads.grt-");
-						my @lines = <CHECKDATUM>;
-						foreach my $line (@lines)
-						{
-							$line =~ s/^\s+//;
-							@lineelms = split(/\s+|,/, $line);
-							if ($lineelms[0] eq $stripcheck) 
-							{
-								print STRIPPED "$line";
-							}
-						}
-						close STRIPPED;
-						close CHECKDATUM;
-					}
-				}
-
-				sub retrieve_temps_stats
-				{
-					my $resfile = shift;
-					my $swap = shift;
-					my @retrievedatatempsstats = @$swap;
-					my $reporttitle = shift;
-					my $stripcheck = shift;
-					my $existingfile = "$resfile-tempsstats.grt";
-					if (-e $existingfile) { `chmod 777 $existingfile\n`; }
-					print TOSHELL "chmod 777 $existingfile\n";
-					#if (-e $existingfile) { `rm $existingfile\n` ;}
-					#print TOSHELL "rm $existingfile\n";
-					#if (-e $existingfile) { `rm -f $existingfile*par\n`;}
-					#print TOSHELL "rm -f $existingfile*par\n";
-					if ($exeonfiles eq "y") 
-					{ 
-						print `res -file $resfile -mode script<<TTT
-
-3
-$retrievedatatempsstats[0]
-$retrievedatatempsstats[1]
-$retrievedatatempsstats[2]
-d
->
-a
-$resfile-$reporttitle-tempsstats.grt
-Simulation results $resfile-$reporttitle-tempsstats.grt
-m
--
--
--
--
--
-TTT
-`;
-					}
-					print TOSHELL
-					"res -file $resfile -mode script<<TTT
-
-3
-$retrievedatatempsstats[0]
-$retrievedatatempsstats[1]
-$retrievedatatempsstats[2]
-d
->
-a
-$resfile-$reporttitle-tempsstats.grt
-Simulation results $resfile-$reporttitle-tempsstats.grt
-m
--
--
--
--
--
-TTT
-
-";
-					#if ($exeonfiles eq "y") { print `rm -f $existingfile*par\n`;}
-					#print TOSHELL "rm -f $existingfile*par\n";
-					print RETRIEVELIST "$resfile-$reporttitle-tempsstats.grt ";
-					
-					if ($stripcheck)
-					{
-						open (CHECKDATUM, "$resfile-$reporttitle-tempsstats.grt");
-						open (STRIPPED, ">$resfile-$reporttitle-tempsstats.grt-");
-						my @lines = <CHECKDATUM>;
-						foreach my $line (@lines)
-						{
-							$line =~ s/^\s+//;
-							@lineelms = split(/\s+|,/, $line);
-							if ($lineelms[0] eq $stripcheck) 
-							{
-								print STRIPPED "$line";
-							}
-						}
-						close STRIPPED;
-						close CHECKDATUM;
-					}
-				}
-
-	
-				########## END OF SUBS RETRIEVE
-				my $retrievelistfile = "$mypath/$file-retrievelist.txt";
-				open (RETRIEVELIST, ">>$retrievelistfile") or die;
-				if ($dowhat[2] eq "y")
-				{
-					my $themereportref = $themereports[$countersim];
-					my @themereports = @{$themereportref};
-					my $reporttitlesref = $reporttitles[$countersim];
-					my @reporttitles = @{$reporttitlesref};
-					my $retrievedatarefsdeep = $retrievedata[$countersim];
-					my @retrievedatarefs = @{$retrievedatarefsdeep};
-					my $stripcheckref = $stripchecks[$countersim];
-					my @stripckecks = @{$stripcheckref};
-			
-					my $countreport = 0;
-					foreach my $reporttitle (@reporttitles)
-					{
-						my $themereport = $themereports[$countreport];
-						my $retrieveref = $retrievedatarefs[$countreport];
-						my $stripcheck = $stripckecks[$countreport];
-						my @retrievedata = @{$retrieveref};
-						if ( $themereport eq "temps" ) { &retrieve_temperatures_results($resfile, \@retrievedata, $reporttitle, $stripcheck); }
-						if ( $themereport eq "comfort"  ) { &retrieve_comfort_results($resfile, \@retrievedata, $reporttitle, $stripcheck); }
-						if ( $themereport eq "loads" ) 	{ &retrieve_loads_results($resfile, \@retrievedata, $reporttitle, $stripcheck); }
-						if ( $themereport eq "tempsstats"  ) { &retrieve_temps_stats($resfile, \@retrievedata, $reporttitle, $stripcheck); }
-						$countreport++;
-					}
-					print RETRIEVELIST "\n";
-				}
 			}
 			$countersim++;
 		}
 		$countdir++;
 	}
-	print `rm -f ./*par`;
-	print TOSHELL "rm -f ./*par\n";
+	
 	close SIMLIST;
-	close RETRIEVELIST;
 }    # END SUB sim;
 				
 				
@@ -7806,16 +7518,12 @@ TTT
 	
 	
 	
-	##############################################################################
+# BEGINNING OF SUB RETRIEVE	
 ##############################################################################
 ##############################################################################
-
-# HERE FOLLOWES THE CONTENT OF THE "report.pm" FILE, WHICH HAS BEEN MERGED HERE
-# TO AVOID COMPLICATION WITH THE PERL MODULE INSTALLATION.
-## HERE THE "report", "retrieve" and "merge" FUNCTIONS FOLLOW, CALLED FROM THE MAIN PROGRAM FILE.
-
-sub report # This function retrieves the results of interest from the text file created by the "retrieve" function
-{
+##############################################################################
+sub retrieve
+{	
 	my $to = shift;
 	my $mypath = shift;
 	my $file = shift;
@@ -7836,184 +7544,420 @@ sub report # This function retrieves the results of interest from the text file 
 	my @reporttitles = @$swap;
 	my $swap = shift;
 	my @retrievedata = @$swap;
-	my $toshell = shift;
-	my $outfile = shift;
-	my $configfile = shift;
-	my $swap = shift;
-	my @rankdata = @$swap;
-	my $swap = shift;
-	my @rankcolumn = @$swap;
-	my $swap = shift;
-	my @reporttempsdata = @$swap;
-	my $swap = shift;
-	my @reportcomfortdata = @$swap;
-	my $swap = shift;
-	my @reportradiationenteringdata = @$swap;
-	my $stripcheck = shift;
+				
+	sub retrieve_temperatures_results 
+	{
+		my $resfile = shift;
+		my $swap = shift;
+		my @retrievedatatemps = @$swap;
+		my $reporttitle = shift;
+		my $stripcheck = shift;
+		my $theme = shift;
+		#my $existingfile = "$resfile-$theme.grt";
+		#if (-e $existingfile) { print `chmod 777 $existingfile\n`;} 
+		#print TOSHELL "chmod 777 $existingfile\n";
+		#if (-e $existingfile) { print `rm $existingfile\n` ;}
+		#print TOSHELL "rm $existingfile\n";
+		#if ($exeonfiles eq "y") { print `rm -f $existingfile*par\n`; }
+		#print TOSHELL "rm -f $existingfile*par\n";
+			
+		if ($exeonfiles eq "y")
+		{ 
+			print `res -file $resfile -mode script<<YYY
+
+3
+$retrievedatatemps[0]
+$retrievedatatemps[1]
+$retrievedatatemps[2]
+c
+g
+a
+a
+b
+a
+b
+e
+b
+f
+>
+a
+$resfile-$reporttitle-$theme.grt
+Simulation results $resfile-$reporttitle-$theme
+!
+-
+-
+-
+-
+-
+-
+-
+-
+YYY
+
+`;
+		}
+		print TOSHELL
+		"res -file $resfile -mode script<<YYY
+
+3
+$retrievedatatemps[0]
+$retrievedatatemps[1]
+$retrievedatatemps[2]
+c
+g
+a
+a
+b
+a
+b
+e
+b
+f
+>
+a
+$resfile-$reporttitle-$theme.grt
+Simulation results $resfile-$reporttitle-$theme
+!
+-
+-
+-
+-
+-
+-
+-
+YYY
+
+";
+
+	#if (-e $existingfile) { print `rm -f $existingfile*par`;}
+	#print TOSHELL "rm -f $existingfile*par\n";
+	}
+
+	sub retrieve_comfort_results
+	{
+		my $resfile = shift;
+		my $swap = shift;
+		my @retrievedatacomf = @$swap;
+		my $reporttitle = shift;
+		my $stripcheck = shift;
+		my $theme = shift;
+		#my $existingfile = "$resfile-$theme.grt"; 
+		#if (-e $existingfile) { print `chmod 777 $existingfile\n`;} 
+		#print TOSHELL "chmod 777 $existingfile\n";
+		#if (-e $existingfile) { print `rm $existingfile\n` ;}
+		#print TOSHELL "rm $existingfile\n";
+		#if ($exeonfiles eq "y") { print `rm -f $existingfile*par\n`;}
+		#print TOSHELL "rm -f $existingfile*par\n";
+		if ($exeonfiles eq "y") 
+		{ 
+			print `res -file $resfile -mode script<<ZZZ
+
+3
+$retrievedatacomf[0]
+$retrievedatacomf[1]
+$retrievedatacomf[2]
+c
+g
+c
+a
+
+b
+
+
+a
+>
+a
+$resfile-$reporttitle-$theme.grt
+Simulation results $resfile-$reporttitle-$theme
+!
+-
+-
+-
+-
+-
+-
+-
+-
+ZZZ
+
+`;
+		}
+		print TOSHELL
+		"res -file $resfile -mode script<<ZZZ
+
+3
+$retrievedatacomf[0]
+$retrievedatacomf[1]
+$retrievedatacomf[2]
+c
+g
+c
+a
+
+b
+
+
+a
+>
+a
+$resfile-$reporttitle-$theme.grt
+Simulation results $resfile-$reporttitle-$theme
+!
+-
+-
+-
+-
+-
+-
+-
+-
+ZZZ
+
+";
+	#if (-e $existingfile) { `rm -f $existingfile*par\n`;}
+	#print TOSHELL "rm -f $existingfile*par\n";
+	}
+
+	sub retrieve_loads_results
+	{
+		
+		my $resfile = shift;
+		my $swap = shift;
+		my @retrievedataloads = @$swap;
+		my $reporttitle = shift;
+		my $stripcheck = shift;
+		my $theme = shift;
+		#my $existingfile = "$resfile-$theme.grt";
+		#if (-e $existingfile) { `chmod 777 $existingfile\n`;}
+		#print TOSHELL "chmod 777 $existingfile\n";
+		#if (-e $existingfile) { `rm $existingfile\n` ;}
+		#print TOSHELL "rm $existingfile\n";
+
+		if ($exeonfiles eq "y") 
+		{ 	print "CALLED RETRIEVE LOADS RESULTS\n";
+			print "\$resfile: $resfile, \$retrievedataloads[0]: $retrievedataloads[0], \$retrievedataloads[1]: $retrievedataloads[1], \$retrievedataloads[2]:$retrievedataloads[2]\n";
+			print "\$reporttitle: $reporttitle, \$theme: $theme\n";
+			print "\$resfile-\$reporttitle-\$theme: $resfile-$reporttitle-$theme";
+			print `res -file $resfile -mode script<<TTT
+
+3
+$retrievedataloads[0]
+$retrievedataloads[1]
+$retrievedataloads[2]
+d
+>
+a
+$resfile-$reporttitle-$theme.grt
+Simulation results $resfile-$reporttitle-$theme
+l
+a
+
+-
+-
+-
+-
+-
+-
+-
+TTT
+`;
+		}
+		print TOSHELL
+		"res -file $resfile -mode script<<TTT
+
+3
+$retrievedataloads[0]
+$retrievedataloads[1]
+$retrievedataloads[2]
+d
+>
+a
+$resfile-$reporttitle-$theme.grt
+Simulation results $resfile-$reporttitle-$theme
+l
+a
+
+-
+-
+-
+-
+-
+-
+-
+TTT
+
+";
+		print RETRIEVELIST "$resfile-$reporttitle-$theme.grt ";
+		
+		if ($stripcheck)
+		{
+			open (CHECKDATUM, "$resfile-$reporttitle-$theme.grt") or die;
+			open (STRIPPED, ">$resfile-$reporttitle-$theme.grt-") or die;
+			my @lines = <CHECKDATUM>;
+			foreach my $line (@lines)
+			{
+				$line =~ s/^\s+//;
+				@lineelms = split(/\s+|,/, $line);
+				if ($lineelms[0] eq $stripcheck) 
+				{
+					print STRIPPED "$line";
+				}
+			}
+			close STRIPPED;
+			close CHECKDATUM;
+		}
+	}
+
+	sub retrieve_temps_stats
+	{
+		my $resfile = shift;
+		my $swap = shift;
+		my @retrievedatatempsstats = @$swap;
+		my $reporttitle = shift;
+		my $stripcheck = shift;
+		my $theme = shift;
+		#my $existingfile = "$resfile-$theme.grt";
+		#if (-e $existingfile) { `chmod 777 $existingfile\n`; }
+		#print TOSHELL "chmod 777 $existingfile\n";
+		#if (-e $existingfile) { `rm $existingfile\n` ;}
+		#print TOSHELL "rm $existingfile\n";
+		#if (-e $existingfile) { `rm -f $existingfile*par\n`;}
+		#print TOSHELL "rm -f $existingfile*par\n";
+		if ($exeonfiles eq "y") 
+		{ 
+			print "CALLED RETRIEVE TEMPS STATS\n";
+			print "\$resfile: $resfile, \$retrievedataloads[0]: $retrievedataloads[0], \$retrievedataloads[1]: $retrievedataloads[1], \$retrievedataloads[2]:$retrievedataloads[2]\n";
+			print "\$reporttitle: $reporttitle, \$theme: $theme\n";
+			print "\$resfile-\$reporttitle-\$theme: $resfile-$reporttitle-$theme";
+			print `res -file $resfile -mode script<<TTT
+
+3
+$retrievedatatempsstats[0]
+$retrievedatatempsstats[1]
+$retrievedatatempsstats[2]
+d
+>
+a
+$resfile-$reporttitle-$theme.grt
+Simulation results $resfile-$reporttitle-$theme.grt
+m
+-
+-
+-
+-
+-
+TTT
+
+`;
+		}
+		print TOSHELL
+		"res -file $resfile -mode script<<TTT
+
+3
+$retrievedatatempsstats[0]
+$retrievedatatempsstats[1]
+$retrievedatatempsstats[2]
+d
+>
+a
+$resfile-$reporttitle-$theme.grt
+Simulation results $resfile-$reporttitle-$theme.grt
+m
+-
+-
+-
+-
+-
+TTT
+
+";
+		#if ($exeonfiles eq "y") { print `rm -f $existingfile*par\n`;}
+		#print TOSHELL "rm -f $existingfile*par\n";
+		print RETRIEVELIST "$resfile-$reporttitle-$theme.grt ";
+		
+		if ($stripcheck)
+		{
+			open (CHECKDATUM, "$resfile-$reporttitle-$theme.grt") or die;
+			open (STRIPPED, ">$resfile-$reporttitle-$theme.grt-") or die;
+			my @lines = <CHECKDATUM>;
+			foreach my $line (@lines)
+			{
+				$line =~ s/^\s+//;
+				@lineelms = split(/\s+|,/, $line);
+				if ($lineelms[0] eq $stripcheck) 
+				{
+					print STRIPPED "$line";
+				}
+			}
+			close STRIPPED;
+			close CHECKDATUM;
+		}
+	}
+
+	open (OPENSIMS, "$simlistfile") or die;
+	my @sims = <OPENSIMS>;
+	# print "SIMS: " . Dumper(@sims) . "\n";
+	close OPENSIMS;
 	
-	$" = "";
-
-	sub strip_files_temps
+	my $countertheme = 0;
+	foreach my $themereportref (@themereports)
 	{
-		my $themereport = shift;
-		my @measurements_to_report      = @{ $reporttempsdata[0] };
-		my @columns_to_report           = @{ $reporttempsdata[1] };
-		my $number_of_columns_to_report = $#{ $reporttempsdata[1] };
-		my $counterreport               = 0;
-		my $dates_to_report             = $simtitles[$counterreport];
-		my @files_to_report             = <$mypath/$filenew*temperatures.grt>;
-
-		#
-		foreach my $file_to_report (@files_to_report)
-		{    #
-			$file_to_report =~ s/\.\/$file\///;
-			my $counterline    = 0;
-			my @countercolumns = undef;
-			my $infile         = "$file_to_report";
-			my $outfile        = "$file_to_report-stripped";
-			open( INFILEREPORT,  "$infile" )   or die "Can't open infile $infile 3: $!";
-			open( OUTFILEREPORT, ">$outfile" ) or die "Can't open outfile $outfile: $!";
-			my @lines_to_report = <INFILEREPORT>;
-
-			foreach $line_to_report (@lines_to_report)
+		# print "SIMS: \n";
+		my @themereports = @{$themereportref};
+		my $reporttitlesref = $reporttitles[$countertheme];
+		my @reporttitles = @{$reporttitlesref};
+		my $retrievedatarefsdeep = $retrievedata[$countertheme];
+		my @retrievedatarefs = @{$retrievedatarefsdeep};
+		my $stripcheckref = $stripchecks[$countertheme];
+		my @stripckecks = @{$stripcheckref};
+	
+		my $countreport = 0;
+		foreach my $reporttitle (@reporttitles)
+		{
+			# print "SIMS: \n";
+			my $theme = $themereports[$countreport];
+			my $retrieveref = $retrievedatarefs[$countreport];
+			my $stripcheck = $stripckecks[$countreport];
+			my @retrievedata = @{$retrieveref};
+			my $countersim = 0;
+			foreach my $sim (@sims)
 			{
-				my @roww = split( /\s+/, $line_to_report );
-
-				#
-				if ( $counterline == 1 )
-				{
-					$file_and_period = $roww[5];
-				} elsif ( $counterline == 3 )
-				{
-
-					#
-					my $countercolumn = 0;
-					foreach $element_of_row (@roww)
-					{    #
-						foreach $column (@columns_to_report)
-						{
-							if ( $element_of_row eq $column )
-							{
-								push @countercolumns, $countercolumn;
-								if ( $element_of_row eq $columns_to_report[0] )
-								{
-									$title_of_column = "$element_of_row";
-								} else
-								{
-									$title_of_column =
-									  "$element_of_row-" . "$file_and_period";
-								}
-								print OUTFILEREPORT "$title_of_column\t";
-							}
-						}
-						$countercolumn = $countercolumn + 1;
-					}
-					print OUTFILEREPORT "\n";
-				} elsif ( $counterline > 3 )
-				{
-					foreach $columnumber (@countercolumns)
-					{
-						if ( $columnumber =~ /\d/ )
-						{
-							print OUTFILEREPORT "$roww[$columnumber]\t";
-						}
-					}
-					print OUTFILEREPORT "\n";
-				}
-				$counterline++;
+				chomp($sim);
+				if ( $theme eq "temps" ) { &retrieve_temperatures_results($sim, \@retrievedata, $reporttitle, $stripcheck, $theme); }
+				if ( $theme eq "comfort"  ) { &retrieve_comfort_results($sim, \@retrievedata, $reporttitle, $stripcheck, $theme); }
+				if ( $theme eq "loads" ) 	{ &retrieve_loads_results($sim, \@retrievedata, $reporttitle, $stripcheck, $theme); }
+				print "\$sim: $sim, \@retrievedata: @retrievedata, \$reporttitle: $reporttitle, \$stripcheck: $stripcheck, \$theme: $theme\n";
+				if ( $theme eq "tempsstats"  ) { &retrieve_temps_stats($sim, \@retrievedata, $reporttitle, $stripcheck, $theme); }
+				$countersim++;
 			}
-			$counterreport++;
+			$countreport++;
 		}
+		$countertheme++;
 
-		#
-		close(INFILEREPORT);
-		close(OUTFILEREPORT);
 	}
-
-	sub strip_files_comfort
-	{
-		my $themereport = shift;
-		my @measurements_to_report      = @{ $reportcomfortdata[0] };
-		my @columns_to_report           = @{ $reportcomfortdata[1] };
-		my $number_of_columns_to_report = $#{ $reportcomfortdata[1] };
-		my $counterreport               = 0;
-
-		#
-		my $dates_to_report = $simtitles[$counterreport];
-		my @files_to_report = <$mypath/$filenew*comfort.grt>;
-		my $file_to_report;
-		foreach $file_to_report (@files_to_report)
-		{    #
-			$file_to_report =~ s/\.\/$file\///;
-			my $counterline = 0;
-			my @countercolumns;
-			my $infile  = "$file_to_report";
-			my $outfile = "$file_to_report-stripped";
-			open( INFILEREPORT,  "$infile" )   or die "Can't open infile $infile 4: $!";
-			open( OUTFILEREPORT, ">$outfile" ) or die "Can't open outfile $outfile: $!";
-			my @lines_to_report = <INFILEREPORT>;
-
-			foreach $line_to_report (@lines_to_report)
-			{
-				my @roww = split( /\s+/, $line_to_report );
-
-				#
-				if ( $counterline == 1 )
-				{
-					$file_and_period = $roww[5];
-				} elsif ( $counterline == 3 )
-				{
-
-					#
-					my $countercolumn = 0;
-					foreach $element_of_row (@roww)
-					{    #
-						foreach $column (@columns_to_report)
-						{
-							if ( $element_of_row eq $column )
-							{
-								push @countercolumns, $countercolumn;
-								if ( $element_of_row eq $columns_to_report[0] )
-								{
-									$title_of_column = "$element_of_row";
-								} else
-								{
-									$title_of_column =
-									  "$element_of_row-" . "$file_and_period";
-								}
-								print OUTFILEREPORT "$title_of_column\t";
-							}
-						}
-						$countercolumn = $countercolumn + 1;
-					}
-					print OUTFILEREPORT "\n";
-				} elsif ( $counterline > 3 )
-				{
-					foreach $columnumber (@countercolumns)
-					{
-						if ( $columnumber =~ /\d/ )
-						{
-							print OUTFILEREPORT "$roww[$columnumber]\t";
-						}
-					}
-					print OUTFILEREPORT "\n";
-				}
-				$counterline++;
-			}
-		}
-
-		#
-		close(INFILEREPORT);
-		close(OUTFILEREPORT);
-	}
+	print `rm -f ./*.grt`;
+	print TOSHELL "rm -f ./*.grt\n";
+	print `rm -f ./*.par`;
+	print TOSHELL "rm -f ./*.par\n";
+}	# END SUB RETRIEVE
+	
+##############################################################################
+##############################################################################
+##############################################################################
+# END SUB RETRIEVE
 
 
-	foreach my $themereport (@themereports)
-	{
-		if ( $themereport eq "temps" ) { strip_files_temps($themereport); }
-		if ( $themereport eq "comfort" ) { strip_files_comfort($themereport); }
-	}
-}    # END SUB report;
+
+	##############################################################################
+##############################################################################
+##############################################################################
+
+# HERE FOLLOWES THE CONTENT OF THE "report.pm" FILE
+## HERE THE "report" and "merge" FUNCTIONS FOLLOW, CALLED FROM THE MAIN PROGRAM FILE.
+
+sub report # This function retrieveg the results of interest from the text file created by the "retrieve" function
+{ ; } # NO MORE USED
+
 
 sub merge_reports    # Self-explaining
 {
@@ -8057,22 +8001,22 @@ sub merge_reports    # Self-explaining
 	my $counterlines;
 	my $number_of_dates_to_merge = scalar(@simtitles);
 	my @dates                    = @simtitles;
-	my $mergefile = "$mypath/$file-merge";
-	my $filecaselist = "$file-caselist.txt";
+	my $mergefile = "$mypath/$file-merge-$countsweep";
 	
+		
 	sub merge
 	{
 		unless (-e $mergefile)
 		{
-			open (MERGEFILE, ">>$mergefile");
+			open (MERGEFILE, ">>$mergefile") or die;
 		}
-		open (FILECASELIST, $filecaselist) or die;
+		open (FILECASELIST, "$simlistfile") or die;
 		my @lines = <FILECASELIST>;
 		close FILECASELIST;
 		my $counterline = 1;
 		foreach my $line (@lines)
 		{
-			$line =~ s/[\n]//;
+			chomp($line);
 			my $morphcase = "$line";
 			print MERGEFILE "CASE$counterline ";
 			my $counterouter = 0;
@@ -8085,12 +8029,13 @@ sub merge_reports    # Self-explaining
 					my $simtitle = $simtitles[$counterouter];
 					my $reporttitle = $reporttitles[$counterouter][$counterinner];
 					#print "FILE: $file, SIMTITLE: $simtitle, REPORTTITLE!: $reporttitle, THEME: $theme\n";
-					my $case = "$morphcase-$simtitle.res-$reporttitle-$theme.grt-";
+					my $case = "$morphcase-$reporttitle-$theme.grt-";
+					#if (-e $case) { print "IT EXISTS!\n"; }
 					#print "$case\n";
 					open(OPENTEMP, $case) or die;
 					my @linez = <OPENTEMP>;
 					close OPENTEMP;
-					$linez[0] =~ s/[\n]//;
+					chomp($linez[0]);
 					print MERGEFILE "$case $linez[0] ";
 					$counterinner++;
 				}
@@ -8170,7 +8115,7 @@ sub merge_reports    # Self-explaining
 		unless (-e $weight) 
 		{
 			#print "I OPEN\n";
-			open (WEIGHT, ">$weight");
+			open (WEIGHT, ">$weight") or die;
 		}
 		
 		my @containerone;
@@ -8194,7 +8139,7 @@ sub merge_reports    # Self-explaining
 				$countel++;
 			}
 		}
-		print "CONTAINERONE " . Dumper(@containerone) . "\n";
+		#print "CONTAINERONE " . Dumper(@containerone) . "\n";
 			
 		my @containertwo;
 		my @containerthree;
@@ -8241,7 +8186,7 @@ sub merge_reports    # Self-explaining
 			}
 			$countcolm++;
 		}
-		print "CONTAINERTWO " . Dumper(@containertwo) . "\n";
+		#print "CONTAINERTWO " . Dumper(@containertwo) . "\n";
 		
 		
 		my $countline = 0;
@@ -8299,7 +8244,7 @@ sub merge_reports    # Self-explaining
 			$counterline++;
 		}
 		close WEIGHT;
-		print "CONTAINERTHREE: " . Dumper(@containerthree) . "\n";
+		#print "CONTAINERTHREE: " . Dumper(@containerthree) . "\n";
 	}
 	&weight(); #
 	
@@ -8311,7 +8256,7 @@ sub merge_reports    # Self-explaining
 		close WEIGHT;
 		unless (-e $weighttwo) 
 		{
-			open (WEIGHTTWO, ">$weighttwo");
+			open (WEIGHTTWO, ">$weighttwo") or die;
 		}
 		
 		my $counterline;
@@ -8331,10 +8276,10 @@ sub merge_reports    # Self-explaining
 				{
 					#print "ELT: $elt\n";
 					$newelt = ( $elt * abs($weights[$counterin]) );
-					print "ABS" . abs($weights[$counterin]) . "\n";
-					print "NEWELT: $newelt\n";
+					# print "ABS" . abs($weights[$counterin]) . "\n";
+					# print "NEWELT: $newelt\n";
 					$sum = ( $sum + $newelt ) ;
-					print "SUM: $sum\n";
+					# print "SUM: $sum\n";
 					$counterin++;
 				}
 				$counterelt++;
@@ -8361,7 +8306,7 @@ sub merge_reports    # Self-explaining
 	}
 	&weighttwo();	
 	
-	my $sortmerged = "$selectmerged-sortmerged";
+	$sortmerged = "$mergefile-sortmerged";
 	sub sortmerged
 	{
 		open (WEIGHTTWO, $weighttwo) or die;
@@ -8381,370 +8326,17 @@ sub merge_reports    # Self-explaining
 }    # END SUB merge_reports
 
 
-sub rank_reports    # STILL UNUSED. Self-explaining. 
-{
-	my $to = shift;
-	my $mypath = shift;
-	my $file = shift;
-	my $filenew = shift;
-	my $swap = shift;
-	my @dowhat = @$swap;
-	my $swap = shift;
-	my @simdata = @$swap;
-	my $simnetwork = shift;
-	my $swap = shift;
-	my @simtitles = @$swap;
-	my $preventsim = shift;
-	my $exeonfiles = shift;
-	my $fileconfig = shift;
-	my $swap = shift;
-	my @themereports = @$swap;
-	my $swap = shift;
-	my @reporttitles = @$swap;
-	my $swap = shift;
-	my @retrievedata = @$swap;
-
-
-	my @dates = @simtitles;
-
-	sub rank_reports_temps
-	{
-		my $themereport = $_[0];
-		my $counterdate = 0;
-		foreach my $date (@dates)
-		{
-			$date = $simtitles[$counterdate];
-			my @files_to_rank =
-			  <$mypath/$filenew-$date-temperatures-sum-up.txt>;
-			$file_to_rank = $files_to_rank[0];
-			open( INFILERANK, "$file_to_rank" )
-			  or die "Can't open file_to_rank $file_to_rank: $!";
-			@lines_to_rank = <INFILERANK>;
-			close INFILERANK;
-			my $counterlines = 0;
-			my $counterelement;
-			my @table;
-			my $line_to_rank;
-
-			foreach $line_to_rank (@lines_to_rank)
-			{
-				my @roww = split( /\s+/, $line_to_rank );
-				{
-					my $counterelement = 0;
-					foreach $element (@roww)
-					{
-						if ( $counterlines == 0 )
-						{
-							push @table, [];
-						}
-						push @{ table->[$counterelement] }, $element;
-						$counterelement++;
-					}
-				}
-				$counterlines++;
-			}
-			$outfilerank = ">$file_to_rank.ranked.txt";
-			#if (-e $outfilerank) { `chmod 777 $outfilerank\n`; `mv -b $outfilerank-bak\n`;};
-			#print TOSHELL "chmod 777 $outfilerank\n"; print TOSHELL "mv -b $outfilerank-bak\n";
-			open( OUTFILERANK, ">$outfilerank" ) or die "Can't open $outfilerank: $!";
-			my $countercases = 0;
-			my $case;
-			my %rankaverage;
-			my %rankmin;
-			my %rankmax;
-			my %rankdiff_minmax;
-			my @syntesis;
-			my $number_of_cases = $#{table};           #
-			my $number_of_items = $#{ table->[0] };    #
-
-			while ( $countercases <= $number_of_cases )
-			{
-				my @timeseries =
-				  @{ table->[$countercases] }[ 1 .. $#{ table->[0] } ]
-				  ;   # # print OUTFILE "\n\@timeseries: @timeseries\n";
-				if ( @{ table->[$countercases] }[0] ne "Time" )
-				{
-					if ( $countercases == 0 )
-					{
-						print OUTFILERANK "SYNTESYS OF RESULTS\n";
-						$countercases = $countercases + 1;
-					} else
-					{
-						my $title = ${ table->[$countercases] }->[0];    # MODIFIED, BECAUSE IT WAS DEPRECATED: my $title = @{ table->[$countercases] }->[0];
-						&average(@timeseries);
-						&max(@timeseries);
-						&min(@timeseries);
-						&diff_minmax(@timeseries);
-						push @syntesis,
-						  [ $title, $average, $max, $min, $diff_minmax ];    #
-						$rankaverage{$title} = $average ;   # print OUTFILE "\n\$average: $average\n";
-						$rankmin{$title} = $min;    # print OUTFILE "\n\$min: $min\n";
-						$rankmax{$title} = $max;    # print OUTFILE "\n\$max: $max\n";
-						$rankdiff_minmax{$title} = $diff_minmax ; # print OUTFILE "\n\$diff_minmax: $diff_minmax\n";
-						$countercases++;
-					}
-				} else
-				{
-					$countercases = $countercases + 1;
-				}
-			}
-			print OUTFILERANK "\nORDERED BY AVERAGE\n";
-			foreach $value (
-							 sort { $rankaverage{$a} cmp $rankaverage{$b} }
-							 keys %rankaverage
-			  )
-			{
-				print OUTFILERANK "$value\t\t $rankaverage{$value}\n";
-			}
-			print OUTFILERANK "\nORDERED BY MAXIMUM\n";
-			foreach $value (
-							 sort { $rankmax{$a} cmp $rankmax{$b} }
-							 keys %rankmax
-			  )
-			{
-				print OUTFILERANK "$value\t\t $rankmax{$value}\n";
-			}
-			print OUTFILERANK "\nORDERED BY MINIMUM\n";
-			foreach $value (
-							 sort { $rankmin{$a} cmp $rankmin{$b} }
-							 keys %rankmin
-			  )
-			{
-				print OUTFILERANK "$value\t\t $rankmin{$value}\n";
-			}
-			print OUTFILERANK "\nORDERED BY DIFF_MINMAX\n";
-			foreach $value (
-				sort {
-					$rankdiff_minmax{$a} cmp $rankdiff_minmax{$b}
-				} keys %rankdiff_minmax
-			  )
-			{
-				print OUTFILERANK "$value\t\t $rankdiff_minmax{$value}\n";
-			}
-			close OUTFILERANK;
-			$counterdate++;
-		}
-	}
-
-	sub rank_reports_comfort
-	{
-		my $themereport = $_[0];
-		my $counterdate = 0;
-		foreach my $date (@dates)
-		{
-			$date = $simtitles[$counterdate];
-			my @files_to_rank = <$mypath/$filenew*$date*comfort-sum-up.txt>;
-			$file_to_rank = $files_to_rank[0];
-			open( INFILERANK, "$file_to_rank" )
-			  or die "Can't open file_to_rank $file_to_rank: $!";
-			@lines_to_rank = <INFILERANK>;
-			close INFILERANK;
-			my $counterlines = 0;
-			my $counterelement;
-			my @table;
-			my $line_to_rank;
-
-			foreach $line_to_rank (@lines_to_rank)
-			{
-				my @roww = split( /\s+/, $line_to_rank );
-				{
-					my $counterelement = 0;
-					foreach $element (@roww)
-					{
-						if ( $counterlines == 0 )
-						{
-							push @table, [];
-						}
-						push @{ table->[$counterelement] }, $element;
-						$counterelement++;
-					}
-				}
-				$counterlines = $counterlines + 1;
-			}
-			$outfilerank = ">$file_to_rank.ranked.txt";
-			#if (-e $outfilerank) { `chmod 777 $outfilerank\n`; `mv -b $outfilerank-bak\n`;};
-			#print TOSHELL "chmod 777 $outfilerank\n"; print TOSHELL "mv -b $outfilerank-bak\n";
-			open( OUTFILERANK, ">$outfilerank" )
-			  or die "Can't open $outfilerank: $!";
-			my $countercases = 0;
-			my $case;
-			my %rankaverage;
-			my %rankmin;
-			my %rankmax;
-			my %rankdiff_minmax;
-			my @syntesis;
-			my $number_of_cases =
-			  $#{table}; # print OUTFILE "\n2 \$number_of_cases: $number_of_cases\n";
-			my $number_of_items =
-			  $#{ table->[0] }; # print OUTFILE "\n3 \$number_of_items: $number_of_items\n";
-
-			while ( $countercases <= $number_of_cases )
-			{
-				my @timeseries =
-				  @{ table->[$countercases] }[ 1 .. $#{ table->[0] } ];
-				if ( @{ table->[$countercases] }[0] ne "Time" )
-				{
-					if ( $countercases == 0 )
-					{
-						print OUTFILERANK "SYNTESYS OF RESULTS\n";
-						$countercases = $countercases + 1;
-					} else
-					{
-						my $title = ${ table->[$countercases] }->[0];     # MODIFIED, BECAUSE IT WAS DEPRECATED: ${ table->[$countercases] }->[0];
-
-						&average(@timeseries);
-						&max(@timeseries);
-						&min(@timeseries);
-						&diff_minmax(@timeseries);
-						push @syntesis,
-						  [ $title, $average, $max, $min, $diff_minmax ] ; # print OUTFILE "\nHERE I LIST: $title, $average, $max, $min, $diff_minmax\n";
-						$rankaverage{$title} = $average ;   # print OUTFILE "\n\$average: $average\n";
-						$rankmin{$title} = $min;    # print OUTFILE "\n\$min: $min\n";
-						$rankmax{$title} = $max;    # print OUTFILE "\n\$max: $max\n";
-						$rankdiff_minmax{$title} = $diff_minmax ; # print OUTFILE "\n\$diff_minmax: $diff_minmax\n";
-						$countercases++;
-					}
-				} else
-				{
-					$countercases = $countercases + 1;
-				}
-			}
-			print OUTFILERANK "\nORDERED BY AVERAGE\n";
-			foreach $value (
-							 sort { $rankaverage{$a} cmp $rankaverage{$b} }
-							 keys %rankaverage
-			  )
-			{
-				print OUTFILERANK "$value\t\t $rankaverage{$value}\n";
-			}
-			print OUTFILERANK "\nORDERED BY MAXIMUM\n";
-			foreach $value (
-							 sort { $rankmax{$a} cmp $rankmax{$b} }
-							 keys %rankmax
-			  )
-			{
-				print OUTFILERANK "$value\t\t $rankmax{$value}\n";
-			}
-			print OUTFILERANK "\nORDERED BY MINIMUM\n";
-			foreach $value (
-							 sort { $rankmin{$a} cmp $rankmin{$b} }
-							 keys %rankmin
-			  )
-			{
-				print OUTFILERANK "$value\t\t $rankmin{$value}\n";
-			}
-			print OUTFILERANK "\nORDERED BY DIFF_MINMAX\n";
-			foreach $value (
-				sort {
-					$rankdiff_minmax{$a} cmp $rankdiff_minmax{$b}
-				} keys %rankdiff_minmax
-			  )
-			{
-				print OUTFILERANK "$value\t\t $rankdiff_minmax{$value}\n";
-			}
-			close OUTFILERANK;
-			$counterdate++;
-		}
-	}
-
-	sub rank_reports_loads    #
-	{
-		my $themereport = $_[0];
-		my $counterdate = 0;
-		foreach my $date (@dates)
-		{
-			$date = $simtitles[$counterdate];
-			my @files_to_rank = <$mypath/$filenew*$date*loads-sum-up.txt>;
-			$file_to_rank = $files_to_rank[0];
-			open( INFILERANK, "$file_to_rank" )
-			  or die "Can't open file_to_rank $file_to_rank: $!";
-			@lines_to_rank = <INFILERANK>;
-			close INFILERANK;
-			my $outfilerank = ">$file_to_rank-ranked-for-loads.txt";
-			#if (-e $outfilerank) { `chmod 777 $outfilerank\n`; `mv -b $outfilerank-bak\n`;};
-			#print TOSHELL "chmod 777 $outfilerank\n"; print TOSHELL "mv -b $outfilerank-bak\n";
-			open( OUTFILERANK, ">$outfilerank" ) or die "Can't open $outfilerank: $!";
-			my $counterlines = 0;
-			my $counterelement;
-			my @table;
-			my $line_to_rank;
-
-			foreach $line_to_rank (@lines_to_rank)
-			{
-				my @roww = split( /\s+/, $line_to_rank );
-				{
-					push @table, [@roww];
-				}
-			}
-			@table =
-			  sort { $a->[ $rankdata[2] ] <=> $b->[ $rankdata[2] ] } @table;
-			foreach $element (@table)
-			{
-				$" = " ";
-				print OUTFILERANK "@{$element}\n";
-			}
-			close OUTFILERANK;
-			$counterdate++;
-		}
-	}
-
-	sub rank_reports_tempsstats    #
-	{
-		my $themereport = $_[0];
-		my $counterdate = 0;
-		foreach my $date (@dates)
-		{
-			$date = $simtitles[$counterdate];
-			my @files_to_rank = <$mypath/$filenew*$date*tempsstats-sum-up.txt>;
-			$file_to_rank = $files_to_rank[0];
-			#if (-e $file_to_rank) { `chmod 777 $file_to_rank\n`; `mv -b $file_to_rank-bak\n`;}
-			#print TOSHELL "chmod 777 $file_to_rank\n"; print TOSHELL "mv -b $file_to_rank-bak\n"; 
-			open( INFILERANK, "$file_to_rank" )
-			  or die "Can't open file_to_rank $file_to_rank: $!";
-			@lines_to_rank = <INFILERANK>;
-			close INFILERANK;
-			$outfilerank = ">$file_to_rank-ranked-for-tempsstats.txt";
-			open( OUTFILERANK, ">$outfilerank" )
-			  or die "Can't open $outfilerank: $!";
-			my $counterlines = 0;
-			my $counterelement;
-			my @table;
-			my $line_to_rank;
-
-			foreach $line_to_rank (@lines_to_rank)
-			{
-				my @roww = split( /\s+/, $line_to_rank );
-				{
-					push @table, [@roww];
-				}
-			}
-			@table =
-			  sort { $a->[ $rankdata[$rankcolumn[3]] ] <=> $b->[ $rankdata[$rankcolumn[3]] ] }
-			  @table;    # THIS INDEX HAS TO BE FIXED!
-			foreach $element (@table)
-			{
-				$" = " ";
-				print OUTFILERANK "@{$element}\n";
-			}
-			close OUTFILERANK;
-			$counterdate++;
-		}
-	}
-	
-	foreach my $themereport (@themereports)
-	{
-		if ( $themereport eq "temps" ) { rank_reports_temps($themereport); }
-		if ( $themereport eq "comfort" ) { rank_reports_comfort($themereport); }
-		if ( $themereport eq "loads" ) { rank_reports_loads($themereport); }
-		if ( $themereport eq "tempsstats" ) { rank_reports_tempsstats($themereport); }
-	}
-
-}    # END SUB rank_reports. UNUSED
+sub rank_reports    # ERASED
+{ ; }
 
 
 
 sub convert_report # ZZZ THIS HAS TO BE PUT IN ORDER BECAUSE JUST ONE ITEM WORKS.
 {
+	my $swap = shift;
+	my @varthemes_variations = @$swap;
+	my $swap = shift;
+	my @varthemes_steps = @$swap; 
 	my $to = shift;
 	my $mypath = shift;
 	my $file = shift;
@@ -8765,23 +8357,12 @@ sub convert_report # ZZZ THIS HAS TO BE PUT IN ORDER BECAUSE JUST ONE ITEM WORKS
 	my @reporttitles = @$swap;
 	my $swap = shift;
 	my @retrievedata = @$swap;
-
-
-
-	sub do_convert_report
-	{
-		my $themereport = $_[0];
+	my $themereport = $_[0];
 	my $convertcriterium = $themereport;
-	my $count = 0;
 	my @varthemes_values;
-	my @files_to_convert;
-	foreach $date (@simtitles)
-	{
-		$file_to_convert = "$mypath/$filenew-$date-$convertcriterium-sum-up.txt";
-		push @files_to_convert, $file_to_convert;
-	}
 
-	foreach my $countervar (@varnumbers)
+	my $count = 0;
+	foreach my $varnumber (@varnumbers)
 	{
 		$basevalue       = $varthemes_variations[$count][0];
 		$roofvalue       = $varthemes_variations[$count][1];
@@ -8789,10 +8370,8 @@ sub convert_report # ZZZ THIS HAS TO BE PUT IN ORDER BECAUSE JUST ONE ITEM WORKS
 		$range           = ( $roofvalue - $basevalue );
 		my @values;
 		my $step = 0;
-
 		if ( $number_of_steps > 1 )
 		{
-
 			until ( $step > ( $number_of_steps - 1 ) )
 			{
 				my $value;
@@ -8803,181 +8382,84 @@ sub convert_report # ZZZ THIS HAS TO BE PUT IN ORDER BECAUSE JUST ONE ITEM WORKS
 			}
 		}
 		push( @varthemes_values, [@values] );
-		$write = Dumper(@varthemes_values);
+		$write = "VARTHEMES VALUES: " . Dumper(@varthemes_values) . "\n";
 		$count++;
 	}
 			
-	foreach my $file_to_convert (@files_to_convert)
-	{
-		open( INFILECONVERT, "$file_to_convert" ) or die "Can't open file_to_convert $file_to_convert: $!";
-		my @lines_to_convert = <INFILECONVERT>;
-		close INFILECONVERT;
-		$outfileconvert = "$file_to_convert" . "-converted.txt";
-		#if (-e $outfileconvert) { `chmod 777 $outfileconvert\n`; `mv -b $outfileconvert-bak\n`;}
-		#print TOSHELL "chmod 777 $outfileconvert\n"; print TOSHELL "mv -b $outfileconvert-bak\n"; 
-		open( OUTFILECONVERT, ">$outfileconvert" ) or die "Can't open $outfileconvert: $!";
-		
-		foreach my $line_to_convert (@lines_to_convert)
-		{
-			my $counter = 0;
-			foreach my $countervar (@varnumbers)
-			{
-				my $stepper         = 1;
-				my $number_of_steps = $varthemes_steps[$counter];
-				foreach my $value ( @{ $varthemes_values[$counter] } )
-				{
-					$line_to_convert =~ s/_\+$countervar\-$stepper/$value /;
-					$stepper++;
-				}
-				$line_to_convert =~ s/$mypath\/$file//;
-				#$line_to_convert =~ s/_\+$countervar/ $varthemes_report[$counter]/;
-				$line_to_convert =~ s/[§£]/ /;
-				$line_to_convert =~ s/loads-sum-up.txt-filtered.txt//;
-				$counter++;
-			}
-			print OUTFILECONVERT "$line_to_convert";
-		}
-		close OUTFILECONVERT;
-		open(INFILEPUTCOMMAS, "$outfileconvert") or die "Can't open infileputcommas $outfileconvert: $!";
-		my @new_lines_to_convert = <INFILEPUTCOMMAS>;
-		close INFILEPUTCOMMAS;
-		my $outfileputcommas = "$outfileconvert".".csv";
-		#if (-e $outfileputcommas) { `chmod 777 $outfileputcommas\n`; `mv -b $outfileputcommas-bak\n`;}
-		#print TOSHELL "chmod 777 $outfileputcommas\n"; print TOSHELL "mv -b $outfileputcommas-bak\n"; 
-		open( OUTFILEPUTCOMMAS, ">$outfileputcommas" ) or die "Can't open outfileputcommas $outfileputcommas: $!";
-		foreach my $new_line_to_convert (@new_lines_to_convert)
-		{
-			$new_line_to_convert =~ s/\t/ /g;
-			$new_line_to_convert =~ s/  / /g;
-			$new_line_to_convert =~ s/  / /g;
-			$new_line_to_convert =~ s/ /,/g;
-
-			my @roww = split( /,/, $new_line_to_convert );
-			my $number_of_items = ( scalar(@roww) -1);
-			my $count = 0;
-			foreach my $row (@roww)
-			{
-				foreach my $filter_column (@filter_columns)
-				{
-					if ( $count == $filter_column  )
-					{
-						if ( $count < $number_of_items )
-						{
-							print OUTFILEPUTCOMMAS "$row,";	
-						}
-						else {print OUTFILEPUTCOMMAS "$row";}
-					}
-				}
-				$count++;
-			}
-			print OUTFILEPUTCOMMAS "\n";
-		}
-		close OUTFILEPUTCOMMAS;
-	}
-	} # END SUB DO_CONVERT_REPORT
+	open( INFILECONVERT, "$sortmerged" ) or die;
+	my @lines_to_convert = <INFILECONVERT>;
+	close INFILECONVERT;
+	$outfileconvert = "$sortmerged" . "-named.txt";
+	#if (-e $outfileconvert) { `chmod 777 $outfileconvert\n`; `mv -b $outfileconvert-bak\n`;}
+	#print TOSHELL "chmod 777 $outfileconvert\n"; print TOSHELL "mv -b $outfileconvert-bak\n"; 
+	open( OUTFILECONVERT, ">$outfileconvert" ) or die;
 	
-		foreach my $themereport (@themereports)
-	{	
-		do_convert_report($themereport);
+	foreach my $line_to_convert (@lines_to_convert)
+	{
+		my $counter = 0;
+		foreach my $varnumber (@varnumbers)
+		{
+			my $stepper         = 1;
+			my $number_of_steps = $varthemes_steps[$counter];
+			my $varthemes_values_refs = $varthemes_values[$counter];
+			my @varthemes_values = @{$varthemes_values_refs};
+			foreach my $value ( @varthemes_values )
+			{
+				$line_to_convert =~ s/_$varnumber\-$stepper/$value /;
+				$stepper++;
+			}
+			$line_to_convert =~ s/$mypath\/$file//;
+			#$line_to_convert =~ s/_\+$varnumber/ $varthemes_report[$counter]/;
+			$line_to_convert =~ s/[§£]/ /;
+			#$line_to_convert =~ s/loads-sum-up.txt-filtered.txt//;
+			$counter++;
+		}
+		print OUTFILECONVERT "$line_to_convert";
 	}
+	close OUTFILECONVERT;
+	
+	open(INFILEPUTCOMMAS, "$outfileconvert") or die "Can't open infileputcommas $outfileconvert: $!";
+	my @new_lines_to_convert = <INFILEPUTCOMMAS>;
+	close INFILEPUTCOMMAS;
+	my $outfilecsv = "$outfileconvert".".csv";
+	#if (-e $outfilecsv) { `chmod 777 $outfilecsv\n`; `mv -b $outfilecsv-bak\n`;}
+	#print TOSHELL "chmod 777 $outfilecsv\n"; print TOSHELL "mv -b $outfilecsv-bak\n"; 
+	open( OUTFILECSV, ">$outfilecsv" ) or die;
+	foreach my $new_line_to_convert (@new_lines_to_convert)
+	{
+		$new_line_to_convert =~ s/\t/ /g;
+		$new_line_to_convert =~ s/  / /g;
+		$new_line_to_convert =~ s/  / /g;
+		$new_line_to_convert =~ s/ /,/g;
+
+		my @roww = split( /,/, $new_line_to_convert );
+		my $number_of_items = ( scalar(@roww) -1);
+		my $count = 0;
+		foreach my $row (@roww)
+		{
+			foreach my $filter_column (@filter_columns)
+			{
+				if ( $count == $filter_column  )
+				{
+					if ( $count < $number_of_items )
+					{
+						print OUTFILECSV "$row,";	
+					}
+					else {print OUTFILECSV "$row";}
+				}
+			}
+			$count++;
+		}
+		print OUTFILECSV "\n";
+	}
+	close OUTFILECSV;
+
 } # END sub convert_report
 
 
 
-sub filter_reports # STALE. TO BE RE-CHECKED. 
-{
-	my $to = shift;
-	my $mypath = shift;
-	my $file = shift;
-	my $filenew = shift;
-	my $swap = shift;
-	my @dowhat = @$swap;
-	my $swap = shift;
-	my @simdata = @$swap;
-	my $simnetwork = shift;
-	my $swap = shift;
-	my @simtitles = @$swap;
-	my $preventsim = shift;
-	my $exeonfiles = shift;
-	my $fileconfig = shift;
-	my $swap = shift;
-	my @themereports = @$swap;
-	my $swap = shift;
-	my @reporttitles = @$swap;
-	my $swap = shift;
-	my @retrievedata = @$swap;
-
-
-	sub do_filter_reports
-	{
-		my $themereport = $_[0];
-	my $counterdate = 0;
-	my $countfiles  = 0;
-	my $filtercriterium = $themereport;
-
-	foreach $date (@simtitles)
-	{
-		$file_source = "$mypath/$filenew-$date-$filtercriterium-sum-up.txt";
-		open( INFILEFILTER, "$file_source" ) or die "Can't open file_source $file_source: $!";
-		my @lines_to_filter = <INFILEFILTER>;
-		close INFILEFILTER;
-		my $counterfilter = 0;	
-		foreach my $theme_report (@files_to_filter)	
-		{
-			if ($counterfilter > 0)
-			{
-				my @cases_to_filter     = @{ $filter_reports[$counterfilter][0] };
-				my @cases_not_to_filter = @{ $filter_reports[$counterfilter][1] };
-				my @fixed_values        = @{ $filter_reports[$counterfilter][2] };
-				my $filtered_filetitle = $files_to_filter[$counterfilter];
-				$outfilefilter = "$file_source-$filtered_filetitle"."-filtered.txt";
-				#if (-e $outfilefilter) { `chmod 777 $outfilefilter\n`; `mv -b $outfilefilter-bak\n`;}
-				#print TOSHELL "chmod 777 $outfilefilter\n"; print TOSHELL "mv -b $outfilefilter-bak\n"; 
-				open( OUTFILEFILTER, ">$outfilefilter" ) or die "Can't open $outfilefilter: $!";
-				foreach my $line_to_filter (@lines_to_filter)
-				{
-					my $counter = 0;
-					my $accum   = 0;
-					if ( @cases_not_to_filter )
-					{
-						foreach my $case_not_to_filter (@cases_not_to_filter)
-						{
-							if ( $line_to_filter =~ m/_\$case_not_to_filter\-$fixed_values[$counter]/ )
-							{
-								$accum++;
-								if ( $accum >= scalar(@fixed_values) )
-								{
-									$line_to_filter =~ s/\t/ /g;
-									$line_to_filter =~ s/  / /g;
-									$line_to_filter =~ s/  / /g;
-									print OUTFILEFILTER "$line_to_filter";					
-									$accum = 0;
-								}
-							}
-							$counter++;
-						}
-					}
-					else
-					{
-						print OUTFILEFILTER "$line_to_filter";
-					}
-				}
-			}
-			close OUTFILEFILTER;
-			$counterfilter++;
-		}
-		$countfiles++;
-	}
-	}
-	
-	
-	
-	foreach my $themereport (@themereports)
-	{
-		do_filter_reports($themereport);
-	}
-	
-} # END sub filter_reports
+sub filter_reports # ERASED
+{ ; }
 
 
 sub convert_filtered_reports  # STALE. TO BE RE-CHECKED. 
@@ -9027,7 +8509,7 @@ sub convert_filtered_reports  # STALE. TO BE RE-CHECKED.
 		}
 	}
 
-	foreach my $countervar (@varnumbers)
+	foreach my $varnumber (@varnumbers)
 	{
 		my $basevalue       = $varthemes_variations[$count][0];
 		my $roofvalue       = $varthemes_variations[$count][1];
@@ -9065,17 +8547,17 @@ sub convert_filtered_reports  # STALE. TO BE RE-CHECKED.
 		foreach my $line_to_convert (@lines_to_convert)
 		{
 			my $counter = 0;
-			foreach my $countervar (@varnumbers)
+			foreach my $varnumber (@varnumbers)
 			{
 				my $stepper         = 1;
 				my $number_of_steps = $varthemes_steps[$counter];
 				foreach my $value ( @{ $varthemes_values[$counter] } )
 				{
-					$line_to_convert =~ s/_\+$countervar\-$stepper/$value /;
+					$line_to_convert =~ s/_\+$varnumber\-$stepper/$value /;
 					$stepper++;
 				}
 				$line_to_convert =~ s/$mypath\/$file//;
-				$line_to_convert =~ s/_\+$countervar/ $varthemes_report[$counter]/;
+				$line_to_convert =~ s/_\+$varnumber/ $varthemes_report[$counter]/;
 				$line_to_convert =~ s/[§£]/ /;
 				$line_to_convert =~ s/loads-sum-up.txt-filtered.txt//;
 				$counter++;
@@ -9255,13 +8737,20 @@ sub maketable  # STALE. TO BE RE-CHECKED.
 		&morph(); } 
 	}
 
-	if ( ( $dowhat[1] eq "y" ) or ( $dowhat[2] eq "y" ) )
+	if ( $dowhat[1] eq "y" )
 	{ 
 		&sim( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
 		\@simtitles, $preventsim, $exeonfiles, $fileconfig, 
 		\@themereports, \@reporttitles, \@retrievedata );
 	}
-
+	
+	if ( $dowhat[2] eq "y" )
+	{ 
+		&retrieve( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+		\@simtitles, $preventsim, $exeonfiles, $fileconfig, 
+		\@themereports, \@reporttitles, \@retrievedata );
+	}
+	
 	if ( $dowhat[4] eq "y" ) 
 	{ 
 		&report( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
@@ -9278,10 +8767,10 @@ sub maketable  # STALE. TO BE RE-CHECKED.
 
 	if ( $dowhat[6] eq "y" )
 	{
-		&convert_report( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+		&convert_report( \@varthemes_variations, \@varthemes_steps, $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
 		\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
 		\@rankdata, \@rankcolumn, \@reporttempsdata, 
-		\@reportcomfortdata, \@reportradiationenteringdata, $stripcheck  ); # CONVERTS NOT YET FILTERED REPORTS
+		\@reportcomfortdata, \@reportradiationenteringdata, $stripcheck  ); # NAMES VARIABLES IN REPORTS
 	}
 	if ( $dowhat[7] eq "y" )
 	{
@@ -9304,7 +8793,7 @@ sub maketable  # STALE. TO BE RE-CHECKED.
 		\@rankdata, \@rankcolumn, \@reporttempsdata,
 		\@reportcomfortdata, \@reportradiationenteringdata, $stripcheck ); # CONVERTS TO TABLE ALREADY FILTERED REPORTS
 	}
-
+	$countsweep++;
 } # END SUB exec
 ###########################################################################################
 ###########################################################################################
@@ -9317,7 +8806,9 @@ sub maketable  # STALE. TO BE RE-CHECKED.
 
 #print "NOT ENTERED, " . Dumper(@bundlesgroup) . " \n";
 
-if ( (@bundlesgroup) and (-e "./scripts/opts_search.pl") )
+if ( (@bundlesgroup eq "bum") #ZZZ
+#and (-e "./scripts/opts_search.pl") 
+)
 {
 	foreach my $el (@bundlesgroup)
 	{
@@ -9339,19 +8830,24 @@ if ( (@bundlesgroup) and (-e "./scripts/opts_search.pl") )
 				else
 				{
 					@chancelines = map { $_ * 3 } @varn;
+					print "THESE ARE CHANCELINES IN LAUNCHER: " . Dumper(@chancelines) . "\n";
 					@varnumbers = @chancelines[ $block[0] .. ( $block[0] + $block[1] - 1 ) ];
+					print "THESE ARE VARNUMBERS IN LAUNCHER: " . Dumper(@varnumbers) . "\n"; 
 				} 
 				if (@varnumbers)
 				{
 					&exec(\@varnumbers);
-					print "I ENTER 4, @varnumbers\n";
+					print "I CALL EXEC WITH, " . Dumper(@varnumbers) . "\n";
 				}
 			}
 		}
 	}
 }
 else
-{  &exec; }
+{  
+	&exec; 
+	print "I CALL EXEC AND \@VARNUMBERS IS: " . Dumper(@varnumbers) . "\n";
+}
 
 # END OF THE PROGRAM THAT LAUNCHES OPTS.
 ##########################################################################################
