@@ -30,7 +30,7 @@ $file =
 $filenew = "$file"."_"; 
 # Write here the work model directory.  The program will copy the root model directory into this one.  Afterward changes may be made to it
 
-@dowhat = ( # This variables tell to the program what to do.
+@dowhat = ( # This variables tells to the program what to do.
 "y", 
 # 1) create cases for simulation?
 
@@ -54,8 +54,12 @@ $filenew = "$file"."_";
 "n", 
 # 8) filter already converted reports? (NOTE: UNTESTED FROM VERSION 0.5 ON.)
 
-"n" );  
+"n",
 # 9) make table to be plotted in 3D? (NOTE: UNTESTED FROM VERSION 0.5 ON.)
+
+"n"
+); 
+# 11) checks if it is possible to launch a block search, and if it is does it.
 
 $preventsim = 
 "n"; 

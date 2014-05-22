@@ -19,7 +19,7 @@ $reportfile = "";
 $steps = 3;
 @midvalues = (2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2); 
 
-@bundlesgroup = ( [ [[4, 1, 3]]]);
+@bundlesgroup = ( [ [[4, 2, 2]]]);
 # my @bundlesgroup = ( [ [[4, 2, 2], [5, 2, 2] [6, 2, 2]]] );
 # END OF THE SECTION TO CONFIGURE BLOCK SEARCH
 #######################################################################################################
@@ -33,10 +33,11 @@ $configfileinsert = ""; # "./erase_first_ams2e.pl";
 "n", # 4) erase res and .fl file as they are created or not
 "n", # 5) report. OBSOLETE. DON'T USE.
 "y", # 6) merge reports
-"y", # 7) name variables in non-filtered reports (convert reports)
+"n", # 7) name variables in non-filtered reports (convert reports)
 "n", # 8) filter already converted reports
 "n", # 9) make table to be plotted in 3D
-"n"); # 10) convert filtered and make-tabled reports
+"n", # 10) convert filtered and make-tabled reports
+"n" ); # 11) checks if it is possible to launch a block search.
 # This variables tell to the program what to do.  1) Create cases for simulation; 
 # 2) simulate AND retrieve; 3) retrieve data; 4) erase res and .fl file as they are created or not 5) report; 6) merge reports; NOTE: THIS IS NOT UNUSEFUL WITH LOADS AND TEMPS STATS REPORTS. IT HAS TO BE OFF. IT IS A NEW FEATURE NOT YET IMPLEMENTED FOR OTHER VARIABLES
 # 7) substitute names (convert) in non-filtered reports, 8) filter already converted reports, 9) make table to be plotted in 3D; 
@@ -107,7 +108,7 @@ $simnetwork = "y"; # "n" id there is no mass/flow network. This information rega
 
 # $counterstep = 1;
 
-@varnumbers = ( 1, 2 );   # (5, 6, 2, 3, 1, 4); (8, 9, 10, 1, 2, 3, 4, 5, 6, 7);  THESE IS DATUM OF THE GREATEST IMPORTANCE. IT TELLS THE SEQUENCE OF THE CICLES OF TRIALS. IT IS THE LIST OF THE VARIABLES IN PLAY.
+# @varnumbers = ( 1, 2 );   # (5, 6, 2, 3, 1, 4); (8, 9, 10, 1, 2, 3, 4, 5, 6, 7);  THESE IS DATUM OF THE GREATEST IMPORTANCE. IT TELLS THE SEQUENCE OF THE CICLES OF TRIALS. IT IS THE LIST OF THE VARIABLES IN PLAY.
 
 @vars = (1, 2, 3, 4);
 
