@@ -7,25 +7,26 @@ $blocksearch = "y"; # say yes of you want to perform a block search optimization
 $ordercolumn = ""; # FOR SUB GETDATA
 $comparecolumn = ""; # FOR SUB GETDATA
 $number_of_bests = "";
-$parnumber = 10; #number of parameters.
+$parnumber = 3; #number of parameters.
 $wholeresultsfile = "";
 $take_column_inresults = 14; # UNUSED
 $absmax = "";
 $absmin = "";
 # $varsnum;
+
+@varn = ( [ [1, 2, 3, 4] ] );
 $chancefile; 
-@varn = (1, 2, 3, 4);
 $reportfile = "";
 $steps = 3;
 @midvalues = (2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2); 
 
-@bundlesgroup = ( [ [[4, 2, 2]]]);
-# my @bundlesgroup = ( [ [[4, 2, 2], [5, 2, 2] [6, 2, 2]]] );
+@casegroup = ( [ [4, 4] ] ) ;
+$casegroupfile;
+
 # END OF THE SECTION TO CONFIGURE BLOCK SEARCH
 #######################################################################################################
 
 $file = "ame";  # Write here the root model directory.  This will remain unchanged. THIS NOW IS DONE VIA KEYBOARD THROUGH THE EXECUTABLE.
-$filenew = "$file"."_"; # Write here the work model directory.  The program will copy the root model directory into this one.  Afterwards changes may be made to it
 $configfileinsert = ""; # "./erase_first_ams2e.pl";
 @dowhat = ( "y", # 1) Create cases for simulation: morph.
 "y", # 2) simulate
@@ -37,7 +38,7 @@ $configfileinsert = ""; # "./erase_first_ams2e.pl";
 "n", # 8) filter already converted reports
 "n", # 9) make table to be plotted in 3D
 "n", # 10) convert filtered and make-tabled reports
-"n" ); # 11) checks if it is possible to launch a block search.
+"n" ); #
 # This variables tell to the program what to do.  1) Create cases for simulation; 
 # 2) simulate AND retrieve; 3) retrieve data; 4) erase res and .fl file as they are created or not 5) report; 6) merge reports; NOTE: THIS IS NOT UNUSEFUL WITH LOADS AND TEMPS STATS REPORTS. IT HAS TO BE OFF. IT IS A NEW FEATURE NOT YET IMPLEMENTED FOR OTHER VARIABLES
 # 7) substitute names (convert) in non-filtered reports, 8) filter already converted reports, 9) make table to be plotted in 3D; 
@@ -110,8 +111,6 @@ $simnetwork = "y"; # "n" id there is no mass/flow network. This information rega
 
 # @varnumbers = ( 1, 2 );   # (5, 6, 2, 3, 1, 4); (8, 9, 10, 1, 2, 3, 4, 5, 6, 7);  THESE IS DATUM OF THE GREATEST IMPORTANCE. IT TELLS THE SEQUENCE OF THE CICLES OF TRIALS. IT IS THE LIST OF THE VARIABLES IN PLAY.
 
-@vars = (1, 2, 3, 4);
-
 $stepsvar1 = 3; # 5; 7 $stepsvar(n) = numer_of_steps_for_this_variable.  This shoulld always better be an odd number since one number is the central one, the default one supplied;
 @applytype1 = ( ["translation", "zone.cfg", "zone.cfg", "a"]); #  @applytype(n) = (["type_of_change", "your_test_file", "file_name_to_which_the_former_will_be_copied_to", "zone_letter"]), 
 $general_variables1 = [
@@ -153,7 +152,7 @@ $translate3 = [ ["y", #yes_or_no_translate # @applytype111 = (["translation", "z
 "" # configuration file for conditions
 ] ];
 
-$stepsvar4 = 1; # 5; 7 $stepsvar(n) = numer_of_steps_for_this_variable.  This shoulld always better be an odd number since one number is the central one, the default one supplied;
+$stepsvar4 = 2; # 5; 7 $stepsvar(n) = numer_of_steps_for_this_variable.  This shoulld always better be an odd number since one number is the central one, the default one supplied;
 @applytype4 = ( ["rotation", "zone.cfg", "zone.cfg", "a"]); #  @applytype(n) = (["type_of_change", "your_test_file", "file_name_to_which_the_former_will_be_copied_to", "zone_letter"]), 
 $general_variables4 = [
 "n", # $generate(n) eq "n" # (if the models deriving from this runs will not be generating new models) or y (if they will be generating new models).
@@ -162,7 +161,7 @@ $general_variables4 = [
 $rotate4 = [ ["y",  # yes or no rotate # @applytype111 = (["rotation", "zone.geo", "zone.geo", "a"]);
 "n", # $yes_or_no_rotate_obstruction: 	"y" o "n"						
 "90", # swingrotate
-"c", # update radiation calculation with the "ish" module?  "b" for yes and "c" for no, continue.
+"a", # update radiation calculation with the "ish" module?  "b" for yes and "c" for no, continue.
 "a", #vertex around which to rotate
 "undef" # configuration file for conditions. UNUSED FOR NOW.
 ] ];

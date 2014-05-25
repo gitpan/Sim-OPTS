@@ -11,6 +11,14 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 use feature 'say';
 no strict; 
 no warnings;
+use Math::Trig;
+use List::Util qw[min max reduce];
+use Data::Dumper;
+$Data::Dumper::Indent = 0;
+$Data::Dumper::Useqq  = 1;
+$Data::Dumper::Terse  = 1;
+use Array::Diff; #  my $diff = Array::Diff->diff( \@old, \@new );
+#use Set::Intersection; # my @intersection = get_intersection(\@arr1, \@arr2);
 
 @ISA = qw(Exporter); # our @ISA = qw(Exporter);
 
@@ -25,7 +33,7 @@ no warnings;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(opts prepare); # our @EXPORT = qw( );
-$VERSION = '0.33_1'; # our $VERSION = '';
+$VERSION = '0.33__3'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 # use Sim::OPTS::prepare; # HERE IS THE FUNCTION 'prepare', a text interface to the function 'opts'.
@@ -48,11 +56,33 @@ sub even
     return 1 if $number == 0;
     return odd ($number - 1);
 }
+
+sub setop
+{
+	(@union, @intersection, @difference) = ();
+	my $swap = shift;
+	my @first = @$swap;
+	my $swap = shift;
+	my @second = @$swap;
+	foreach $e (@first, @second) { $count{$e}++ }
+	foreach $e (keys %count) 
+	{
+		push(@union, $e);
+		if ($count{$e} == 2) 
+		{
+			push(@intersection, $e);
+		} 
+		else 
+		{
+			push(@difference, $e);
+		}
+	}
+}
         
 	
 sub opts 
 { 
-	my ( $filenew, $winnerline, $configfile, $response1, $dumpfile, $simlistfile, $sortmerged, @totvarnumbers);
+	my ( $filenew, $winnerline, $loserline, $configfile, $morphfile, $simlistfile, $sortmerged, @totvarnumbers, @uplift, @downlift, $fileuplift, $filedownlift );
 
 	sub start
 
@@ -76,6 +106,7 @@ Insert the name of a configuration file (local path):\n";
 
 	# eval `cat $configfile`; # The file where the program data are
 	require $configfile; # The file where the program data are
+	if (-e $casegroupfile) { require $casegroupfile; }
 
 	# use Sim::OPTS::morph;
 	# use Sim::OPTS::sim; # HERE THE FUNCTIONS "sim" and "retrieve" are.
@@ -85,295 +116,297 @@ Insert the name of a configuration file (local path):\n";
 	{
 		; #use Sim::OPTS::search;
 	}
-	
-	use Math::Trig;
-	use List::Util qw[min max reduce];
-	use Data::Dumper;
-	$Data::Dumper::Indent = 0;
-	$Data::Dumper::Useqq  = 1;
-	$Data::Dumper::Terse  = 1;
 
 	###########################################################################################
 	# BELOW THE OPTS PROGRAM FOLLOWS.
 
 	print "OPTS - IS - RUNNING.
 -------------------\n";
-	if ($outfile ne "" ) { open( OUTFILE, ">$outfile" ) or die "Can't open $outfile: $!"; }
-	if ($toshell ne "" ) { open( TOSHELL, ">$toshell" ) or die "Can't open $toshell: $!"; }
+	if ($outfile) { open( OUTFILE, ">$outfile" ) or die "Can't open $outfile: $!"; }
+	if ($toshell) { open( TOSHELL, ">$toshell" ) or die "Can't open $toshell: $!"; }
 	
-	my $counterfn = 0;
-	print `mkdir $mypath/models`;
-	print TOSHELL "mkdir $mypath/models\n\n";
-	
-	if ($countblock == 0)
-	{
-		$filenew = "$mypath/models/$file" . "_";
-		#print "FILENAMEOUT: $filename\n";
-		#print "SCALAR @ VARNUMBERS: " . scalar(@varnumbers) . "\n";
-		#print "SCALAR @ VARS: " . scalar(@vars) . "\n";
-		foreach my $el (@vars)
-		{
-			#print "COUNTERFN: " . "$counterfn\n";
-			#print "\$FILENAMEIN: $filename\n";
-			#print "\$vars[\$counterfn]: $vars[$counterfn]\n";
-			$filenew = "$filenew" . "$vars[$counterfn]" . "-" . "0" . "_" ;
-			$counterfn++;
-			#print "DOING \$filenew: $filenew\n\n";
-		}
-		#print "OUT \$filenew: $filenew\n\n";
-	}
-	else 
-	{ $filenew = $winnerline; }
+	unless (-e "$mypath/models") { `mkdir $mypath/models`; }
+	unless (-e "$mypath/models") { print TOSHELL "mkdir $mypath/models\n\n"; }
 
 	#################################################################################
-#################################################################################
-#my $filename;
-my $countblock = 1;
-sub exec
-{
-	my $swap = shift;
-	my @arrayarrived = @$swap;
-	if (@arrayarrived) { @varnumbers = @arrayarrived; }
-	push (@totvarnumbers, @varnumbers);
-	$dumpfile = "$mypath/" . "morphfile-" . "$countblock";
-	$simlistfile = "$mypath/$file-simlist-$countblock";
-	
-	open (DUMPFILE, ">>$dumpfile") or die;
-
-sub morph    # This function generates the test case variables 
-# and modifies them.
-# HERE THE VARIABLES ARE ASSIGNED A 
-# NUMBERED NAME ON THE FLY AT EACH SEARCH ITERATION (PHASE).
-# THE VARIABLE $varnumber COUNTS THE MORPHING PHASE.
-# THE VARIABLE DESIGNING THE MORHING PHASE IS $stepsvar.
-# THE VARIABLE $counterzone DOES NOT EXACTLY COUNT A ZONE (IT 
-# JUST MAY. IT COUNTS A MORPHING PHASE NESTED INTO ANOTHER
-# ONE: A MORPHING SUB-PHASE.
-{
-	my $countvar = 0;
-	
-	foreach $varnumber (@varnumbers)
+	#################################################################################
+	#my $filename;
+	sub exec
 	{
-		if ( $countvar == $#varnumbers )
-		{
-			$$general_variables[0] = "n";
-		}
+		my $swap = shift;
+		my @varnumbers = @$swap;
+		my $countblock = shift;
+		my $countcase = shift;
+		my $swap = shift;
+		my @nextvarnumbers = @$swap;
+		my $swap = shift;
+		my @uplift = @$swap;
+		my $swap = shift;
+		my @downlift = @$swap;
+		my $swap = shift;
+		my @blocks = @$swap;
+		my $swap = shift;
+		my @blockelts = @$swap;
 		
-		print "VARNUMBER: $varnumber\n\n";
-		$stepsvar = ${ "stepsvar" . "$varnumber" };
-		@applytype = @{ "applytype" . "$varnumber" };
-		@generic_change = @{ "generic_change" . "$varnumber" };
-		$rotate = ${ "rotate" . "$varnumber" };
-		$rotatez = ${ "rotatez" . "$varnumber" };
-		$general_variables = ${ "general_variables" . "$varnumber" };
-		$translate = ${ "translate" . "$varnumber" };
-		$translate_surface_simple = ${ "translate_surface_simple" . "$varnumber" };
-		$translate_surface = ${ "translate_surface" . "$varnumber" };
-		$keep_obstructions = ${ "keep_obstructions" . "$varnumber" };
-		$shift_vertexes = ${ "shift_vertexes" . "$varnumber" };
-		$construction_reassignment = ${ "construction_reassignment" . "$varnumber" };
-		$thickness_change = ${ "thickness_change" . "$varnumber" };
-		$recalculateish = ${ "recalculateish" . "$varnumber" };
-		@recalculatenet = @{ "recalculatenet" . "$varnumber" };
-		$obs_modify = ${ "obs_modify" . "$varnumber" };
-		$netcomponentchange = ${ "netcomponentchang" . "$varnumber" };
-		$changecontrol = ${ "changecontrol" . "$varnumber" };
-		@apply_constraints = @{ "apply_constraints" . "$varnumber" }; # NOW SUPERSEDED BY @constrain_geometry
-		$rotate_surface = ${ "rotate_surface" . "$varnumber" };
-		@reshape_windows = @{ "reshape_windows" . "$varnumber" };
-		@apply_netconstraints = @{ "apply_netconstraints" . "$varnumber" };
-		@apply_windowconstraints = @{ "apply_windowconstraints" . "$varnumber" };
-		@translate_vertexes = @{ "translate_vertexes" . "$varnumber" };
-		$warp = ${ "warp" . "$varnumber" };
-		@daylightcalc = @{ "daylightcalc" . "$varnumber" };
-		@change_config = @{ "change_config" . "$varnumber" };
-		@constrain_geometry = @{ "constrain_geometry" . "$varnumber" };
-		@vary_controls = @{ "vary_controls" . "$varnumber" };
-		@constrain_controls =  @{ "constrain_controls" . "$varnumber" };
-		@constrain_geometry = @{ "constrain_geometry" . "$varnumber" };
-		@constrain_obstructions = @{ "constrain_obstructions" . "$varnumber" };
-		@get_obstructions = @{ "get_obstructions" . "$varnumber" };
-		@pin_obstructions = @{ "pin_obstructions" . "$varnumber" };
-		$checkfile = ${ "checkfile" . "$varnumber" };
-		@vary_net = @{ "vary_net" . "$varnumber" };
-		@constrain_net = @{ "constrain_net" . "$varnumber" };
-		@propagate_constraints = @{ "propagate_constraints" . "$varnumber" };
-		@change_climate = @{ "change_climate" . "$varnumber" };
+		$morphfile = "$mypath/$file-morphfile-$countblock";
+		$simlistfile = "$mypath/$file-simlist-$countblock";
+		
+		open (MORPHFILE, ">$morphfile") or die;
+		
+		say OUTFILE "\nHERE RECEIVING \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
+		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
+		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
+		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+		
+		
+		push (@totvarnumbers, @varnumbers);
+		&setop(\@totvarnumbers, \@varnumbers);
+		@totvarnumbers = @union;
+		
 
-		my @cases_to_sim;
-		my @files_to_convert;
-		my (@v, @obs, @node, @component, @loopcontrol, @flowcontrol); # THINGS GLOBAL AS REGARDS COUNTER ZONE CYCLES
-		my (@myv, @myobs, @mynode, @mycomponent, @myloopcontrol, @myflowcontrol); # THINGS LOCAL AS REGARDS COUNTER ZONE CYCLES
-		my (@tempv, @tempobs, @tempnode, @tempcomponent, @temploopcontrol, @tempflowcontrol); # THINGS LOCAL AS REGARDS COUNTER ZONE CYCLES
-		my (@dov, @doobs, @donode, @docomponent, @doloopcontrol, @doflowcontrol); # THINGS LOCAL AS REGARDS COUNTER ZONE CYCLES
-		#open (CASELIST, ">$caselistfile") or die;
-		
-		if ( ( $countvar == $#varnumbers ) and ($$general_variables[0] eq "y") )
+		sub morph    # This function generates the test case variables 
+		# and modifies them.
+		# HERE THE VARIABLES ARE ASSIGNED A 
+		# NUMBERED NAME ON THE FLY AT EACH SEARCH ITERATION (PHASE).
+		# THE VARIABLE $varnumber COUNTS THE MORPHING PHASE.
+		# THE VARIABLE DESIGNING THE MORHING PHASE IS $stepsvar.
+		# THE VARIABLE $counterzone DOES NOT EXACTLY COUNT A ZONE (IT 
+		# JUST MAY. IT COUNTS A MORPHING PHASE NESTED INTO ANOTHER
+		# ONE: A MORPHING SUB-PHASE.
 		{
-			$$general_variables[0] = "n";
-		} # THIS TELLS THAT IF THE SEARCH IS ENDING (LAST SUBSEARCH CYCLE) GENERATION OF CASES HAS TO BE TURNED OFF
-		
-		my $generate  = $$general_variables[0];
-		my $sequencer = $$general_variables[1];
-		my $dffile = "df-$file.txt";
-
-		if ( $countvar == 0 )
-		{
-			if ($exeonfiles eq "y") { print `cp -r $mypath/$file $filenew`; }
-			print TOSHELL "cp -r $mypath/$file $filenew\n\n";
-		}
-		if ( ( $sequencer eq "n" ) and not( $countvar == 0 ) )
-		{
-			my @files_to_convert = grep -d, <$mypath/models/$file*£>;
-			foreach $file_to_convert (@files_to_convert)
+			say OUTFILE "\nHERE 2 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
+		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
+		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
+		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+			my $countvar = 0;
+			foreach $varnumber (@varnumbers)
 			{
-				$file_converted = "$file_to_convert" . "_";
-				unless (-e $file_converted)
+				say OUTFILE "\nHERE 3 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
+		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
+		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
+		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+				if ( $countvar == $#varnumbers )
 				{
-					if ($exeonfiles eq "y") { print `mv $file_to_convert $file_converted\n`; }
-					print TOSHELL "mv $file_to_convert $file_converted\n\n";
-				}
-			}
-		}
-		#eval `cat $configfileinsert`;
+					$$general_variables[0] = "n";
+				} # THIS TELLS THAT IF THE SEARCH IS ENDING (LAST SUBSEARCH CYCLE) GENERATION OF CASES HAS TO BE TURNED OFF
+				
+				$stepsvar = ${ "stepsvar" . "$varnumber" };
+				@applytype = @{ "applytype" . "$varnumber" };
+				@generic_change = @{ "generic_change" . "$varnumber" };
+				$rotate = ${ "rotate" . "$varnumber" };
+				$rotatez = ${ "rotatez" . "$varnumber" };
+				$general_variables = ${ "general_variables" . "$varnumber" };
+				$translate = ${ "translate" . "$varnumber" };
+				$translate_surface_simple = ${ "translate_surface_simple" . "$varnumber" };
+				$translate_surface = ${ "translate_surface" . "$varnumber" };
+				$keep_obstructions = ${ "keep_obstructions" . "$varnumber" };
+				$shift_vertexes = ${ "shift_vertexes" . "$varnumber" };
+				$construction_reassignment = ${ "construction_reassignment" . "$varnumber" };
+				$thickness_change = ${ "thickness_change" . "$varnumber" };
+				$recalculateish = ${ "recalculateish" . "$varnumber" };
+				@recalculatenet = @{ "recalculatenet" . "$varnumber" };
+				$obs_modify = ${ "obs_modify" . "$varnumber" };
+				$netcomponentchange = ${ "netcomponentchang" . "$varnumber" };
+				$changecontrol = ${ "changecontrol" . "$varnumber" };
+				@apply_constraints = @{ "apply_constraints" . "$varnumber" }; # NOW SUPERSEDED BY @constrain_geometry
+				$rotate_surface = ${ "rotate_surface" . "$varnumber" };
+				@reshape_windows = @{ "reshape_windows" . "$varnumber" };
+				@apply_netconstraints = @{ "apply_netconstraints" . "$varnumber" };
+				@apply_windowconstraints = @{ "apply_windowconstraints" . "$varnumber" };
+				@translate_vertexes = @{ "translate_vertexes" . "$varnumber" };
+				$warp = ${ "warp" . "$varnumber" };
+				@daylightcalc = @{ "daylightcalc" . "$varnumber" };
+				@change_config = @{ "change_config" . "$varnumber" };
+				@constrain_geometry = @{ "constrain_geometry" . "$varnumber" };
+				@vary_controls = @{ "vary_controls" . "$varnumber" };
+				@constrain_controls =  @{ "constrain_controls" . "$varnumber" };
+				@constrain_geometry = @{ "constrain_geometry" . "$varnumber" };
+				@constrain_obstructions = @{ "constrain_obstructions" . "$varnumber" };
+				@get_obstructions = @{ "get_obstructions" . "$varnumber" };
+				@pin_obstructions = @{ "pin_obstructions" . "$varnumber" };
+				$checkfile = ${ "checkfile" . "$varnumber" };
+				@vary_net = @{ "vary_net" . "$varnumber" };
+				@constrain_net = @{ "constrain_net" . "$varnumber" };
+				@propagate_constraints = @{ "propagate_constraints" . "$varnumber" };
+				@change_climate = @{ "change_climate" . "$varnumber" };
 
-		@cases_to_sim = grep -d, <$mypath/models/$file*_>;
-		print "DUMP CASES TO SIM: " . Dumper(@cases_to_sim) . "\n";
-		foreach $case_to_sim (@cases_to_sim)
-		{
-			print "\$case_to_sim: $case_to_sim\n";
-			$counterstep = 1;
-		
-			while ( $counterstep <= $stepsvar )
-			{
-				my $from = "$case_to_sim";
-				my $almost_to = $from;
-				$almost_to =~ s/$varnumber-\d+/$varnumber-$counterstep/ ;
-				print "\$varnumber:$varnumber, \$counterstep:$counterstep, \$stepsvar: $stepsvar, \$from: $from, \$almost_to: $almost_to\n";
-				#print "DECIDING: \$varnumber-\$counterstep: $varnumber-$counterstep\n";
-				if (     ( $generate eq "n" )
-					 and ( ( $sequencer eq "y" ) or ( $sequencer eq "last" ) ) )
+				my @cases_to_sim;
+				my @files_to_convert;
+				my (@v, @obs, @node, @component, @loopcontrol, @flowcontrol); # THINGS GLOBAL AS REGARDS COUNTER ZONE CYCLES
+				my (@myv, @myobs, @mynode, @mycomponent, @myloopcontrol, @myflowcontrol); # THINGS LOCAL AS REGARDS COUNTER ZONE CYCLES
+				my (@tempv, @tempobs, @tempnode, @tempcomponent, @temploopcontrol, @tempflowcontrol); # THINGS LOCAL AS REGARDS COUNTER ZONE CYCLES
+				my (@dov, @doobs, @donode, @docomponent, @doloopcontrol, @doflowcontrol); # THINGS LOCAL AS REGARDS COUNTER ZONE CYCLES
+				#open (CASELIST, ">$caselistfile") or die;
+				
+				my $generate  = $$general_variables[0];
+				my $sequencer = $$general_variables[1];
+				my $dffile = "df-$file.txt";			
+				
+				if ( ( $countvar == 0 ) and ( $countblock == 1 ) and ( $countcase == 0 ) )
 				{
-					if ( $almost_to =~ m/§$/ ) { $to = "$almost_to" ; }
-					else
-					{
-						#$to = "$case_to_sim$varnumber-$counterstep§";
-						$to = "$almost_to" . "§";
-					}
-				} 
-				elsif ( ( $generate eq "y" ) and ( $sequencer eq "n" ) )
-				{
-					if ( $almost_to =~ m/_$/ ) { $to = "$almost_to" ; }
-					else
-					{
-						#$to = "$case_to_sim$varnumber-$counterstep" . "_";
-						$to = "$almost_to" . "_";
-						#if ( $counterstep == $stepsvar )
-						#{
-						#	if ($exeonfiles eq "y") { print `chmod -R 777 $from\n`; }
-						#	print TOSHELL "chmod -R 777 $from\n\n";
-						#}
-					}
-				} 
-				elsif ( ( $generate eq "y" ) and ( $sequencer eq "y" ) )
-				{
-					#$to = "$case_to_sim$varnumber-$counterstep" . "£";
-					$to = "$almost_to" . "£";
-				} 
-				elsif ( ( $generate eq "y" ) and ( $sequencer eq "last" ) )
-				{
-					if ( $almost_to =~ m/£$/ ) { $to = "$almost_to" ; }
-					else
-					{
-						#$to = "$case_to_sim$varnumber-$counterstep" . "£";
-						$to = "$almost_to" . "£";
-						#if ( $counterstep == $stepsvar )
-						#{
-						#	if ($exeonfiles eq "y") { print `chmod -R 777 $from\n`; }
-						#	print TOSHELL "chmod -R 777 $from\n\n";
-						#}
-					}
-				} 
-				elsif ( ( $generate eq "n" ) and ( $sequencer eq "n" ) )
-				{
-					 $almost_to =~ s/[§|_|£]$// ;
-					#$to = "$case_to_sim$varnumber-$counterstep";
-					$to = "$almost_to";
+					if ($exeonfiles eq "y") { `cp -r $mypath/$file $filenew`; }
+					print TOSHELL "cp -r $mypath/$file $filenew\n\n";
 				}
 
-				print "TO: $to\n";
-				
-				if ($countvar == $#varnumbers)
+				@cases_to_sim = grep -d, <$mypath/models/$file*_>;
+
+				foreach $case_to_sim (@cases_to_sim)
 				{
-					print DUMPFILE "$to\n";
-				}
+					say OUTFILE "\nHERE 4 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
+		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
+		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
+		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+					print OUTFILE "\$case_to_sim: $case_to_sim\n";
+					$counterstep = 1;
 				
-				unless (-e $something)###ZZZ
-				{
-					if (     ( $generate eq "y" )
-						 and ( $counterstep == $stepsvar )
-						 and ( ( $sequencer eq "n" ) or ( $sequencer eq "last" ) ) )
+					while ( $counterstep <= $stepsvar )
 					{
-						if ($exeonfiles eq "y") { print `mv $from $to\n`; }
-						print TOSHELL "mv $from $to\n\n";
-						#if ($exeonfiles eq "y") { print `chmod -R 777 $to\n`; }
-						#print TOSHELL "chmod -R 777 $to\n\n";
-					} else
-					{
-						if ($exeonfiles eq "y") { print `cp -R $from $to\n`; }
-						print TOSHELL "cp -R $from $to\n\n";
-						#if ($exeonfiles eq "y") { print `chmod -R 777 $to\n`; }
-						#print TOSHELL "chmod -R 777 $to\n\n";
-					}
-				}
-				$counterzone = 0;
-				unless (-e $something)###ZZZ
-				{	
-					foreach my $zone (@applytype)
-					{#DDD1
-						my $modification_type = $applytype[$counterzone][0];
-						if ( ( $applytype[$counterzone][1] ne $applytype[$counterzone][2] )
-							 and ( $modification_type ne "changeconfig" ) )
+						say OUTFILE "\nHERE 5 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
+		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
+		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
+		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+						my $from = "$case_to_sim";
+						my $almost_to = $from;
+						$almost_to =~ s/$varnumber-\d+/$varnumber-$counterstep/ ;
+						
+						if (     ( $generate eq "n" )
+							 and ( ( $sequencer eq "y" ) or ( $sequencer eq "last" ) ) )
 						{
-							if ($exeonfiles eq "y") 
-							{ 
-								print 
-								`cp -f $to/zones/$applytype[$counterzone][1] $to/zones/$applytype[$counterzone][2]\n`; 
+							if ( $almost_to =~ m/§$/ ) { $to = "$almost_to" ; }
+							else
+							{
+								#$to = "$case_to_sim$varnumber-$counterstep§";
+								$to = "$almost_to" . "§";
 							}
-							print TOSHELL 
-							"cp -f $to/zones/$applytype[$counterzone][1] $to/zones/$applytype[$counterzone][2]\n\n";
-							if ($exeonfiles eq "y") 
-							{ 
-								print 
-								`cp -f $to/cfg/$applytype[$counterzone][1] $to/cfg/$applytype[$counterzone][2]\n`; 
-							}    # ORDINARILY, YOU MAY REMOVE THIS PART
-							print TOSHELL
-							"cp -f $to/cfg/$applytype[$counterzone][1] $to/cfg/$applytype[$counterzone][2]\n\n";
-							# ORDINARILY, YOU MAY REMOVE THIS PART
-						}
-						if (
-							 (
-							   $applytype[$counterzone][1] ne $applytype[$counterzone][2]
-							 )
-							 and ( $modification_type eq "changeconfig" )
-						  )
+						} 
+						elsif ( ( $generate eq "y" ) and ( $sequencer eq "n" ) )
 						{
-							if ($exeonfiles eq "y") 
-							{ 
-								print 
-								`cp -f $to/cfg/$applytype[$counterzone][1] $to/cfg/$applytype[$counterzone][2]\n`; 
+							if ( $almost_to =~ m/_$/ ) { $to = "$almost_to" ; }
+							else
+							{
+								#$to = "$case_to_sim$varnumber-$counterstep" . "_";
+								$to = "$almost_to" . "_";
+								#if ( $counterstep == $stepsvar )
+								#{
+								#	if ($exeonfiles eq "y") { print `chmod -R 777 $from\n`; }
+								#	print TOSHELL "chmod -R 777 $from\n\n";
+								#}
 							}
-							print TOSHELL 
-							"cp -f $to/cfg/$applytype[$counterzone][1] $to/cfg/$applytype[$counterzone][2]\n\n"; 
-							# ORDINARILY, REMOVE THIS LINE
+						} 
+						elsif ( ( $generate eq "y" ) and ( $sequencer eq "y" ) )
+						{
+							#$to = "$case_to_sim$varnumber-$counterstep" . "£";
+							$to = "$almost_to" . "£";
+						} 
+						elsif ( ( $generate eq "y" ) and ( $sequencer eq "last" ) )
+						{
+							if ( $almost_to =~ m/£$/ ) { $to = "$almost_to" ; }
+							else
+							{
+								#$to = "$case_to_sim$varnumber-$counterstep" . "£";
+								$to = "$almost_to" . "£";
+								#if ( $counterstep == $stepsvar )
+								#{
+								#	if ($exeonfiles eq "y") { print `chmod -R 777 $from\n`; }
+								#	print TOSHELL "chmod -R 777 $from\n\n";
+								#}
+							}
+						} 
+						elsif ( ( $generate eq "n" ) and ( $sequencer eq "n" ) )
+						{
+							 $almost_to =~ s/[§|_|£]$// ;
+							#$to = "$case_to_sim$varnumber-$counterstep";
+							$to = "$almost_to";
 						}
 						
+						say OUTFILE "\nHERE BEFORE \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
+		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
+		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
+		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
 						
-						print CASELIST "$to\n";
+						if ($countvar == $#varnumbers)
+						{
+							$to =~ s/_$//;
+							print MORPHFILE "$to\n";
+						}
 						
-						
-						
-						#########################################################################################
+						say OUTFILE "\nHERE AFTER \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
+		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
+		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
+		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+
+
+
+						unless (-e $something)###ZZZ
+						{
+							if (     ( $generate eq "y" )
+								 and ( $counterstep == $stepsvar )
+								 and ( ( $sequencer eq "n" ) or ( $sequencer eq "last" ) ) )
+							{
+								if ($exeonfiles eq "y") { `cp -R $from $to\n`; }
+								print TOSHELL "cp -R $from $to\n\n";
+								#if ($exeonfiles eq "y") { print `chmod -R 777 $to\n`; }
+								#print TOSHELL "chmod -R 777 $to\n\n";
+							} else
+							{
+								if ($exeonfiles eq "y") { `cp -R $from $to\n`; }
+								print TOSHELL "cp -R $from $to\n\n";
+								#if ($exeonfiles eq "y") { print `chmod -R 777 $to\n`; }
+								#print TOSHELL "chmod -R 777 $to\n\n";
+							}
+						}
+						$counterzone = 0;
+						unless (-e $something)###ZZZ
+						{	
+							foreach my $zone (@applytype)
+							{#DDD1
+								my $modification_type = $applytype[$counterzone][0];
+								if ( ( $applytype[$counterzone][1] ne $applytype[$counterzone][2] )
+									 and ( $modification_type ne "changeconfig" ) )
+								{
+									if ($exeonfiles eq "y") 
+									{  
+										`cp -f $to/zones/$applytype[$counterzone][1] $to/zones/$applytype[$counterzone][2]\n`; 
+									}
+									print TOSHELL 
+									"cp -f $to/zones/$applytype[$counterzone][1] $to/zones/$applytype[$counterzone][2]\n\n";
+									if ($exeonfiles eq "y") 
+									{  
+										`cp -f $to/cfg/$applytype[$counterzone][1] $to/cfg/$applytype[$counterzone][2]\n`; 
+									}    # ORDINARILY, YOU MAY REMOVE THIS PART
+									print TOSHELL
+									"cp -f $to/cfg/$applytype[$counterzone][1] $to/cfg/$applytype[$counterzone][2]\n\n";
+									# ORDINARILY, YOU MAY REMOVE THIS PART
+								}
+								if (
+									 (
+									   $applytype[$counterzone][1] ne $applytype[$counterzone][2]
+									 )
+									 and ( $modification_type eq "changeconfig" )
+								  )
+								{
+									if ($exeonfiles eq "y") 
+									{ 
+										`cp -f $to/cfg/$applytype[$counterzone][1] $to/cfg/$applytype[$counterzone][2]\n`; 
+									}
+									print TOSHELL 
+									"cp -f $to/cfg/$applytype[$counterzone][1] $to/cfg/$applytype[$counterzone][2]\n\n"; 
+									# ORDINARILY, REMOVE THIS LINE
+								}
+								
+								
+								print CASELIST "$to\n";
+								
+								
+								
+								#########################################################################################
 #########################################################################################
 #########################################################################################
 
@@ -3056,7 +3089,7 @@ sub checkfile # THIS FUNCTION DOES BETTER WHAT IS ALSO DONE BY THE PREVIOUS ONE.
 
 	unless ( ($sourceaddress eq "" ) or ( $targetaddress eq "" ))
 	{
-		print "TARGETFILE IN FUNCTION: $targetaddress\n";
+		print OUTFILE "TARGETFILE IN FUNCTION: $targetaddress\n";
 		if ( $sourceaddress ne $targetaddress )
 		{
 			if ($exeonfiles eq "y") 
@@ -4255,8 +4288,8 @@ sub constrain_geometry # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY
 	my $to_do = shift;
 
 	
-	# print "YOUCALLED!\n\n";
-	# print "HERE: \@constrain_geometry:" . Dumper(@constrain_geometry) . "\n\n";
+	# print OUTFILE "YOUCALLED!\n\n";
+	# print OUTFILE "HERE: \@constrain_geometry:" . Dumper(@constrain_geometry) . "\n\n";
 	if ($longmenu eq "y")
 	{																
 		@vertexletters = ("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", 
@@ -4278,8 +4311,8 @@ sub constrain_geometry # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY
 	foreach my $elm (@constrain_geometry)
 	{
 		my @group = @{$elm};
-		# print "INSIDE: \@constrain_geometry:" . Dumper(@constrain_geometry) . "\n\n";
-		# print "INSIDE: \@group:" . Dumper(@group) . "\n\n";
+		# print OUTFILE "INSIDE: \@constrain_geometry:" . Dumper(@constrain_geometry) . "\n\n";
+		# print OUTFILE "INSIDE: \@group:" . Dumper(@group) . "\n\n";
 		my $zone_letter = $group[1];
 		my $sourcefile = $group[2];
 		my $targetfile = $group[3];
@@ -4289,7 +4322,7 @@ sub constrain_geometry # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY
 		my @work_letters = @{$group[5]}; 
 		my $longmenus = $group[6]; 
 		
-		# print "VARIABLES: \$to:$to, \$fileconfig:$fileconfig, \$stepsvar:$stepsvar, \$counterzone:$counterzone, \$counterstep:$counterstep, \$exeonfiles:$exeonfiles, 
+		# print OUTFILE "VARIABLES: \$to:$to, \$fileconfig:$fileconfig, \$stepsvar:$stepsvar, \$counterzone:$counterzone, \$counterstep:$counterstep, \$exeonfiles:$exeonfiles, 
 		# \$zone_letter:$zone_letter, \$sourceaddress:$sourceaddress, \$targetaddress:$targetaddress, \$longmenus:$longmenus, \@work_letters, " . Dumper(@work_letters) . "\n\n";
 
 		unless ($to_do eq "justwrite")
@@ -4303,7 +4336,7 @@ sub constrain_geometry # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY
 		{
 			apply_geo_constraints(\@dov, \@vertexletters, \@work_letters, $exeonfiles, $zone_letter, $toshell, $outfile, $configfile, \@tempv);
 		}
-		# print "\@v: " . Dumper(@v) . "\n\n";
+		# print OUTFILE "\@v: " . Dumper(@v) . "\n\n";
 	}
 } # END SUB constrain_geometry
 
@@ -4401,14 +4434,14 @@ sub apply_geo_constraints
 	my @v = @$swap;
 	my $swap = shift;
 	my @vertexletters = @$swap;
-	# print "\@vertexletters: " . Dumper(@vertexletters) . "\n\n";
+	# print OUTFILE "\@vertexletters: " . Dumper(@vertexletters) . "\n\n";
 	
 	my $swap = shift;
 	my @work_letters = @$swap;
-	# print "\@work_letters" . Dumper(@work_letters) . "\n\n";
+	# print OUTFILE "\@work_letters" . Dumper(@work_letters) . "\n\n";
 	
 	my $exeonfiles = shift;
-	# print "exeonfiles: $exeonfiles\n\n";
+	# print OUTFILE "exeonfiles: $exeonfiles\n\n";
 	my $zone_letter = shift;
 	my $toshell = shift;
 	my $outfile = shift;
@@ -4419,7 +4452,7 @@ sub apply_geo_constraints
 	
 	my $countervertex = 0;
 	
-	# print "\@v: " . Dumper(@v) . "\n\n";
+	# print OUTFILE "\@v: " . Dumper(@v) . "\n\n";
 	foreach my $v (@v)
 	{
 		my $vertexletter = $vertexletters[$countervertex];
@@ -4436,7 +4469,7 @@ sub apply_geo_constraints
 		{ 
 			if ($exeonfiles eq "y") 
 			{
-				# print "YES. \$v:" . Dumper($v) . "\n\n";
+				# print OUTFILE "YES. \$v:" . Dumper($v) . "\n\n";
 				print
 #################################
 `prj -file $to/cfg/$fileconfig -mode script<<YYY
@@ -4526,7 +4559,7 @@ sub vary_controls
 	my @vary_controls = @$swap;
 
 	
-	# print "FIRST: \$to:$to, \$fileconfig:$fileconfig, \$stepsvar:$stepsvar, \$counterzone:$counterzone, \$counterstep:$counterstep, \@applytype:@applytype, \@vary_controls:@vary_controls\n\n";
+	# print OUTFILE "FIRST: \$to:$to, \$fileconfig:$fileconfig, \$stepsvar:$stepsvar, \$counterzone:$counterzone, \$counterstep:$counterstep, \@applytype:@applytype, \@vary_controls:@vary_controls\n\n";
 	my $semaphore_zone;
 	my $semaphore_dataloop;
 	my $semaphore_massflow;
@@ -4552,7 +4585,7 @@ sub vary_controls
 	my $loopcontrol_letter;
 	
 	my @group = @{$vary_controls[$counterzone]};
-	# print "SECOND: \@group: " . Dumper(@group) . "\n\n";
+	# print OUTFILE "SECOND: \@group: " . Dumper(@group) . "\n\n";
 	my $sourcefile = $group[0];
 	my $targetfile = $group[1];
 	my $configfile = $group[2];
@@ -4565,9 +4598,9 @@ sub vary_controls
 	my $sourceaddress = "$to$sourcefile";
 	my $targetaddress = "$to$targetfile";
 	my $configaddress = "$to$configfile";	
-	# print "Dumper\@vary_controls\: " . Dumper(@vary_controls) ."\n\@\{\$vary_controls\[0\]\} : @{$vary_controls[0]}\n"
+	# print OUTFILE "Dumper\@vary_controls\: " . Dumper(@vary_controls) ."\n\@\{\$vary_controls\[0\]\} : @{$vary_controls[0]}\n"
 	#. "Dumper\@applytype\: " . Dumper(@applytype) . 
-	# print "THIRD: \$sourcefile:$sourcefile, \$targetfile:$targetfile, \$configfile:$configfile, \@swing_zone_hours:@swing_zone_hours, \@swing_max_heating_powers:@swing_max_heating_powers, \@swing_max_cooling_powers:@swing_max_cooling_powers, \@swing_min_cooling_powers:@swing_min_cooling_powers, \@swing_heating_setpoints:@swing_heating_setpoints, \@swing_cooling_setpoints:@swing_cooling_setpoints, \@swing_zone_hours:@swing_zone_hours, \@swing_zone_setpoints:@swing_zone_setpoints, \$sourceaddress:$sourceaddress, \$targetaddress:$targetaddress, \$configaddress:$configaddress."  .
+	# print OUTFILE "THIRD: \$sourcefile:$sourcefile, \$targetfile:$targetfile, \$configfile:$configfile, \@swing_zone_hours:@swing_zone_hours, \@swing_max_heating_powers:@swing_max_heating_powers, \@swing_max_cooling_powers:@swing_max_cooling_powers, \@swing_min_cooling_powers:@swing_min_cooling_powers, \@swing_heating_setpoints:@swing_heating_setpoints, \@swing_cooling_setpoints:@swing_cooling_setpoints, \@swing_zone_hours:@swing_zone_hours, \@swing_zone_setpoints:@swing_zone_setpoints, \$sourceaddress:$sourceaddress, \$targetaddress:$targetaddress, \$configaddress:$configaddress."  .
 	# "\n\n"; 
 
 	#@loopcontrol; # DON'T PUT "my" HERE.
@@ -4587,7 +4620,7 @@ sub vary_controls
 		read_controls($sourceaddress, $targetaddress, \@letters, \@period_letters);
 	}
 				
-	# print "RESULT. ZONE CONTROLS: " . Dumper( @loopcontrol) . "\nFLOW CONTROLS: " . Dumper(@flowcontrol) . "\n\n";
+	# print OUTFILE "RESULT. ZONE CONTROLS: " . Dumper( @loopcontrol) . "\nFLOW CONTROLS: " . Dumper(@flowcontrol) . "\n\n";
 	
 	calc_newctl($to, $fileconfig, $stepsvar, $counterzone, $counterstep, \@buildbulk, 
 	\@flowbulk, \@loopcontrol, \@flowcontrol);
@@ -4642,27 +4675,27 @@ sub vary_controls
 				my $swing_min_cooling_power = $askloop[6];
 				my $swing_heating_setpoint = $askloop[7];
 				my $swing_cooling_setpoint = $askloop[8];
-				#print "NOW: \$swing_loop_hour:$swing_loop_hour, \$swing_max_heating_power:$swing_max_heating_power, \$swing_min_heating_power:$swing_min_heating_power, \$swing_max_cooling_power:$swing_max_cooling_power, \$swing_min_cooling_power:$swing_min_cooling_power,  \$swing_heating_setpoint:$swing_heating_setpoint, \$swing_cooling_setpoint:$swing_cooling_setpoint\n\n";
+				#print OUTFILE "NOW: \$swing_loop_hour:$swing_loop_hour, \$swing_max_heating_power:$swing_max_heating_power, \$swing_min_heating_power:$swing_min_heating_power, \$swing_max_cooling_power:$swing_max_cooling_power, \$swing_min_cooling_power:$swing_min_cooling_power,  \$swing_heating_setpoint:$swing_heating_setpoint, \$swing_cooling_setpoint:$swing_cooling_setpoint\n\n";
 				
 				my $countloop = 0; #IT IS FOR THE FOLLOWING FOREACH. LEAVE IT ATTACHED TO IT.
 				foreach $each_loop (@loopcontrol) # THIS DISTRIBUTES THIS NESTED DATA STRUCTURES IN A FLAT MODE TO PAIR THE INPUT FILE, USER DEFINED ONE.
 				{
 					my $countcontrol = 0;
 					@thisloop = @{$each_loop};
-					# print "\@thisloop:@thisloop\n\n";
+					# print OUTFILE "\@thisloop:@thisloop\n\n";
 					# my $letterfile = $letters[$countloop];
 					foreach $lp (@thisloop)
 					{
 						my @control = @{$lp};
 						# print OUTFILE "\@control:@control\n";
-						#print "\$countcontrol:$countcontrol\n";
+						#print OUTFILE "\$countcontrol:$countcontrol\n";
 						# my $letterfilecontrol = $period_letters[$countcontrol];
 						$loop_letter = $loopcontrol[$countloop][$countcontrol][0];
 						$loopcontrol_letter = $loopcontrol[$countloop][$countcontrol][1];
-						#print "\$new_loop_letter:$new_loop_letter, \$loop_letter:$loop_letter, \$new_loopcontrol_letter:$new_loopcontrol_letter, \$loopcontrol_letter:$loopcontrol_letter\n";
+						#print OUTFILE "\$new_loop_letter:$new_loop_letter, \$loop_letter:$loop_letter, \$new_loopcontrol_letter:$new_loopcontrol_letter, \$loopcontrol_letter:$loopcontrol_letter\n";
 						if ( ( $new_loop_letter eq $loop_letter ) and ($new_loopcontrol_letter eq $loopcontrol_letter ) )
 						{
-							# print "YES!: \n\n\n";
+							# print OUTFILE "YES!: \n\n\n";
 							$loop_hour__ = $loopcontrol[$countloop][$countcontrol][$loop_hour];
 							$max_heating_power__ = $loopcontrol[$countloop][$countcontrol][$max_heating_power];
 							$min_heating_power__ = $loopcontrol[$countloop][$countcontrol][$min_heating_power];
@@ -4704,7 +4737,7 @@ sub vary_controls
 				my $pace_cooling_setpoint =  ( $swing_cooling_setpoint / ($stepsvar - 1) );
 				my $floorvalue_cooling_setpoint = ($cooling_setpoint__ - ($swing_cooling_setpoint / 2) );
 				my $new_cooling_setpoint = $floorvalue_cooling_setpoint + ($counterstep * $pace_cooling_setpoint);
-				# print "NOWNEW: \$new_loop_hour:$new_loop_hour, \$new_max_heating_power:$new_max_heating_power, \$new_min_heating_power:$new_min_heating_power, \$new_max_cooling_power:$new_max_cooling_power, \$new_min_cooling_power:$new_min_cooling_power, \$new_heating_setpoint:$new_heating_setpoint, \$new_cooling_setpoint:$new_cooling_setpoint. \n\n";
+				# print OUTFILE "NOWNEW: \$new_loop_hour:$new_loop_hour, \$new_max_heating_power:$new_max_heating_power, \$new_min_heating_power:$new_min_heating_power, \$new_max_cooling_power:$new_max_cooling_power, \$new_min_cooling_power:$new_min_cooling_power, \$new_heating_setpoint:$new_heating_setpoint, \$new_cooling_setpoint:$new_cooling_setpoint. \n\n";
 				
 				$new_loop_hour = sprintf("%.2f", $new_loop_hour);
 				$new_max_heating_power = sprintf("%.2f", $new_max_heating_power);
@@ -4723,7 +4756,7 @@ sub vary_controls
 			# print OUTFILE "NEW LOOP CONTROLS INSIDE: " . Dumper(@new_loopcontrols) . "\n\n";
 
 			my $countflow = 0;
-			# print "\@buildbulk: " . Dumper(@buildbulk) . "\n\n"; print "\@flowbulk: " . Dumper(@flowbulk) . "\n\n";
+			# print OUTFILE "\@buildbulk: " . Dumper(@buildbulk) . "\n\n"; print OUTFILE "\@flowbulk: " . Dumper(@flowbulk) . "\n\n";
 			foreach my $elm (@flowbulk)
 			{
 				my @askflow = @{$elm};
@@ -4735,20 +4768,20 @@ sub vary_controls
 				if ( $swing_flow_onoff eq "ON") { $swing_flow_onoff = 1; }
 				elsif ( $swing_flow_onoff eq "OFF") { $swing_flow_onoff = -1; }
 				my $swing_flow_fraction = $askflow[5];
-				#print "\$new_flow_letter:$new_flow_letter, \$new_flowcontrol_letter:$new_flowcontrol_letter, \$swing_flow_hour:$swing_flow_hour, \$swing_flow_setpoint:$swing_flow_setpoint, \$swing_flow_onoff:$swing_flow_onoff, \$swing_flow_fraction:$swing_flow_fraction. \n\n";
+				#print OUTFILE "\$new_flow_letter:$new_flow_letter, \$new_flowcontrol_letter:$new_flowcontrol_letter, \$swing_flow_hour:$swing_flow_hour, \$swing_flow_setpoint:$swing_flow_setpoint, \$swing_flow_onoff:$swing_flow_onoff, \$swing_flow_fraction:$swing_flow_fraction. \n\n";
 				
 				my $countflow = 0; #IT IS FOR THE FOLLOWING FOREACH. LEAVE IT ATTACHED TO IT.
 				foreach $each_flow (@flowcontrol) # THIS DISTRIBUTES THIS NESTED DATA STRUCTURES IN A FLAT MODE TO PAIR THE INPUT FILE, USER DEFINED ONE.
 				{
 					my $countcontrol = 0;
 					@thisflow = @{$each_flow};
-					# print "\@thisflow:@thisflow\n\n";
+					# print OUTFILE "\@thisflow:@thisflow\n\n";
 					# my $letterfile = $letters[$countflow];
 					foreach $elm (@thisflow)
 					{
 						my @control = @{$elm};
-						# print "\@control:@control\n";
-						#print "\$countcontrol:$countcontrol\n";
+						# print OUTFILE "\@control:@control\n";
+						#print OUTFILE "\$countcontrol:$countcontrol\n";
 						# my $letterfilecontrol = $period_letters[$countcontrol];
 						$flow_letter = $flowcontrol[$countflow][$countcontrol][0];
 						$flowcontrol_letter = $flowcontrol[$countflow][$countcontrol][1];
@@ -4760,7 +4793,7 @@ sub vary_controls
 							if ( $flow_onoff__ eq "ON") { $flow_onoff__ = 1; }
 							elsif ( $flow_onoff__ eq "OFF") { $flow_onoff__ = -1; }
 							$flow_fraction__ = $flowcontrol[$countflow][$countcontrol][$flow_fraction];
-							#print "\$flow_letter:$flow_letter, \$flowcontrol_letter:$flowcontrol_letter, \$flow_hour__:$flow_hour__, \$flow_setpoint__:$flow_setpoint__, \$flow_onoff__:$flow_onoff__, \$flow_fraction__:$flow_fraction__. \n\n";
+							#print OUTFILE "\$flow_letter:$flow_letter, \$flowcontrol_letter:$flowcontrol_letter, \$flow_hour__:$flow_hour__, \$flow_setpoint__:$flow_setpoint__, \$flow_onoff__:$flow_onoff__, \$flow_fraction__:$flow_fraction__. \n\n";
 						}
 						$countcontrol++;
 					}
@@ -4788,21 +4821,21 @@ sub vary_controls
 				$new_flow_onoff = sprintf("%.2f", $new_flow_onoff);
 				$new_flow_fraction = sprintf("%.2f", $new_flow_fraction);
 				
-				# print "THIS: \$flow_letter:$flow_letter, \$new_flow_hour:$new_flow_hour,  \$new_flow_setpoint:$new_flow_setpoint, \$new_flow_onoff:$new_flow_onoff, \$new_flow_fraction:$new_flow_fraction \n\n";
+				# print OUTFILE "THIS: \$flow_letter:$flow_letter, \$new_flow_hour:$new_flow_hour,  \$new_flow_setpoint:$new_flow_setpoint, \$new_flow_onoff:$new_flow_onoff, \$new_flow_fraction:$new_flow_fraction \n\n";
 				push(@new_flowcontrols, 
 				[ $new_flow_letter, $new_flowcontrol_letter, $new_flow_hour,  $new_flow_setpoint, $new_flow_onoff, $new_flow_fraction ] );
-				# print "IN1: \@new_flowcontrols: " . Dumper(@new_flowcontrols) . "\n\n";
+				# print OUTFILE "IN1: \@new_flowcontrols: " . Dumper(@new_flowcontrols) . "\n\n";
 			}
 			# HERE THE MODIFICATIONS TO BE EXECUTED ON EACH PARAMETERS ARE APPLIED TO THE MODELS THROUGH ESP-r.
 			# FIRST, HERE THEY ARE APPLIED TO THE ZONE CONTROLS, THEN TO THE FLOW CONTROLS
-			#print "IN2: \@new_flowcontrols: " . Dumper(@new_flowcontrols) . "\n\n";
+			#print OUTFILE "IN2: \@new_flowcontrols: " . Dumper(@new_flowcontrols) . "\n\n";
 		}
-		#print "IN3: \@new_flowcontrols: " . Dumper(@new_flowcontrols) . "\n\n";
+		#print OUTFILE "IN3: \@new_flowcontrols: " . Dumper(@new_flowcontrols) . "\n\n";
 	} # END SUB calc_newcontrols
-	# print "OUT4: \@new_loopcontrols: " . Dumper(@new_loopcontrols) . "\n\n";
-	# print "OUT4: \@new_flowcontrols: " . Dumper(@new_flowcontrols) . "\n\n";
-	# print "OUT4: \@loopcontrol: " . Dumper(@loopcontrol) . "\n\n";
-	# print "OUT4: \@flowcontrol: " . Dumper(@flowcontrol) . "\n\n";
+	# print OUTFILE "OUT4: \@new_loopcontrols: " . Dumper(@new_loopcontrols) . "\n\n";
+	# print OUTFILE "OUT4: \@new_flowcontrols: " . Dumper(@new_flowcontrols) . "\n\n";
+	# print OUTFILE "OUT4: \@loopcontrol: " . Dumper(@loopcontrol) . "\n\n";
+	# print OUTFILE "OUT4: \@flowcontrol: " . Dumper(@flowcontrol) . "\n\n";
 	
 	print OUTFILE "\@new_loopcontrols: " . Dumper(@new_loopcontrols) . "\n\n";
 
@@ -4836,8 +4869,8 @@ sub constrain_controls
 	my $sourceaddress = "$to$sourcefile";
 	my $targetaddress = "$to$targetfile";
 	my $configaddress = "$to$configfile";
-	# print "\$sourcefile:$sourcefile, \$targetfile:$targetfile, \$configfile:$configfile. \n\n";
-	# print "FIRST: \$to:$to, \$fileconfig:$fileconfig, \$stepsvar:$stepsvar, \$counterzone:$counterzone, \$counterstep:$counterstep, \@applytype:@applytype, \@group:@group\n\n";
+	# print OUTFILE "\$sourcefile:$sourcefile, \$targetfile:$targetfile, \$configfile:$configfile. \n\n";
+	# print OUTFILE "FIRST: \$to:$to, \$fileconfig:$fileconfig, \$stepsvar:$stepsvar, \$counterzone:$counterzone, \$counterstep:$counterstep, \@applytype:@applytype, \@group:@group\n\n";
 	#@loopcontrol; @flowcontrol; @new_loopcontrols; @new_flowcontrols; # DON'T PUT "my" HERE. THEY ARE GLOBAL!!!
 	my $semaphore_zone;
 	my $semaphore_dataloop;
@@ -4876,7 +4909,7 @@ sub constrain_controls
 	{
 		if ($counterstep == 1)
 		{
-			print "THIS\n";
+			print OUTFILE "THIS\n";
 			checkfile($sourceaddress, $targetaddress);
 			read_controls($sourceaddress, $targetaddress, \@letters, \@period_letters);
 			read_control_constraints($to, $fileconfig, $stepsvar, 
@@ -4886,7 +4919,7 @@ sub constrain_controls
 	
 	unless ($to_do eq "justread")
 	{
-		print "THAT\n";
+		print OUTFILE "THAT\n";
 		apply_loopcontrol_changes($exeonfiles, \@new_loopcontrol, \@temploopcontrol);
 		apply_flowcontrol_changes($exeonfiles, \@new_flowcontrol, \@tempflowcontrol);
 	}
@@ -4940,13 +4973,13 @@ sub read_controls
 		}
 		if ( ($line =~ /ctl type, law/ ) )
 		{
-			# print "\nHERE\n",
+			# print OUTFILE "\nHERE\n",
 			$countloopcontrol++;
 			my @row = split(/\s+/, $line);
 			$loop_hour = $row[3];
 			$semaphore_loopcontrol = "yes";
 			$loopcontrol_letter = $period_letters[$countloopcontrol];
-			#print "HEREINSIDE PUSH $count: \$countloop:$countloop, \$countloopcontrol:$countloopcontrol, \$loopcontrol_letter:$loopcontrol_letter. \n";
+			#print OUTFILE "HEREINSIDE PUSH $count: \$countloop:$countloop, \$countloopcontrol:$countloopcontrol, \$loopcontrol_letter:$loopcontrol_letter. \n";
 		}
 
 		if ( ($semaphore_loop eq "yes") and ($semaphore_loopcontrol eq "yes") and ($line =~ /No. of data items/ ) ) 
@@ -4975,7 +5008,7 @@ sub read_controls
 
 		if ($line =~ /Control mass/ )
 		{
-			# print "CON\n\n";
+			# print OUTFILE "CON\n\n";
 			$semaphore_flow = "yes";
 			$countflowcontrol = -1;
 			$countflow++;
@@ -4983,18 +5016,18 @@ sub read_controls
 		}
 		if ( ($line =~ /ctl type \(/ ) )
 		{
-			# print "CTL\n\n";
+			# print OUTFILE "CTL\n\n";
 			$countflowcontrol++;
 			my @row = split(/\s+/, $line);
 			$flow_hour = $row[3];
 			$semaphore_flowcontrol = "yes";
 			$flowcontrol_letter = $period_letters[$countflowcontrol];
-			# print "HEREINSIDE PUSH $count: \$countflow:$countflow, \$countflowcontrol:$countflowcontrol, \$flowcontrol_letter:$flowcontrol_letter. \n";
+			# print OUTFILE "HEREINSIDE PUSH $count: \$countflow:$countflow, \$countflowcontrol:$countflowcontrol, \$flowcontrol_letter:$flowcontrol_letter. \n";
 		}
 
 		if ( ($semaphore_flow eq "yes") and ($semaphore_flowcontrol eq "yes") and ($line =~ /No. of data items/ ) ) 
 		{  
-			#print "DOLINE\n\n";
+			#print OUTFILE "DOLINE\n\n";
 			$doline = $counterlines + 1;
 		}
 		
@@ -5007,14 +5040,14 @@ sub read_controls
 			push(@{$flowcontrol[$countflow][$countflowcontrol]}, 
 			$flow_letter, $flowcontrol_letter, $flow_hour, $flow_setpoint, $flow_onoff, $flow_fraction);
 			$semaphore_flowcontrol = "no";
-			# print "DOTHIS: " . Dumper(@flowcontrol) . "\n\n";
+			# print OUTFILE "DOTHIS: " . Dumper(@flowcontrol) . "\n\n";
 			$doline = "";
 		}
 		$counterlines++;
 	}
 	
-	# print "loopcontrol: " . Dumper(@loopcontrol) . "\n\n!";
-	# print "flowcontrol: " . Dumper(@flowcontrol) . "\n\n!";			
+	# print OUTFILE "loopcontrol: " . Dumper(@loopcontrol) . "\n\n!";
+	# print OUTFILE "flowcontrol: " . Dumper(@flowcontrol) . "\n\n!";			
 } # END SUB read_controls.
 
 
@@ -5058,7 +5091,7 @@ sub read_control_constraints
 	my $counterzone = shift;
 	my $counterstep = shift;
 	my $configaddress = shift;
-	# print "\nCONFIGADDRESS: $configaddress\n\n";
+	# print OUTFILE "\nCONFIGADDRESS: $configaddress\n\n";
 	my $swap = shift;
 	@loopcontrol = @$swap;
 	my $swap = shift;
@@ -5081,8 +5114,8 @@ sub read_control_constraints
 		
 		@doloopcontrol = @{$loopcontrol[$#loopcontrol]}; # ;)
 		@doflowcontrol = @{$flowcontrol[$#flowcontrol]}; # ;)
-		# print "BEFORE loopcontrol: " . Dumper(@loopcontrol) . "\n\n";
-		# print "BEFORE flowcontrol: " . Dumper(@flowcontrol) . "\n\n";
+		# print OUTFILE "BEFORE loopcontrol: " . Dumper(@loopcontrol) . "\n\n";
+		# print OUTFILE "BEFORE flowcontrol: " . Dumper(@flowcontrol) . "\n\n";
 
 		shift (@doloopcontrol);
 		shift (@doflowcontrol);
@@ -5122,8 +5155,8 @@ sub read_control_constraints
 		shift @new_loopcontrol;
 		shift @new_flowcontrol;
 		
-		# print "AFTER loopcontrol: " . Dumper(@new_loopcontrol) . "\n\n";
-		# print "AFTER flowcontrol: " . Dumper(@new_flowcontrol) . "\n\n";
+		# print OUTFILE "AFTER loopcontrol: " . Dumper(@new_loopcontrol) . "\n\n";
+		# print OUTFILE "AFTER flowcontrol: " . Dumper(@new_flowcontrol) . "\n\n";
 	}
 } # END SUB read_control_constraints
 
@@ -5156,7 +5189,7 @@ sub apply_loopcontrol_changes
 		$new_cooling_setpoint = $loop[8];
 		unless ( @{$new_loop_ctls[$counterloop]} ~~ @{$temploopcontrol[$counterloop]} )
 		{
-			#print "PRINTONE\n";
+			#print OUTFILE "PRINTONE\n";
 
 			if ($exeonfiles eq "y") 
 			{
@@ -5262,7 +5295,7 @@ sub apply_flowcontrol_changes
 	my $swap = shift;
 	my @tempflowcontrol = @$swap;
 	
-	# print "\@new_flowcontrols at \$counterstep $counterstep:" . Dumper(@new_flowcontrols) . "\n\n";
+	# print OUTFILE "\@new_flowcontrols at \$counterstep $counterstep:" . Dumper(@new_flowcontrols) . "\n\n";
 	my $counterflow = 0;
 	
 	foreach my $elm (@new_flowcontrols)
@@ -5402,7 +5435,7 @@ sub read_obstructions
 	my $sourceaddress = shift;
 	my $targetaddress = shift;
 	my $configaddress = shift;
-	# print "\$sourceaddress:$sourceaddress, \$targetaddress:$targetaddress\n\n";
+	# print OUTFILE "\$sourceaddress:$sourceaddress, \$targetaddress:$targetaddress\n\n";
 	my $swap = shift;
 	@work_letters = @$swap;
 	my $actonmaterials = shift;
@@ -5445,7 +5478,7 @@ sub read_obstructions
 		"n", "o", "0\nf", "0\ng", "0\nh", "0\ni", "0\nj", "0\nk", "0\nl", 
 		"0\nm", "0\nn", "0\no");
 	}
-	#print "OBS_LETTERS IN READ" . Dumper(@obs_letters) . "\n\n";
+	#print OUTFILE "OBS_LETTERS IN READ" . Dumper(@obs_letters) . "\n\n";
 	
 	my $counter = 0;
 	foreach my $line (@lines)
@@ -5465,7 +5498,7 @@ sub read_obstructions
 			}
 		}
 	}
-	# print "OBS IN READ" . Dumper(@obs) . "\n\n";
+	# print OUTFILE "OBS IN READ" . Dumper(@obs) . "\n\n";
 } # END SUB read_obstructions
 
 
@@ -5544,7 +5577,7 @@ sub apply_obs_constraints
 	my @work_letters = @$swap;
 	my $exeonfiles = shift;
 	my $zone_letter = shift;
-	#print "ZONE LETTER: $zone_letter\n\n";
+	#print OUTFILE "ZONE LETTER: $zone_letter\n\n";
 	my $actonmaterials = shift;
 	my $exeonfiles = shift;
 	my $swap = shift;
@@ -5552,19 +5585,19 @@ sub apply_obs_constraints
 	
 	
 	my $counterobs = 0;
-	#print "WORK LETTERS BEFORE: " . Dumper(@work_letters) . "\n\n";
-	#print "OBS IN APPLY " . Dumper(@obs) . "\n\n";
-	print "OBS_LETTERS IN APPLY" . Dumper(@obs_letters) . "\n\n";
+	#print OUTFILE "WORK LETTERS BEFORE: " . Dumper(@work_letters) . "\n\n";
+	#print OUTFILE "OBS IN APPLY " . Dumper(@obs) . "\n\n";
+	print OUTFILE "OBS_LETTERS IN APPLY" . Dumper(@obs_letters) . "\n\n";
 	foreach my $ob (@obs)
 	{
 		my $obs_letter = $obs_letters[$counterobs];
-		#print "WORK LETTERS: " . Dumper(@work_letters) . "\n\n";
-		#print "OBS_LETTERS " . Dumper(@obs_letters) . "\n\n";
-		#print "OBS_LETTER " . Dumper($obs_letter) . "\n\n";
+		#print OUTFILE "WORK LETTERS: " . Dumper(@work_letters) . "\n\n";
+		#print OUTFILE "OBS_LETTERS " . Dumper(@obs_letters) . "\n\n";
+		#print OUTFILE "OBS_LETTER " . Dumper($obs_letter) . "\n\n";
 		if ( ( @work_letters eq "") or ($obs_letter  ~~ @work_letters))
 		{
-			#print "WORK LETTERS IN " . Dumper(@work_letters) . "\n\n";
-			#print "OBS_LETTERS IN " . Dumper(@obs_letters) . "\n\n";
+			#print OUTFILE "WORK LETTERS IN " . Dumper(@work_letters) . "\n\n";
+			#print OUTFILE "OBS_LETTERS IN " . Dumper(@obs_letters) . "\n\n";
 			my @obstr = @{$ob};
 			my $x = $obstr[0];
 			my $y = $obstr[1];
@@ -6002,7 +6035,7 @@ sub vary_net
 	my $targetfile = $group[1];
 	my $configfile = $group[2];
 	my @nodebulk = @{$group[3]};
-	# print "NODEBULK: " . Dumper(@nodebulk) . "\n\n";
+	# print OUTFILE "NODEBULK: " . Dumper(@nodebulk) . "\n\n";
 	my @componentbulk = @{$group[4]};
 	my $countnode = 0;
 	my $countcomponent = 0;
@@ -6022,7 +6055,7 @@ sub vary_net
 	{
 		read_net($sourceaddress, $targetaddress, \@node_letters, \@component_letters);
 	}
-	# print "NODES: " . Dumper(@node) . "\n\n";
+	# print OUTFILE "NODES: " . Dumper(@node) . "\n\n";
 	
 	
 	sub calc_newnet
@@ -6033,7 +6066,7 @@ sub vary_net
 		my $stepsvar = shift;
 		my $counterzone = shift;
 		my $counterstep = shift;
-		#print "\$counterstep:$counterstep\n";
+		#print OUTFILE "\$counterstep:$counterstep\n";
 		my $swap = shift;
 		my @nodebulk = @$swap;
 		my $swap = shift;
@@ -6046,10 +6079,10 @@ sub vary_net
 		my $outfile = shift;
 		my $configfile = shift;
 		
-		# print "NODES: " . Dumper(@node) . "\n\n";
-		# print "NODEBULK: " . Dumper(@nodebulk) . "\n\n";
-		# print "COMPONENTS " . Dumper(@component) . "\n\n";
-		# print "COMPONENTBULK: " . Dumper(@componentbulk) . "\n\n";
+		# print OUTFILE "NODES: " . Dumper(@node) . "\n\n";
+		# print OUTFILE "NODEBULK: " . Dumper(@nodebulk) . "\n\n";
+		# print OUTFILE "COMPONENTS " . Dumper(@component) . "\n\n";
+		# print OUTFILE "COMPONENTBULK: " . Dumper(@componentbulk) . "\n\n";
 		
 		my @new_volumes_or_surfaces;
 		my @node_heights_or_cps;
@@ -6062,9 +6095,9 @@ sub vary_net
 		{
 			foreach $each_nodebulk (@nodebulk)
 			{
-				# print "EACH NODEBULK: $each_nodebulk\n\n";
+				# print OUTFILE "EACH NODEBULK: $each_nodebulk\n\n";
 				my @asknode = @{$each_nodebulk};
-				#print "ASKNODE: @asknode\n\n";
+				#print OUTFILE "ASKNODE: @asknode\n\n";
 				my $new_node_letter = $asknode[0];
 				my $new_fluid = $asknode[1];
 				my $new_type = $asknode[2];
@@ -6073,28 +6106,28 @@ sub vary_net
 				my $swing_data_2 = $asknode[4];
 				my $new_surface = $asknode[5];
 				my @askcp = @{$asknode[6]};
-				#print "ASKCP: @askcp\n\n";
-				########print "\@askcp:@askcp\n\n";
+				#print OUTFILE "ASKCP: @askcp\n\n";
+				########print OUTFILE "\@askcp:@askcp\n\n";
 				my ($height__, $data_2__, $data_1__, $new_cp);					
 				my $countnode = 0; #IT IS FOR THE FOLLOWING FOREACH. LEAVE IT ATTACHED TO IT.
-				########print "NODES: @node\n\n";
+				########print OUTFILE "NODES: @node\n\n";
 				foreach $each_node (@node)
 				{
 					@node_ = @{$each_node};
 					my $node_letter = $node_[0]; 
-					#print "\$new_node_letter: $new_node_letter\n";
-					#print "\$node_letter: $node_letter\n";
+					#print OUTFILE "\$new_node_letter: $new_node_letter\n";
+					#print OUTFILE "\$node_letter: $node_letter\n";
 					if ( $new_node_letter eq $node_letter ) 
 					{
 						$height__ = $node_[3];
 						$data_2__ = $node_[4];
 						$data_1__ = $node_[5];
 						$new_cp = $askcp[$counterstep-1];
-						#print "IN\$new_cp:$new_cp\n";
+						#print OUTFILE "IN\$new_cp:$new_cp\n";
 					}
 					$countnode++;
 				}
-				######print "OUT\$new_cp:$new_cp\n\n";
+				######print OUTFILE "OUT\$new_cp:$new_cp\n\n";
 				my $height = ( $swing_height / ($stepsvar - 1) );
 				my $floorvalue_height = ($height__ - ($swing_height / 2) );
 				my $new_height = $floorvalue_height + ($counterstep * $pace_height);
@@ -6119,9 +6152,9 @@ sub vary_net
 				
 			foreach $each_componentbulk (@componentbulk)
 			{
-				# print "EACH componentBULK: $each_componentbulk\n\n";
+				# print OUTFILE "EACH componentBULK: $each_componentbulk\n\n";
 				my @askcomponent = @{$each_componentbulk};
-				# print "ASKcomponent: @askcomponent\n\n";
+				# print OUTFILE "ASKcomponent: @askcomponent\n\n";
 				my $new_component_letter = $askcomponent[0];
 
 				my $new_type = $askcomponent[1];
@@ -6135,12 +6168,12 @@ sub vary_net
 				foreach $each_component (@component) # PLURAL
 				{
 					@component_ = @{$each_component};
-					# print "\@component_: @component_\n\n";
+					# print OUTFILE "\@component_: @component_\n\n";
 					$component_letter = $component_letters[$countcomponent]; 
-					#print "\$new_component_letter: $new_component_letter; \$component_letter; $component_letter\n";
+					#print OUTFILE "\$new_component_letter: $new_component_letter; \$component_letter; $component_letter\n";
 					if ( $new_component_letter eq $component_letter ) 
 					{
-						#print "HEY!\n";
+						#print OUTFILE "HEY!\n";
 						$new_component_letter = $component_[0];
 						$new_fluid = $component_[1];
 						$new_type = $component_[2];
@@ -6182,7 +6215,7 @@ sub vary_net
 			}
 		}
 		# print  "IN3: \@new_nodes: " . Dumper(@new_nodes) . "\n\n";
-		#print "IN3: \@new_components: " . Dumper(@new_components) . "\n\n";
+		#print OUTFILE "IN3: \@new_components: " . Dumper(@new_components) . "\n\n";
 	} # END SUB calc_newnet
 
 	calc_newnet($to, $fileconfig, $stepsvar, $counterzone, $counterstep, \@nodebulk, \@componentbulk, \@node, \@component);	# PLURAL
@@ -6206,11 +6239,11 @@ sub read_net
 	my $swap = shift;
 	my @component_letters = @$swap;
 		
-	# print "CALLED WITH: read_net, \$sourceaddress:$sourceaddress, \$targetaddress:$targetaddress, \@node_letters:@node_letters, \@component_letters:@component_letters)\n\n";
+	# print OUTFILE "CALLED WITH: read_net, \$sourceaddress:$sourceaddress, \$targetaddress:$targetaddress, \@node_letters:@node_letters, \@component_letters:@component_letters)\n\n";
 	open( SOURCEFILE, $sourceaddress ) or die "Can't open $sourcefile : $!\n";
 	my @lines = <SOURCEFILE>;
 	close SOURCEFILE;
-	# print "lines: @lines\n";
+	# print OUTFILE "lines: @lines\n";
 	my $counterlines = 0;
 	my $countnode = -1;
 	my $countcomponent = -1;
@@ -6221,11 +6254,11 @@ sub read_net
 	my ($component_letter, $type, $data_1, $data_2, $data_3, $data_4);
 	foreach my $line (@lines)
 	{
-		#print "line: $line\n";
+		#print OUTFILE "line: $line\n";
 		if ( $line =~ m/Fld. Type/ )
 		{
 			$semaphore_node = "yes";
-			#print "SEMAPHORENODE YES\n";
+			#print OUTFILE "SEMAPHORENODE YES\n";
 		}
 		if ( $semaphore_node eq "yes" )
 		{
@@ -6235,7 +6268,7 @@ sub read_net
 		{
 			$semaphore_component = "yes";
 			$semaphore_node = "no";
-			#print "SEMAPHORENODE YES\n";
+			#print OUTFILE "SEMAPHORENODE YES\n";
 		}
 		
 		
@@ -6274,11 +6307,11 @@ sub read_net
 				$component_letter = $component_letters[$countcomp];
 				$fluid = $row[0];
 				$type = $row[1];
-				#print "TYPE!: $type\n\n";
+				#print OUTFILE "TYPE!: $type\n\n";
 				if ($type eq "110") { $type = "k";}
 				if ($type eq "120") { $type = "l";}
 				if ($type eq "130") { $type = "m";}
-				#print "TYPEC!: $type\n\n";
+				#print OUTFILE "TYPEC!: $type\n\n";
 				$countcomp++;
 			}
 			else # $number is even 
@@ -6294,9 +6327,9 @@ sub read_net
 			
 		$counterlines++;
 	}
-	#print "NODES " . Dumper(@node) . "\n\n"; # PLURAL
+	#print OUTFILE "NODES " . Dumper(@node) . "\n\n"; # PLURAL
 
-	#print "COMPONENTS " . Dumper(@component) . "\n\n";		
+	#print OUTFILE "COMPONENTS " . Dumper(@component) . "\n\n";		
 } # END SUB read_controls.
 
 
@@ -6316,7 +6349,7 @@ sub apply_node_changes
 	foreach my $elm (@new_nodes)
 	{
 		my @node_ = @{$elm};
-		#print "NODE: @node_\n";
+		#print OUTFILE "NODE: @node_\n";
 		my $new_node_letter = $node_[0];
 		my $new_fluid = $node_[1];
 		my $new_type = $node_[2];
@@ -6326,8 +6359,8 @@ sub apply_node_changes
 		my $new_surface = $node_[6];
 		my $new_cp = $node_[7];
 		
-		# print "\$new_node_letter:$new_node_letter, \$new_fluid:$new_fluid, \$new_type:$new_type, \$new_zone:$new_zone, \$new_height:$new_height, \$new_data_2:$new_data_2, \$new_surface:$new_surface, \$new_cp:$new_cp\n\n";
-		# print "NEW_TYPE: $new_type\n\n";
+		# print OUTFILE "\$new_node_letter:$new_node_letter, \$new_fluid:$new_fluid, \$new_type:$new_type, \$new_zone:$new_zone, \$new_height:$new_height, \$new_data_2:$new_data_2, \$new_surface:$new_surface, \$new_cp:$new_cp\n\n";
+		# print OUTFILE "NEW_TYPE: $new_type\n\n";
 		unless ( @{$new_nodes[$counternode]} ~~ @{$tempnodes[$counternode]} )
 		{
 			if ($new_type eq "a" ) # IF NODES ARE INTERNAL
@@ -6402,7 +6435,7 @@ YYY
 			{
 				if ($exeonfiles eq "y") 
 				{
-					#print "HERE!\n\n";
+					#print OUTFILE "HERE!\n\n";
 					print 
 	#################################
 `prj -file $to/cfg/$fileconfig -mode script<<YYY
@@ -6435,7 +6468,7 @@ YYY
 
 	################################
 				}
-				#print "HERE2!\n\n";
+				#print OUTFILE "HERE2!\n\n";
 				print TOSHELL 
 	#########################
 "prj -file $to/cfg/$fileconfig -mode script<<YYY
@@ -6761,7 +6794,7 @@ sub read_net_constraints
 	my $counterzone = shift;
 	my $counterstep = shift;
 	my $configaddress = shift;
-	# print "\nCONFIGADDRESS: $configaddress\n\n";
+	# print OUTFILE "\nCONFIGADDRESS: $configaddress\n\n";
 	my $swap = shift;
 	@node = @$swap; # PLURAL
 	my $swap = shift;
@@ -6823,8 +6856,8 @@ sub read_net_constraints
 		# Differentent $counterzones can be referred to the same zone. Different $counterzones just number mutations in series.
 
 		
-		# print "BEFORE nodes: " . Dumper(@node) . "\n\n";
-		# print "BEFORE components " . Dumper(@component) . "\n\n";
+		# print OUTFILE "BEFORE nodes: " . Dumper(@node) . "\n\n";
+		# print OUTFILE "BEFORE components " . Dumper(@component) . "\n\n";
 
 		@donode = @{$node[$#node]}; # ;) 
 		@docomponent = @{$component[$#component]}; # ;) 
@@ -6832,8 +6865,8 @@ sub read_net_constraints
 		shift (@donode);
 		shift (@docomponent);
 		
-		# print "AFTER loopcontrol: " . Dumper(@new_loopcontrol) . "\n\n";
-		# print "AFTER flowcontrol: " . Dumper(@new_flowcontrol) . "\n\n";
+		# print OUTFILE "AFTER loopcontrol: " . Dumper(@new_loopcontrol) . "\n\n";
+		# print OUTFILE "AFTER flowcontrol: " . Dumper(@new_flowcontrol) . "\n\n";
 	}
 } # END SUB read_net_constraints
 
@@ -6945,15 +6978,15 @@ sub propagate_constraints
 	
 	
 	my $zone = $applytype[$counterzone][3];
-	# print "ZONE: $zone\n";
+	# print OUTFILE "ZONE: $zone\n";
 	my $counter = 0;
 	my @group = @{$propagate_constraints[$counterzone]};
-	#print "YUP\n";
+	#print OUTFILE "YUP\n";
 	foreach my $elm (@group)
 	{
 		if ($counter > 0)
 		{
-			#print "YEP\n";
+			#print OUTFILE "YEP\n";
 			my @items = @{$elm};
 			my $what_to_do = $items[0];
 			my $sourcefile = $items[1];
@@ -6961,13 +6994,13 @@ sub propagate_constraints
 			my $configfile = $items[3];
 			if ($what_to_do eq "read_geo")
 			{
-				#print "READGEO\n\n";
+				#print OUTFILE "READGEO\n\n";
 				$to_do = "justread";
 				my @vertex_letters = @{$items[4]};
-				#print "VERTEX_LETTERS: @vertex_letters\n";
+				#print OUTFILE "VERTEX_LETTERS: @vertex_letters\n";
 				my $long_menus = $items[5];
 				my @constrain_geometry = ( [ "", $zone,  $sourcefile, $targetfile, $configfile , \@vertex_letters, $long_menus ] );
-				# print "\@constrain_geometry:" . Dumper(@constrain_geometry) . "\n\n";
+				# print OUTFILE "\@constrain_geometry:" . Dumper(@constrain_geometry) . "\n\n";
 				constrain_geometry($to, $fileconfig, $stepsvar, $counterzone, 
 				$counterstep, $exeonfiles, \@applytype, \@constrain_geometry, $to_do);
 				
@@ -6976,7 +7009,7 @@ sub propagate_constraints
 			{
 				$to_do = "justread";
 				my @obs_letters = @{$items[4]};
-				# print "OBS_LETTERS: @obs_letters\n";
+				# print OUTFILE "OBS_LETTERS: @obs_letters\n";
 				my $act_on_materials = $items[5];
 				my @constrain_obstructions = ( [ "", $applytype[$counterzone][3], $sourcefile, $targetfile, $configfile , \@obs_letters, $act_on_materials ] );
 				constrain_obstructions($to, $fileconfig, $stepsvar, $counterzone, 
@@ -7048,295 +7081,298 @@ sub propagate_constraints
 # END OF THE CONTENT OF THE "opts_morph.pl" FILE.
 #########################################################################################
 #########################################################################################
-						#########################################################################################
-						
-						
-						my $yes_or_no_rotate_obstructions = "$$rotate[$counterzone][1]" ; 
-						# WHY $BRING_CONSTRUCTION_BACK DOES NOT WORK IF THESE TWO VARIABLES ARE PRIVATE?
-						my $yes_or_no_keep_some_obstructions = "$$keep_obstructions[$counterzone][0]";    
-						# WHY?
-						print `cd $to`;
-						print TOSHELL "cd $to\n\n";
-						
-						
-						
-						my $countercycles_transl_surfs = 0;				
-						
-						if ( $stepsvar > 1)
-						{	
-							sub dothings
-							{	# THIS CONTAINS FUNCTIONS THAT APPLY CONSTRAINTS AND UPDATE CALCULATIONS.							
-								#if ( $get_obstructions[$counterzone][0] eq "y" )
-								#{ 
-								#	get_obstructions # THIS IS TO MEMORIZE OBSTRUCTIONS.
-								#	# THEY WILL BE SAVED IN A TEMPORARY FILE.
-								#	($to, $fileconfig, $stepsvar, $counterzone, 
-								#	$counterstep, $exeonfiles, \@applytype, \@get_obstructions); 
-								#}
-								if ($propagate_constraints[$counterzone][0] eq "y") 
-								{ 
-									&propagate_constraints
-									($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype, \@propagate_constraints); 
+								#########################################################################################
+								
+								
+								my $yes_or_no_rotate_obstructions = "$$rotate[$counterzone][1]" ; 
+								# WHY $BRING_CONSTRUCTION_BACK DOES NOT WORK IF THESE TWO VARIABLES ARE PRIVATE?
+								my $yes_or_no_keep_some_obstructions = "$$keep_obstructions[$counterzone][0]";    
+								# WHY?
+								print `cd $to`;
+								print TOSHELL "cd $to\n\n";
+								
+								say OUTFILE "\nHERE 6 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
+		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
+		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
+		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+
+								
+								my $countercycles_transl_surfs = 0;				
+								
+								if ( $stepsvar > 1)
+								{	
+									sub dothings
+									{	# THIS CONTAINS FUNCTIONS THAT APPLY CONSTRAINTS AND UPDATE CALCULATIONS.							
+										#if ( $get_obstructions[$counterzone][0] eq "y" )
+										#{ 
+										#	get_obstructions # THIS IS TO MEMORIZE OBSTRUCTIONS.
+										#	# THEY WILL BE SAVED IN A TEMPORARY FILE.
+										#	($to, $fileconfig, $stepsvar, $counterzone, 
+										#	$counterstep, $exeonfiles, \@applytype, \@get_obstructions); 
+										#}
+										if ($propagate_constraints[$counterzone][0] eq "y") 
+										{ 
+											&propagate_constraints
+											($to, $fileconfig, $stepsvar, $counterzone, 
+											$counterstep, $exeonfiles, \@applytype, \@propagate_constraints); 
+										}
+										if ($apply_constraints[$counterzone][0] eq "y") 
+										{ 
+											&apply_constraints
+											($to, $fileconfig, $stepsvar, $counterzone, 
+											$counterstep, $exeonfiles, \@applytype, \@constrain_geometry); 
+										}
+										if ($constrain_geometry[$counterzone][0] eq "y") 
+										{ 
+											&constrain_geometry
+											($to, $fileconfig, $stepsvar, $counterzone, 
+											$counterstep, $exeonfiles, \@applytype, \@constrain_geometry); 
+										}
+										if ($constrain_controls[$counterzone][0] eq "y") 
+										{ 
+											&constrain_controls
+											($to, $fileconfig, $stepsvar, $counterzone, 
+											$counterstep, $exeonfiles, \@applytype, \@constrain_controls); 
+										}
+										if ($$keep_obstructions[$counterzone][0] eq "y") # TO BE SUPERSEDED BY get_obstructions AND pin_obstructions
+										{ 
+											&bring_obstructions_back($to, $fileconfig, $stepsvar, $counterzone, 
+											$counterstep, $exeonfiles, \@applytype, $keep_obstructions); 
+										}
+										if ($constrain_net[$counterzone][0] eq "y")
+										{ 
+											&constrain_net($to, $fileconfig, $stepsvar, $counterzone, 
+											$counterstep, $exeonfiles, \@applytype, \@constrain_net, $to_do); 
+										}
+										if ($recalculatenet[0] eq "y") 
+										{ 
+											&recalculatenet
+											($to, $fileconfig, $stepsvar, $counterzone, 
+											$counterstep, $exeonfiles, \@applytype, \@recalculatenet); 
+										}
+										if ($constrain_obstructions[$counterzone][0] eq "y") 
+										{ 
+											&constrain_obstructions
+											($to, $fileconfig, $stepsvar, $counterzone, 
+											$counterstep, $exeonfiles, \@applytype, \@constrain_obstructions, $to_do); 
+										}
+										#if ( $pin_obstructions[$counterzone][0] eq "y" ) 
+										#{ 
+										#	pin_obstructions ($to, $fileconfig, $stepsvar, $counterzone, 
+										#	$counterstep, $exeonfiles, \@applytype, $zone_letter, \@pin_obstructions); 
+										#}
+										if ($recalculateish eq "y") 
+										{ 
+											&recalculateish
+											($to, $fileconfig, $stepsvar, $counterzone, 
+											$counterstep, $exeonfiles, \@applytype, \@recalculateish); 
+										}
+										if ($daylightcalc[0] eq "y") 
+										{ 
+											&daylightcalc
+											($to, $fileconfig, $stepsvar, $counterzone,  
+											$counterstep, $exeonfiles, \@applytype, $filedf, \@daylightcalc); 
+										}
+									} # END SUB DOTHINGS
+									
+									if ( $modification_type eq "generic_change" )#
+									{
+										&make_generic_change
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, $exeonfiles,
+										\@applytype, $generic_change);
+										&dothings;
+									} #
+									elsif ( $modification_type eq "surface_translation_simple" )
+									{
+										&translate_surfaces_simple
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
+										$exeonfiles, \@applytype, $translate_surface_simple);
+										&dothings;
+									} 
+									elsif ( $modification_type eq "surface_translation" )
+									{
+										&translate_surfaces
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
+										$exeonfiles, \@applytype, $translate_surface);
+										&dothings;
+									} 
+									elsif ( $modification_type eq "surface_rotation" )              #
+									{
+										&rotate_surface
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
+										$exeonfiles, \@applytype, $rotate_surface);
+										&dothings;
+									} 
+									elsif ( $modification_type eq "vertexes_shift" )
+									{
+										&shift_vertexes
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
+										$exeonfiles, \@applytype, $shift_vertexes);
+										&dothings;
+									}
+									elsif ( $modification_type eq "vertex_translation" )
+									{
+										&translate_vertexes
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
+										$exeonfiles, \@applytype, \@translate_vertexes);                         
+										&dothings;
+									}  
+									elsif ( $modification_type eq "construction_reassignment" )
+									{
+										&reassign_construction
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
+										$exeonfiles, \@applytype, $construction_reassignment);
+										&dothings;
+									} 
+									elsif ( $modification_type eq "rotation" )
+									{
+										&rotate
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
+										$exeonfiles, \@applytype, $rotate);
+										&dothings;
+									} 
+									elsif ( $modification_type eq "translation" )
+									{
+										&translate
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
+										$exeonfiles, \@applytype, $translate, $toshell, $outfile, $configfile);
+										&dothings;
+									} 
+									elsif ( $modification_type eq "thickness_change" )
+									{
+										&change_thickness
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
+										$exeonfiles, \@applytype, $thickness_change);
+										&dothings;
+									} 
+									elsif ( $modification_type eq "rotationz" )
+									{
+										&rotatez
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
+										$exeonfiles, \@applytype, $rotatez);
+										&dothings;
+									} 
+									elsif ( $modification_type eq "change_config" )
+									{
+										&change_config
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
+										$exeonfiles, \@applytype, \@change_config);
+										&dothings;
+									}
+									elsif ( $modification_type eq "window_reshapement" ) 
+									{
+										&reshape_windows
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
+										$exeonfiles, \@applytype, \@reshape_windows);					
+										&dothings;
+									}
+									elsif ( $modification_type eq "obs_modification" )  # REWRITE FOR NEW GEO FILE?
+									{
+										&obs_modify
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
+										$exeonfiles, \@applytype, $obs_modify);
+										&dothings;
+									}
+									elsif ( $modification_type eq "warping" )
+									{
+										&warp
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
+										$exeonfiles, \@applytype, $warp);
+										&dothings;
+									}
+									elsif ( $modification_type eq "vary_controls" )
+									{
+										&vary_controls
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
+										$exeonfiles, \@applytype, \@vary_controls);
+										&dothings;
+									}
+									elsif ( $modification_type eq "vary_net" )
+									{
+										&vary_net
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
+										$exeonfiles, \@applytype, \@vary_net);
+										&dothings;
+									}
+									elsif ( $modification_type eq "change_climate" )
+									{
+										&change_climate
+										($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
+										$exeonfiles, \@applytype, \@change_climate);
+										&dothings;
+									} 
+									elsif ( $modification_type eq "constrain_controls" )
+									{
+										&dothings;
+									}
+									#elsif ( $modification_type eq "get_obstructions" )
+									#{
+									#	dothings;
+									#}
+									#elsif ( $modification_type eq "pin_obstructions" )
+									#{
+									#	dothings;
+									#}
+									elsif ( $modification_type eq "constrain_geometry" )
+									{
+										&dothings;
+									}
+									elsif ( $modification_type eq "apply_constraints" )
+									{
+										&dothings;
+									}
+									elsif ( $modification_type eq "constrain_net" )
+									{
+										&dothings;
+									}
+									elsif ( $modification_type eq "propagate_net" )
+									{
+										&dothings;
+									}
+									elsif ( $modification_type eq "recalculatenet" )
+									{
+										&dothings;
+									}
+									elsif ( $modification_type eq "constrain_obstructions" )
+									{
+										&dothings;
+									}
+									elsif ( $modification_type eq "propagate_constraints" )
+									{
+										&dothings;
+									}
 								}
-								if ($apply_constraints[$counterzone][0] eq "y") 
-								{ 
-									&apply_constraints
-									($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype, \@constrain_geometry); 
-								}
-								if ($constrain_geometry[$counterzone][0] eq "y") 
-								{ 
-									&constrain_geometry
-									($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype, \@constrain_geometry); 
-								}
-								if ($constrain_controls[$counterzone][0] eq "y") 
-								{ 
-									&constrain_controls
-									($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype, \@constrain_controls); 
-								}
-								if ($$keep_obstructions[$counterzone][0] eq "y") # TO BE SUPERSEDED BY get_obstructions AND pin_obstructions
-								{ 
-									&bring_obstructions_back($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype, $keep_obstructions); 
-								}
-								if ($constrain_net[$counterzone][0] eq "y")
-								{ 
-									&constrain_net($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype, \@constrain_net, $to_do); 
-								}
-								if ($recalculatenet[0] eq "y") 
-								{ 
-									&recalculatenet
-									($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype, \@recalculatenet); 
-								}
-								if ($constrain_obstructions[$counterzone][0] eq "y") 
-								{ 
-									&constrain_obstructions
-									($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype, \@constrain_obstructions, $to_do); 
-								}
-								#if ( $pin_obstructions[$counterzone][0] eq "y" ) 
-								#{ 
-								#	pin_obstructions ($to, $fileconfig, $stepsvar, $counterzone, 
-								#	$counterstep, $exeonfiles, \@applytype, $zone_letter, \@pin_obstructions); 
-								#}
-								if ($recalculateish eq "y") 
-								{ 
-									&recalculateish
-									($to, $fileconfig, $stepsvar, $counterzone, 
-									$counterstep, $exeonfiles, \@applytype, \@recalculateish); 
-								}
-								if ($daylightcalc[0] eq "y") 
-								{ 
-									&daylightcalc
-									($to, $fileconfig, $stepsvar, $counterzone,  
-									$counterstep, $exeonfiles, \@applytype, $filedf, \@daylightcalc); 
-								}
-							} # END SUB DOTHINGS
-							
-							if ( $modification_type eq "generic_change" )#
-							{
-								&make_generic_change
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, $exeonfiles,
-								\@applytype, $generic_change);
-								&dothings;
-							} #
-							elsif ( $modification_type eq "surface_translation_simple" )
-							{
-								&translate_surfaces_simple
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $translate_surface_simple);
-								&dothings;
-							} 
-							elsif ( $modification_type eq "surface_translation" )
-							{
-								&translate_surfaces
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $translate_surface);
-								&dothings;
-							} 
-							elsif ( $modification_type eq "surface_rotation" )              #
-							{
-								&rotate_surface
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $rotate_surface);
-								&dothings;
-							} 
-							elsif ( $modification_type eq "vertexes_shift" )
-							{
-								&shift_vertexes
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $shift_vertexes);
-								&dothings;
-							}
-							elsif ( $modification_type eq "vertex_translation" )
-							{
-								&translate_vertexes
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, \@translate_vertexes);                         
-								&dothings;
-							}  
-							elsif ( $modification_type eq "construction_reassignment" )
-							{
-								&reassign_construction
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $construction_reassignment);
-								&dothings;
-							} 
-							elsif ( $modification_type eq "rotation" )
-							{
-								&rotate
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $rotate);
-								&dothings;
-							} 
-							elsif ( $modification_type eq "translation" )
-							{
-								&translate
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $translate, $toshell, $outfile, $configfile);
-								&dothings;
-							} 
-							elsif ( $modification_type eq "thickness_change" )
-							{
-								&change_thickness
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $thickness_change);
-								&dothings;
-							} 
-							elsif ( $modification_type eq "rotationz" )
-							{
-								&rotatez
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $rotatez);
-								&dothings;
-							} 
-							elsif ( $modification_type eq "change_config" )
-							{
-								&change_config
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, \@change_config);
-								&dothings;
-							}
-							elsif ( $modification_type eq "window_reshapement" ) 
-							{
-								&reshape_windows
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, \@reshape_windows);					
-								&dothings;
-							}
-							elsif ( $modification_type eq "obs_modification" )  # REWRITE FOR NEW GEO FILE?
-							{
-								&obs_modify
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $obs_modify);
-								&dothings;
-							}
-							elsif ( $modification_type eq "warping" )
-							{
-								&warp
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, $warp);
-								&dothings;
-							}
-							elsif ( $modification_type eq "vary_controls" )
-							{
-								&vary_controls
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, \@vary_controls);
-								&dothings;
-							}
-							elsif ( $modification_type eq "vary_net" )
-							{
-								&vary_net
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, \@vary_net);
-								&dothings;
-							}
-							elsif ( $modification_type eq "change_climate" )
-							{
-								&change_climate
-								($to, $fileconfig, $stepsvar, $counterzone, $counterstep, 
-								$exeonfiles, \@applytype, \@change_climate);
-								&dothings;
-							} 
-							elsif ( $modification_type eq "constrain_controls" )
-							{
-								&dothings;
-							}
-							#elsif ( $modification_type eq "get_obstructions" )
-							#{
-							#	dothings;
-							#}
-							#elsif ( $modification_type eq "pin_obstructions" )
-							#{
-							#	dothings;
-							#}
-							elsif ( $modification_type eq "constrain_geometry" )
-							{
-								&dothings;
-							}
-							elsif ( $modification_type eq "apply_constraints" )
-							{
-								&dothings;
-							}
-							elsif ( $modification_type eq "constrain_net" )
-							{
-								&dothings;
-							}
-							elsif ( $modification_type eq "propagate_net" )
-							{
-								&dothings;
-							}
-							elsif ( $modification_type eq "recalculatenet" )
-							{
-								&dothings;
-							}
-							elsif ( $modification_type eq "constrain_obstructions" )
-							{
-								&dothings;
-							}
-							elsif ( $modification_type eq "propagate_constraints" )
-							{
-								&dothings;
-							}
+								$counterzone++;
+								print `cd $mypath`;
+								print TOSHELL "cd $mypath\n\n";
+							}#DDD1
 						}
-						$counterzone++;
-						print `cd $mypath`;
-						print TOSHELL "cd $mypath\n\n";
-					}#DDD1
+						$counterstep++ ; 
+					}
 				}
-				$counterstep++ ; 
+				if ($countvar == $#varnumbers)
+				{
+					my @files_to_erase = grep -d, <$mypath/models/$file*_>;
+					foreach my $file (@files_to_erase)
+					{
+						if ($exeonfiles = "y") { print `rm -R $file`; }
+						print TOSHELL "rm -R $file";
+					}
+				}
+				$countvar++;
 			}
-		}
-		if ($countvar == $#varnumbers)
-		{
-			print `rm -R $mypath/models/$file*_`;
-			print TOSHELL "rm -R $mypath/models/$file*_";
-		}
-		$countvar++;
-	}
-	close DUMPFILE;
-	my @files_to_clean = grep -d, <$mypath/$file*_>;
-	foreach my $file_to_clean (@files_to_clean)
-	{
-		if ($exeonfiles eq "y") { `rm -rf $file_to_clean`; }
-		print TOSHELL
-		  "rm -rf $file_to_clean\n";
-	}
-	close CASELIST;
-}    # END SUB morph
-##############################################################################
-##############################################################################
-##############################################################################	
+			close MORPHFILE;
+			
+			close CASELIST;
+		}    # END SUB morph
+		##############################################################################
+		##############################################################################
+		##############################################################################	
 	
 	
-	
-	##############################################################################
+		# BEGINNING OF SUB SIM
+		##############################################################################
 ##############################################################################
 ##############################################################################
 
@@ -7373,24 +7409,36 @@ sub sim    # This function launch the simulations in ESP-r
 	my @retrievedata = @$swap;
 
 	my $countersimmax = ( ( $#simdata + 1 ) / 4 );
-	open(DUMPFILE, $dumpfile) or die "Can't open  $dumpfile $!";
+	open(MORPHFILE, $morphfile) or die "Can't open  $morphfile $!";
 	#@dirs_to_simulate = grep -d, <$mypath/$filenew*>;
-	@dirs_to_simulate = <DUMPFILE>;
-	close DUMPFILE;
-	print "\$dumpfile: $dumpfile. \@dirs_to_simulate: " . Dumper(@dirs_to_simulate) . "\n";
+	@dirs_to_simulate = <MORPHFILE>;
+	close MORPHFILE;
+	print OUTFILE "\$morphfile: $morphfile. \@dirs_to_simulate: " . Dumper(@dirs_to_simulate) . "\n";
 	my @ress;
 	my @flfs;
 	
+	say OUTFILE "\nHERE SIM \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
+		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
+		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
+		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+
 	open (SIMLIST, ">$simlistfile") or die;
 	
 	#foreach my $dir_to_simulate (@dirs_to_simulate)
 	#{
-	#	print "\$dir_to_simulate: $dir_to_simulate";
+	#	print OUTFILE "\$dir_to_simulate: $dir_to_simulate";
 	#}
 	
 	my $countdir = 0;
 	foreach my $dir_to_simulate (@dirs_to_simulate)
 	{
+		say OUTFILE "\nHERE SIM2 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
+		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
+		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
+		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+
 		chomp($dir_to_simulate);
 		my $countersim = 0;	
 		foreach my $date_to_sim (@simtitles)
@@ -7411,7 +7459,7 @@ sub sim    # This function launch the simulations in ESP-r
 					{
 						if ($exeonfiles eq "y") 
 						{
-							print `bps -file $dir_to_simulate/cfg/$fileconfig -mode script<<XXX
+							`bps -file $dir_to_simulate/cfg/$fileconfig -mode script<<XXX
 
 c
 $resfile
@@ -7460,14 +7508,14 @@ XXX
 
 ";
 						print SIMLIST "$resfile\n";
-						#print "ONE, $resfile\n";
+						#print OUTFILE "ONE, $resfile\n";
 					}
 											
 					if ( $simnetwork eq "y" )
 					{
 						if ($exeonfiles eq "y") 
 						{
-							print `bps -file $dir_to_simulate/cfg/$fileconfig -mode script<<XXX
+							`bps -file $dir_to_simulate/cfg/$fileconfig -mode script<<XXX
 
 c
 $resfile
@@ -7518,7 +7566,7 @@ XXX
 
 ";
 					print SIMLIST "$resfile\n";
-					print "TWO, $resfile\n";
+					print OUTFILE "TWO, $resfile\n";
 					}						
 				}			
 			}
@@ -7534,12 +7582,12 @@ XXX
 # END OF THE CONTENT OF THE "opts_sim.pl" FILE.
 ##############################################################################
 ##############################################################################
-	##############################################################################
+		##############################################################################
 	
 	
 	
-# BEGINNING OF SUB RETRIEVE	
-##############################################################################
+		# BEGINNING OF SUB RETRIEVE	
+		##############################################################################
 ##############################################################################
 ##############################################################################
 sub retrieve
@@ -7564,8 +7612,20 @@ sub retrieve
 	my @reporttitles = @$swap;
 	my $swap = shift;
 	my @retrievedata = @$swap;
-	print  `mkdir $mypath/results`;
-	print TOSHELL "mkdir $mypath/results\n\n";
+	
+	unless (-e "$mypath/results") 
+	{ 
+		print  `mkdir $mypath/results`; 
+		print TOSHELL "mkdir $mypath/results\n\n"; 
+	}
+	
+	say OUTFILE "\nHERE RETRIEVE \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
+		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
+		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
+		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+
+
 				
 	sub retrieve_temperatures_results 
 	{
@@ -7587,7 +7647,7 @@ sub retrieve
 		
 		if ($exeonfiles eq "y")
 		{ 
-			print `res -file $resfile -mode script<<YYY
+			`res -file $resfile -mode script<<YYY
 
 3
 $retrievedatatemps[0]
@@ -7675,7 +7735,7 @@ YYY
 		#print TOSHELL "rm -f $existingfile*par\n";
 		if ($exeonfiles eq "y") 
 		{ 
-			print `res -file $resfile -mode script<<ZZZ
+			`res -file $resfile -mode script<<ZZZ
 
 3
 $retrievedatacomf[0]
@@ -7759,11 +7819,11 @@ ZZZ
 		#print TOSHELL "rm $existingfile\n";
 
 		if ($exeonfiles eq "y") 
-		{ 	print "CALLED RETRIEVE LOADS RESULTS\n";
-			print "\$resfile: $resfile, \$result: $result, \$retrievedataloads[0]: $retrievedataloads[0], \$retrievedataloads[1]: $retrievedataloads[1], \$retrievedataloads[2]:$retrievedataloads[2]\n";
-			print "\$reporttitle: $reporttitle, \$theme: $theme\n";
-			print "\$result-\$reporttitle-\$theme: $result-$reporttitle-$theme";
-			print `res -file $resfile -mode script<<TTT
+		{ 	print OUTFILE "CALLED RETRIEVE LOADS RESULTS\n";
+			print OUTFILE "\$resfile: $resfile, \$result: $result, \$retrievedataloads[0]: $retrievedataloads[0], \$retrievedataloads[1]: $retrievedataloads[1], \$retrievedataloads[2]:$retrievedataloads[2]\n";
+			print OUTFILE "\$reporttitle: $reporttitle, \$theme: $theme\n";
+			print OUTFILE "\$result-\$reporttitle-\$theme: $result-$reporttitle-$theme";
+			`res -file $resfile -mode script<<TTT
 
 3
 $retrievedataloads[0]
@@ -7851,11 +7911,11 @@ TTT
 		#print TOSHELL "rm -f $existingfile*par\n";
 		if ($exeonfiles eq "y") 
 		{ 
-			print "CALLED RETRIEVE TEMPS STATS\n";
-			print "\$resfile: $resfile, \$retrievedataloads[0]: $retrievedataloads[0], \$retrievedataloads[1]: $retrievedataloads[1], \$retrievedataloads[2]:$retrievedataloads[2]\n";
-			print "\$reporttitle: $reporttitle, \$theme: $theme\n";
-			print "\$resfile-\$reporttitle-\$theme: $resfile-$reporttitle-$theme";
-			print `res -file $resfile -mode script<<TTT
+			print OUTFILE "CALLED RETRIEVE TEMPS STATS\n";
+			print OUTFILE "\$resfile: $resfile, \$retrievedataloads[0]: $retrievedataloads[0], \$retrievedataloads[1]: $retrievedataloads[1], \$retrievedataloads[2]:$retrievedataloads[2]\n";
+			print OUTFILE "\$reporttitle: $reporttitle, \$theme: $theme\n";
+			print OUTFILE "\$resfile-\$reporttitle-\$theme: $resfile-$reporttitle-$theme";
+			`res -file $resfile -mode script<<TTT
 
 3
 $retrievedatatempsstats[0]
@@ -7922,13 +7982,13 @@ TTT
 
 	open (OPENSIMS, "$simlistfile") or die;
 	my @sims = <OPENSIMS>;
-	# print "SIMS: " . Dumper(@sims) . "\n";
+	# print OUTFILE "SIMS: " . Dumper(@sims) . "\n";
 	close OPENSIMS;
 				
 	my $countertheme = 0;
 	foreach my $themereportref (@themereports)
 	{
-		# print "SIMS: \n";
+		# print OUTFILE "SIMS: \n";
 		my @themereports = @{$themereportref};
 		my $reporttitlesref = $reporttitles[$countertheme];
 		my @reporttitles = @{$reporttitlesref};
@@ -7940,7 +8000,7 @@ TTT
 		my $countreport = 0;
 		foreach my $reporttitle (@reporttitles)
 		{
-			# print "SIMS: \n";
+			# print OUTFILE "SIMS: \n";
 			my $theme = $themereports[$countreport];
 			my $retrieveref = $retrievedatarefs[$countreport];
 			my $stripcheck = $stripckecks[$countreport];
@@ -7957,7 +8017,7 @@ TTT
 				if ( $theme eq "comfort"  ) { &retrieve_comfort_results($result, $sim, \@retrievedata, $reporttitle, $stripcheck, $theme); }
 				if ( $theme eq "loads" ) 	{ &retrieve_loads_results($result, $sim, \@retrievedata, $reporttitle, $stripcheck, $theme); }
 				if ( $theme eq "tempsstats"  ) { &retrieve_temps_stats($result, $sim, \@retrievedata, $reporttitle, $stripcheck, $theme); }
-				print "\$sim: $sim, \$result: $result, \@retrievedata: @retrievedata, \$reporttitle: $reporttitle, \$stripcheck: $stripcheck, \$theme: $theme\n";
+				print OUTFILE "\$sim: $sim, \$result: $result, \@retrievedata: @retrievedata, \$reporttitle: $reporttitle, \$stripcheck: $stripcheck, \$theme: $theme\n";
 				$countersim++;
 			}
 			$countreport++;
@@ -7973,22 +8033,18 @@ TTT
 	
 ##############################################################################
 ##############################################################################
-##############################################################################
-# END SUB RETRIEVE
+		##############################################################################
+		# END SUB RETRIEVE
 
-
-
-	##############################################################################
-##############################################################################
-##############################################################################
-
-# HERE FOLLOWES THE CONTENT OF THE "report.pm" FILE
-## HERE THE "report" and "merge" FUNCTIONS FOLLOW, CALLED FROM THE MAIN PROGRAM FILE.
 
 sub report # This function retrieveg the results of interest from the text file created by the "retrieve" function
 { ; } # NO MORE USED
 
-
+		
+		# BEGINNING OF SUB MERGE_REPORTS
+		##############################################################################
+##############################################################################
+##############################################################################
 sub merge_reports    # Self-explaining
 {
 	my $to = shift;
@@ -8032,14 +8088,18 @@ sub merge_reports    # Self-explaining
 	my $number_of_dates_to_merge = scalar(@simtitles);
 	my @dates                    = @simtitles;
 	my $mergefile = "$mypath/$file-merge-$countblock";
-	
 		
+	say OUTFILE "\nHERE MERGE1 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
+		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
+		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
+		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+
+
 	sub merge
 	{
-		unless (-e $mergefile)
-		{
-			open (MERGEFILE, ">>$mergefile") or die;
-		}
+
+		open (MERGEFILE, ">$mergefile") or die;
 		open (FILECASELIST, "$simlistfile") or die;
 		my @lines = <FILECASELIST>;
 		close FILECASELIST;
@@ -8060,11 +8120,11 @@ sub merge_reports    # Self-explaining
 				{
 					my $simtitle = $simtitles[$counterouter];
 					my $reporttitle = $reporttitles[$counterouter][$counterinner];
-					#print "FILE: $file, SIMTITLE: $simtitle, REPORTTITLE!: $reporttitle, THEME: $theme\n";
+					#print OUTFILE "FILE: $file, SIMTITLE: $simtitle, REPORTTITLE!: $reporttitle, THEME: $theme\n";
 					my $case = "$reportcase-$reporttitle-$theme.grt-";
-					print "\$case $case\n";
-					#if (-e $case) { print "IT EXISTS!\n"; }
-					#print "$case\n";
+					#print OUTFILE "\$case $case\n";
+					#if (-e $case) { print OUTFILE "IT EXISTS!\n"; }
+					#print OUTFILE "$case\n";
 					open(OPENTEMP, $case) or die;
 					my @linez = <OPENTEMP>;
 					close OPENTEMP;
@@ -8088,11 +8148,7 @@ sub merge_reports    # Self-explaining
 		open ( MERGEFILE, $mergefile) or die;
 		my @lines = <MERGEFILE>;
 		close MERGEFILE;
-		unless (-e $cleanfile)
-		{
-			open ( CLEANMERGED, ">$cleanfile") or die;
-		}
-		
+		open ( CLEANMERGED, ">$cleanfile") or die;
 		foreach my $line (@lines)
 		{
 			$line =~ s/\n/°/g;
@@ -8107,10 +8163,8 @@ sub merge_reports    # Self-explaining
 		open (CLEANMERGED, $cleanfile) or die;
 		my @lines = <CLEANMERGED>;
 		close CLEANMERGED;
-		unless (-e $selectmerged)
-		{
-			open (SELECTMERGED, ">$selectmerged") or die;
-		}
+		open (SELECTMERGED, ">$selectmerged") or die;
+		
 		
 		foreach my $line (@lines)
 		{
@@ -8143,36 +8197,32 @@ sub merge_reports    # Self-explaining
 		open (SELECTMERGED, $selectmerged) or die;
 		my @lines = <SELECTMERGED>;
 		close SELECTMERGED;
-		# print "FIRST LINE: $lines[0]\n";
+		# print OUTFILE "FIRST LINE: $lines[0]\n";
 		my $counterline = 0;
-		unless (-e $weight) 
-		{
-			#print "I OPEN\n";
-			open (WEIGHT, ">$weight") or die;
-		}
+		open (WEIGHT, ">$weight") or die;
 		
 		my @containerone;
 		foreach my $line (@lines)
 		{
 			$line =~ s/^[\n]//;
-			#print "I SPLIT\n";
+			#print OUTFILE "I SPLIT\n";
 			my @elts = split(/\s+|,/, $line);
 			my $countcol = 0;
 			my $countel = 0;
 			foreach my $elt (@elts)
 			{
-				#print "I CHECK\n";
+				#print OUTFILE "I CHECK\n";
 				if ( odd($countel) )
 				{
-					# print "I PUSH\n";
+					# print OUTFILE "I PUSH\n";
 					push ( @{$containerone[$countcol]}, $elt);
-					#print "ELT: $elt\n";
+					#print OUTFILE "ELT: $elt\n";
 					$countcol++;
 				}
 				$countel++;
 			}
 		}
-		#print "CONTAINERONE " . Dumper(@containerone) . "\n";
+		#print OUTFILE "CONTAINERONE " . Dumper(@containerone) . "\n";
 			
 		my @containertwo;
 		my @containerthree;
@@ -8199,15 +8249,15 @@ sub merge_reports    # Self-explaining
 				push (@maxes, "NOTHING1");
 			}
 					
-			#print "MAXES: " . Dumper(@maxes) . "\n";
-			#print "DUMPCOLUMN: " . Dumper(@column) . "\n";
+			#print OUTFILE "MAXES: " . Dumper(@maxes) . "\n";
+			#print OUTFILE "DUMPCOLUMN: " . Dumper(@column) . "\n";
 			
 			foreach my $el (@column)
 			{
 				my $eltrans;
 				if ( $maxes[$countcolm] != 0 )
 				{
-					#print "\$weights[\$countcolm]: $weights[$countcolm]\n";
+					#print OUTFILE "\$weights[\$countcolm]: $weights[$countcolm]\n";
 					$eltrans = ( $el / $maxes[$countcolm] ) ;
 				}
 				else
@@ -8215,11 +8265,11 @@ sub merge_reports    # Self-explaining
 					$eltrans = "NOTHING2" ;
 				}
 				push ( @{$containertwo[$countcolm]}, $eltrans) ;
-				#print "ELTRANS: $eltrans\n";
+				#print OUTFILE "ELTRANS: $eltrans\n";
 			}
 			$countcolm++;
 		}
-		#print "CONTAINERTWO " . Dumper(@containertwo) . "\n";
+		#print OUTFILE "CONTAINERTWO " . Dumper(@containertwo) . "\n";
 		
 		
 		my $countline = 0;
@@ -8233,9 +8283,9 @@ sub merge_reports    # Self-explaining
 			{
 				my @col =  @{$eltref};
 				my $max = max(@col);
-				#print "MAX: $max\n";
+				#print OUTFILE "MAX: $max\n";
 				my $min = min(@col);
-				#print "MIN: $min\n";
+				#print OUTFILE "MIN: $min\n";
 				my $floordistance = ($max - $min);
 				my $range = ( $min / $max);
 				my $el = $col[$countline];
@@ -8277,7 +8327,7 @@ sub merge_reports    # Self-explaining
 			$counterline++;
 		}
 		close WEIGHT;
-		#print "CONTAINERTHREE: " . Dumper(@containerthree) . "\n";
+		#print OUTFILE "CONTAINERTHREE: " . Dumper(@containerthree) . "\n";
 	}
 	&weight(); #
 	
@@ -8287,10 +8337,7 @@ sub merge_reports    # Self-explaining
 		open (WEIGHT, $weight) or die;
 		my @lines = <WEIGHT>;
 		close WEIGHT;
-		unless (-e $weighttwo) 
-		{
-			open (WEIGHTTWO, ">$weighttwo") or die;
-		}
+		open (WEIGHTTWO, ">$weighttwo") or die;
 		
 		my $counterline;
 		foreach my $line (@lines)
@@ -8307,12 +8354,12 @@ sub merge_reports    # Self-explaining
 				my $newelt;
 				if ($counterelt > ( $#elts - $numberels ))
 				{
-					#print "ELT: $elt\n";
+					#print OUTFILE "ELT: $elt\n";
 					$newelt = ( $elt * abs($weights[$counterin]) );
-					# print "ABS" . abs($weights[$counterin]) . "\n";
-					# print "NEWELT: $newelt\n";
+					# print OUTFILE "ABS" . abs($weights[$counterin]) . "\n";
+					# print OUTFILE "NEWELT: $newelt\n";
 					$sum = ( $sum + $newelt ) ;
-					# print "SUM: $sum\n";
+					# print OUTFILE "SUM: $sum\n";
 					$counterin++;
 				}
 				$counterelt++;
@@ -8339,46 +8386,166 @@ sub merge_reports    # Self-explaining
 	}
 	&weighttwo();	
 	
+	say OUTFILE "\nHERE MERGE2 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
+		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
+		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
+		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+
+
 	$sortmerged = "$mergefile-sortmerged";
 	sub sortmerged
 	{
 		open (WEIGHTTWO, $weighttwo) or die;
-		unless (-e $sortmerged)
-		{	open (SORTMERGED, ">$sortmerged") or die;
-			my @lines = <WEIGHTTWO>;
-			close WEIGHTTWO;
-			my $line = $lines[0];
-			$line =~ s/^[\n]//;
-			my @eltstemp = split(/\s+|,/, $line);
-			my $numberelts = scalar(@eltstemp);
-			print SORTMERGED `sort -n -k$numberelts,$numberelts -t , $weighttwo`;
-		}
+		open (SORTMERGED, ">$sortmerged") or die;
+		my @lines = <WEIGHTTWO>;
+		close WEIGHTTWO;
+		my $line = $lines[0];
+		$line =~ s/^[\n]//;
+		my @eltstemp = split(/\s+|,/, $line);
+		my $numberelts = scalar(@eltstemp);
+		print SORTMERGED `sort -n -k$numberelts,$numberelts -t , $weighttwo`;
 		close SORTMERGED;
 	}
 	&sortmerged();
 }    # END SUB merge_reports
 
-sub chasewinner
+#################################################################
+#################################################################
+		#################################################################
+		# END OF SUB MERGE_REPORTS
+		
+		
+		# BEGINNING OF SUB TAKEOPTIMA
+		#################################################################
+#################################################################
+#################################################################
+sub takeoptima
 {
+	$fileuplift = "$mypath/$file-uplift-$countblock";
+	$filedownlift = "$mypath/$file-downlift-$countblock";
+	open(UPLIFT, ">$fileuplift") or die;
+	
 	my $to = shift;
 	my $mypath = shift;
 	my $file = shift;
 	my $filenew = shift;
+	my $sortmerged = shift;
+	
+	my $tempwinner = "$file" . "_";
+	@uplift = ();
+	@downlift = ();
+
+	say OUTFILE "BEGINNINGtempwinner: $tempwinner";
+	say OUTFILE "\@totvarnumbers" . Dumper(@totvarnumbers) ;
 	
 	open (SORTMERGED, $sortmerged) or die;
-	foreach my $var (@totvarnumbers)
+	say OUTFILE "\$sortmerged: $sortmerged";
+	my @lines = <SORTMERGED>;
+	close SORTMERGED;
+	
+	my $winnerentry = $lines[0];
+	chomp $winnerentry;
+	say OUTFILE "\$winnerentry: $winnerentry";
+	my @winnerelts = split(/\s+|,/, $winnerentry);
+	$winnerline = $winnerelts[0];
+	
+	my $loserentry = $lines[$#lines];
+	chomp $loserentry;
+	say OUTFILE "\$loserentry: $loserentry";
+	my @loserelts = split(/\s+|,/, $loserentry);
+	$loserline = $loserelts[0];
+	
+	say OUTFILE "\$winnerline: $winnerline, \$loserline: $loserline";
+	
+##############################################################################
+	
+	my @provcontainer;
+	my @winnerarray;
+	
+	unless ( ($countvar == $#varnumbers) and ($countblocks == $#blockrefs) )
 	{
-		; ###DDD ESTRACT. 
+		&setop(\@varnumbers, \@nextvarnumbers);
+		my @overlap = @intersection;
+		
+		if (@overlap)
+		{
+			foreach my $el ( @overlap )
+			{
+				my $stepsvarthat = ${ "stepsvar" . "$el" };
+				my $counter = 0;
+				while ($counter < $el)
+				{
+					my $piecetoadd = "$stepsvarthat-" . "$counter";
+					push(@provcontainer, $piecetoadd);
+					$counter++;
+					say OUTFILE "\@provcontainere " . Dumper(@provcontainer);
+				}
+			}
+			
+			my $count = 0;
+			foreach my $el (@provcontainer)
+			{
+				my $newwinnerline = $winnerline;
+				if ( $winnerline =~ /($el-\d+)/ )
+				{
+					my $fragment = $1; 		
+					say OUTFILE "\$fragment: $fragment";
+					my $addfragment = "$el-$count";
+					if ( $newwinnerline =~ s/$fragment/$addfragment/ )
+					{
+						push (@winnerarray, $newwinnerline);
+					}
+					say OUTFILE "\@winnerarraye " . Dumper(@winnerarray);
+				}
+			}
+		}
+		else
+		{
+			push(@winnerarray, $winnerline);
+		}
 	}
-	# $winnerline = ;
+	@uplift = @winnerarray;
+	say OUTFILE "\@uplift: " . Dumper(@uplift);
+	
+	foreach (@uplift)
+	{
+		unless (-e $_)
+		{
+			my $oldup = $_;
+			$_ = "$_" . "_";
+			if ($exeonfiles eq "y") { print `cp -R $oldup $_` ; }
+			print TOSHELL "cp -R $oldup $_\n\n" ;
+		}
+	}
+	
+	say OUTFILE "\nHERE TAKEOPTIMA \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
+		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
+		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
+		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+		
+	## HERE ZZZ
+			
+	foreach my $el ( @uplift )
+	{
+		print UPLIFT "$el";
+	}
+	close UPLIFT;
 }
+###################################################################
+#################################################################
+		#################################################################
+		# END OF SUB TAKEOPTIMA
+		
+
+sub rank_reports  { ; }  # ERASED
 
 
-sub rank_reports    # ERASED
-{ ; }
-
-
-
+		# BEGINNING OF SUB CONVERT_REPORT
+		###################################################################
+###################################################################
+###################################################################
 sub convert_report # ZZZ THIS HAS TO BE PUT IN ORDER BECAUSE JUST ONE ITEM WORKS.
 {
 	my $swap = shift;
@@ -8467,13 +8634,19 @@ sub convert_report # ZZZ THIS HAS TO BE PUT IN ORDER BECAUSE JUST ONE ITEM WORKS
 	close OUTFILECONVERT;
 
 } # END sub convert_report
+###################################################################
+###################################################################
+		###################################################################
+		# END OF SUB CONVERT_REPORT
+		
 
+sub filter_reports { ; } # ERASED
 
-
-sub filter_reports # ERASED
-{ ; }
-
-
+		
+		# BEGINNING OF SUB FILTER_REPORTS
+		###################################################################
+###################################################################
+###################################################################
 sub convert_filtered_reports  # STALE. TO BE RE-CHECKED. 
 {
 	my $to = shift;
@@ -8501,127 +8674,134 @@ sub convert_filtered_reports  # STALE. TO BE RE-CHECKED.
 	sub do_convert_filtered_reports
 	{
 		my $themereport = $_[0];
-	my $convertcriterium = $themereport;
-	my $count = 0;
-	my $counter = 0;
-	my $counterfile = 0;
-	my @varthemes_values;
-	my @files_to_convert;
-	my $write;
-	foreach $date (@simtitles)
-	{
-		foreach my $theme_to_filter (@files_to_filter)
+		my $convertcriterium = $themereport;
+		my $count = 0;
+		my $counter = 0;
+		my $counterfile = 0;
+		my @varthemes_values;
+		my @files_to_convert;
+		my $write;
+		foreach $date (@simtitles)
 		{
-			if ($counter > 0)
-			{			    
-				$file_to_convert = "$mypath/$filenew-$date-$convertcriterium-sum-up.txt-$theme_to_filter-filtered.txt";
-				push @files_to_convert, $file_to_convert;
-			}
-			$counter++;
-		}
-	}
-
-	foreach my $varnumber (@varnumbers)
-	{
-		my $basevalue       = $varthemes_variations[$count][0];
-		my $roofvalue       = $varthemes_variations[$count][1];
-		my $number_of_steps = $varthemes_steps[$count];
-		my $range           = ( $roofvalue - $basevalue );
-		my @values;
-		my $step = 0;
-		if ( $number_of_steps > 1 )
-		{
-
-			until ( $step > ( $number_of_steps - 1 ) )
+			foreach my $theme_to_filter (@files_to_filter)
 			{
-				my $value;
-				$value = ( $basevalue + ( ( $range / ( $number_of_steps - 1 ) ) * $step ) );
-				$value = sprintf( "%.2f", $value );
-				push( @values, $value );
-				$step++;
-			}
-		}
-		push( @varthemes_values, [@values] );
-		$write = Dumper(@varthemes_values);
-		$count++;
-	}
-			
-	foreach my $file_to_convert (@files_to_convert)
-	{
-		open( INFILECONVERT, "$file_to_convert" ) or die "Can't open file_to_convert $file_to_convert: $!";
-		my @lines_to_convert = <INFILECONVERT>;
-		close INFILECONVERT;
-		my $outfileconvert = "$file_to_convert" . "-converted.txt";
-		#if (-e $outfileconvert) { `chmod 777 $outfileconvert\n`; `mv -b $outfileconvert-bak\n`;}
-		#print TOSHELL "chmod 777 $outfileconvert\n"; print TOSHELL "mv -b $outfileconvert-bak\n"; 
-		open( OUTFILECONVERT, ">$outfileconvert" ) or die "Can't open $outfileconvert: $!";
-		
-		foreach my $line_to_convert (@lines_to_convert)
-		{
-			my $counter = 0;
-			foreach my $varnumber (@varnumbers)
-			{
-				my $stepper         = 1;
-				my $number_of_steps = $varthemes_steps[$counter];
-				foreach my $value ( @{ $varthemes_values[$counter] } )
-				{
-					$line_to_convert =~ s/_\+$varnumber\-$stepper/$value /;
-					$stepper++;
+				if ($counter > 0)
+				{			    
+					$file_to_convert = "$mypath/$filenew-$date-$convertcriterium-sum-up.txt-$theme_to_filter-filtered.txt";
+					push @files_to_convert, $file_to_convert;
 				}
-				$line_to_convert =~ s/$mypath\/$file//;
-				$line_to_convert =~ s/_\+$varnumber/ $varthemes_report[$counter]/;
-				$line_to_convert =~ s/[§£]/ /;
-				$line_to_convert =~ s/loads-sum-up.txt-filtered.txt//;
 				$counter++;
 			}
-			print OUTFILECONVERT "$line_to_convert";
 		}
-		close OUTFILECONVERT;
-		
 
-		open(INFILE2PUTCOMMAS, "$outfileconvert") or die "Can't open infile2putcommas $outfileconvert: $!";
-		my @new_lines_to_convert = <INFILE2PUTCOMMAS>;
-		close INFILE2PUTCOMMAS;
-		my $outfile2putcommas = "$outfileconvert".".csv";
-		#if (-e $outfile2putcommas) { `chmod 777 $outfile2putcommas\n`; `mv -b $outfile2putcommas-bak\n`;}
-		#print TOSHELL "chmod 777 $outfile2putcommas\n"; print TOSHELL "mv -b $outfile2putcommas-bak\n"; 
-		open( OUTFILE2PUTCOMMAS, ">$outfile2putcommas" ) or die "Can't open outfile2putcommas $outfile2putcommas: $!";
-		foreach my $new_line_to_convert (@new_lines_to_convert)
+		foreach my $varnumber (@varnumbers)
 		{
-			$new_line_to_convert =~ s/ /,/g;
-
-			my @roww = split( /,/, $new_line_to_convert );
-			my $number_of_items = ( scalar(@roww) -1);
-			my $count = 0;
-			foreach my $row (@roww)
+			my $basevalue       = $varthemes_variations[$count][0];
+			my $roofvalue       = $varthemes_variations[$count][1];
+			my $number_of_steps = $varthemes_steps[$count];
+			my $range           = ( $roofvalue - $basevalue );
+			my @values;
+			my $step = 0;
+			if ( $number_of_steps > 1 )
 			{
-				foreach my $filter_column (@filter_columns)
+
+				until ( $step > ( $number_of_steps - 1 ) )
 				{
-					if ( $count == $filter_column  )
-					{
-						if ( $count < $number_of_items )
-						{
-							print OUTFILE2PUTCOMMAS "$row,";	
-						}
-						else {print OUTFILE2PUTCOMMAS "$row";}
-					}
+					my $value;
+					$value = ( $basevalue + ( ( $range / ( $number_of_steps - 1 ) ) * $step ) );
+					$value = sprintf( "%.2f", $value );
+					push( @values, $value );
+					$step++;
 				}
-				$count++;
 			}
-			print OUTFILE2PUTCOMMAS "\n";
+			push( @varthemes_values, [@values] );
+			$write = Dumper(@varthemes_values);
+			$count++;
 		}
-		close OUTFILE2PUTCOMMAS;
-	}
+				
+		foreach my $file_to_convert (@files_to_convert)
+		{
+			open( INFILECONVERT, "$file_to_convert" ) or die "Can't open file_to_convert $file_to_convert: $!";
+			my @lines_to_convert = <INFILECONVERT>;
+			close INFILECONVERT;
+			my $outfileconvert = "$file_to_convert" . "-converted.txt";
+			#if (-e $outfileconvert) { `chmod 777 $outfileconvert\n`; `mv -b $outfileconvert-bak\n`;}
+			#print TOSHELL "chmod 777 $outfileconvert\n"; print TOSHELL "mv -b $outfileconvert-bak\n"; 
+			open( OUTFILECONVERT, ">$outfileconvert" ) or die "Can't open $outfileconvert: $!";
+			
+			foreach my $line_to_convert (@lines_to_convert)
+			{
+				my $counter = 0;
+				foreach my $varnumber (@varnumbers)
+				{
+					my $stepper         = 1;
+					my $number_of_steps = $varthemes_steps[$counter];
+					foreach my $value ( @{ $varthemes_values[$counter] } )
+					{
+						$line_to_convert =~ s/_\+$varnumber\-$stepper/$value /;
+						$stepper++;
+					}
+					$line_to_convert =~ s/$mypath\/$file//;
+					$line_to_convert =~ s/_\+$varnumber/ $varthemes_report[$counter]/;
+					$line_to_convert =~ s/[§£]/ /;
+					$line_to_convert =~ s/loads-sum-up.txt-filtered.txt//;
+					$counter++;
+				}
+				print OUTFILECONVERT "$line_to_convert";
+			}
+			close OUTFILECONVERT;
+			
+
+			open(INFILE2PUTCOMMAS, "$outfileconvert") or die "Can't open infile2putcommas $outfileconvert: $!";
+			my @new_lines_to_convert = <INFILE2PUTCOMMAS>;
+			close INFILE2PUTCOMMAS;
+			my $outfile2putcommas = "$outfileconvert".".csv";
+			#if (-e $outfile2putcommas) { `chmod 777 $outfile2putcommas\n`; `mv -b $outfile2putcommas-bak\n`;}
+			#print TOSHELL "chmod 777 $outfile2putcommas\n"; print TOSHELL "mv -b $outfile2putcommas-bak\n"; 
+			open( OUTFILE2PUTCOMMAS, ">$outfile2putcommas" ) or die "Can't open outfile2putcommas $outfile2putcommas: $!";
+			foreach my $new_line_to_convert (@new_lines_to_convert)
+			{
+				$new_line_to_convert =~ s/ /,/g;
+
+				my @roww = split( /,/, $new_line_to_convert );
+				my $number_of_items = ( scalar(@roww) -1);
+				my $count = 0;
+				foreach my $row (@roww)
+				{
+					foreach my $filter_column (@filter_columns)
+					{
+						if ( $count == $filter_column  )
+						{
+							if ( $count < $number_of_items )
+							{
+								print OUTFILE2PUTCOMMAS "$row,";	
+							}
+							else {print OUTFILE2PUTCOMMAS "$row";}
+						}
+					}
+					$count++;
+				}
+				print OUTFILE2PUTCOMMAS "\n";
+			}
+			close OUTFILE2PUTCOMMAS;
+		}
 	}
 	
 	foreach my $themereport (@themereports)
 	{
 		do_convert_filtered_reports($themereport);
 	}
-	
 }### END SUB convert_reports. THIS IS NOT WORKING. IT IS NOT MODIFYING THE FILTERED FILES.
+###################################################################
+###################################################################
+		###################################################################
+		# END OF SUB CONVERT_REPORTS
 
 
+		# BEGINNING OF SUB MAKETABLE
+		###################################################################
+###################################################################
+###################################################################
 sub maketable  # STALE. TO BE RE-CHECKED. 
 {
 	my $to = shift;
@@ -8651,85 +8831,85 @@ sub maketable  # STALE. TO BE RE-CHECKED.
 		$themereport = $_;
 		my $convertcriterium = $themereport;
 				
-	foreach $date (@simtitles)
-	{
-		my $countmaketable = 0;
-		my @rowelements;
-		foreach my $theme_to_filter (@files_to_filter)
+		foreach $date (@simtitles)
 		{
-			my @gatherarray;
-			if ($countmaketable > 0)		
+			my $countmaketable = 0;
+			my @rowelements;
+			foreach my $theme_to_filter (@files_to_filter)
 			{
-				$file_to_maketable = "$mypath/$filenew-$date-$convertcriterium-sum-up.txt-$theme_to_filter-filtered.txt-converted.txt";
-				open(INFILE,  "$file_to_maketable")   or die "Can't open file_to_maketable $file_to_maketable: $!\n";
-				my @lines = <INFILE>;
-				close(INFILE);
-				my $number_of_rows = $maketabledata[$countmaketable][0];
-				my $number_of_columns = $maketabledata[$countmaketable][1];
-				my $x_column = $base_columns[$countmaketable][0];
-				my $y_column = $base_columns[$countmaketable][1];
-				my $report_column = $base_columns[$countmaketable][2];			
-				my $countline = 0;
-				my @temparray;
-				
-				foreach my $line (@lines) 
+				my @gatherarray;
+				if ($countmaketable > 0)		
 				{
-					@rowelements = split(/\s+/, $line);
-					push @gatherarray, [@rowelements];
-				#}
-				print OUTFILE "\nGATHERARRAY: \n"; print OUTFILE Dumper(@gatherarray); print OUTFILE "\n\n";
+					$file_to_maketable = "$mypath/$filenew-$date-$convertcriterium-sum-up.txt-$theme_to_filter-filtered.txt-converted.txt";
+					open(INFILE,  "$file_to_maketable")   or die "Can't open file_to_maketable $file_to_maketable: $!\n";
+					my @lines = <INFILE>;
+					close(INFILE);
+					my $number_of_rows = $maketabledata[$countmaketable][0];
+					my $number_of_columns = $maketabledata[$countmaketable][1];
+					my $x_column = $base_columns[$countmaketable][0];
+					my $y_column = $base_columns[$countmaketable][1];
+					my $report_column = $base_columns[$countmaketable][2];			
+					my $countline = 0;
+					my @temparray;
+					
+					foreach my $line (@lines) 
+					{
+						@rowelements = split(/\s+/, $line);
+						push @gatherarray, [@rowelements];
+					#}
+					print OUTFILE "\nGATHERARRAY: \n"; print OUTFILE Dumper(@gatherarray); print OUTFILE "\n\n";
 
-					if ($countline < $number_of_columns)
-					{
-						push @temparray, " $rowelements[$y_column]";
-					}
-					$countline++;
-				}
-				my $countline = 0;
-				push my @array, ["\" \"", @temparray ];
-				my $countrow = 0;
-				until ($countrow >= $number_of_rows)
-				{
-					push @array, [];
-				$countrow++;
-				}
-				print OUTFILE "THIS 1\n" ; print OUTFILE Dumper(@array);
-				my $countlinearray = 0;
-				
-				foreach my $linearray (@array)
-				{
-					if ($countlinearray > 0)
-					{
-						for ( $i = 0 ; $i <  $number_of_columns ; $i++)
+						if ($countline < $number_of_columns)
 						{
-							if ($i == 0)
-							{
-								push @{$array[$countlinearray]}, $gatherarray[$countline][$x_column], $gatherarray[$countline][$report_column];
-							}
-							elsif ($i > 0)
-							{
-								push @{$array[$countlinearray]}, $gatherarray[$countline][$report_column];
-
-							}
-							$countline++;
+							push @temparray, " $rowelements[$y_column]";
 						}
+						$countline++;
 					}
-					$countlinearray++;
+					my $countline = 0;
+					push my @array, ["\" \"", @temparray ];
+					my $countrow = 0;
+					until ($countrow >= $number_of_rows)
+					{
+						push @array, [];
+					$countrow++;
+					}
+					print OUTFILE "THIS 1\n" ; print OUTFILE Dumper(@array);
+					my $countlinearray = 0;
+					
+					foreach my $linearray (@array)
+					{
+						if ($countlinearray > 0)
+						{
+							for ( $i = 0 ; $i <  $number_of_columns ; $i++)
+							{
+								if ($i == 0)
+								{
+									push @{$array[$countlinearray]}, $gatherarray[$countline][$x_column], $gatherarray[$countline][$report_column];
+								}
+								elsif ($i > 0)
+								{
+									push @{$array[$countlinearray]}, $gatherarray[$countline][$report_column];
+
+								}
+								$countline++;
+							}
+						}
+						$countlinearray++;
+					}
+					
+					my $outfile = "$file_to_maketable"."-madetable.txt";
+					#if (-e $outfile) { `chmod 777 $outfile\n`; `mv -b $outfile-bak\n`;}
+					#print TOSHELL "chmod 777 $outfile\n"; print TOSHELL "mv -b $outfile-bak\n"; 
+					open(OUTFILE, ">$outfile") or die "Can't open $outfile: $!\n";
+					foreach my $line (@array)
+					{
+						print OUTFILE "@{$line}\n";
+					}
+					close OUTFILE;
 				}
-				
-				my $outfile = "$file_to_maketable"."-madetable.txt";
-				#if (-e $outfile) { `chmod 777 $outfile\n`; `mv -b $outfile-bak\n`;}
-				#print TOSHELL "chmod 777 $outfile\n"; print TOSHELL "mv -b $outfile-bak\n"; 
-				open(OUTFILE, ">$outfile") or die "Can't open $outfile: $!\n";
-				foreach my $line (@array)
-				{
-					print OUTFILE "@{$line}\n";
-				}
-				close OUTFILE;
+				$countmaketable++;
 			}
-			$countmaketable++;
 		}
-	}
 	}
 	
 	foreach my $themereport (@themereports)
@@ -8737,155 +8917,200 @@ sub maketable  # STALE. TO BE RE-CHECKED.
 		do_maketable($themereport);
 	}
 }
+###################################################################
+###################################################################
+		###################################################################
+		# END OF SUB MAKETABLE
+		
+		
+		# END OF THE CONTENT OF THE "opts_format.pl" FILE.
+		##############################################################################
+		##############################################################################
+		##############################################################################
 
-# END OF THE CONTENT OF THE "opts_format.pl" FILE.
-##############################################################################
-##############################################################################
-	##############################################################################
-
-	if ( $dowhat[0] eq "y" ) 
-	{ 
-		{
-		&morph(); } 
-	}
-
-	if ( $dowhat[1] eq "y" )
-	{ 
-		&sim( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
-		\@simtitles, $preventsim, $exeonfiles, $fileconfig, 
-		\@themereports, \@reporttitles, \@retrievedata );
-	}
-	
-	if ( $dowhat[2] eq "y" )
-	{ 
-		&retrieve( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
-		\@simtitles, $preventsim, $exeonfiles, $fileconfig, 
-		\@themereports, \@reporttitles, \@retrievedata );
-	}
-	
-	if ( $dowhat[4] eq "y" ) 
-	{ 
-		&report( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
-		\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
-		\@rankdata, \@rankcolumn, \@reporttempsdata,
-		\@reportcomfortdata, \@reportradiationenteringdata, $stripcheck ); }
-
-	if ( $dowhat[5] eq "y" )
-	{ &merge_reports( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
-		\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
-		\@rankdata, \@rankcolumn, \@reporttempsdata, 
-		\@reportcomfortdata, \@reportradiationenteringdata, $stripcheck ); 
-	}
-
-	if ( $dowhat[6] eq "y" )
-	{
-		&convert_report( \@varthemes_variations, \@varthemes_steps, $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
-		\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
-		\@rankdata, \@rankcolumn, \@reporttempsdata, 
-		\@reportcomfortdata, \@reportradiationenteringdata, $stripcheck  ); # NAMES VARIABLES IN REPORTS
-	}
-	if ( $dowhat[10] eq "y" )
-	{
-		&chasewinner( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
-		\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
-		\@rankdata, \@rankcolumn, \@reporttempsdata, \@reportcomfortdata,
-		\@reportradiationenteringdata, $stripcheck ); # CHECK THE WINNING CASE AND USES IT FOR BLOCK SEARCH IF POSSIBLE
-	}
-	if ( $dowhat[7] eq "y" )
-	{
-		&filter_reports( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
-		\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
-		\@rankdata, \@rankcolumn, \@reporttempsdata, \@reportcomfortdata,
-		\@reportradiationenteringdata, $stripcheck ); # FILTERS ALREADY CONVERTED REPORTS
-	}
-	if ( $dowhat[8] eq "y" )
-	{
-		&convert_filtered_reports( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
-		\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
-		\@rankdata, \@rankcolumn, \@reporttempsdata, \@reportcomfortdata,
-		\@reportradiationenteringdata, $stripcheck ); # CONVERTS ALREADY FILTERED REPORTS
-	}
-	if ( $dowhat[9] eq "y" )
-	{
-		&maketable( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
-		\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
-		\@rankdata, \@rankcolumn, \@reporttempsdata,
-		\@reportcomfortdata, \@reportradiationenteringdata, $stripcheck ); # CONVERTS TO TABLE ALREADY FILTERED REPORTS
-	}
-	$countblock++;
-} # END SUB exec
-###########################################################################################
-###########################################################################################
-###########################################################################################
-
-
-###########################################################################################
-###########################################################################################
-# BELOW THE PROGRAM THAT LAUNCHES OPTS.
-
-#print "NOT ENTERED, " . Dumper(@bundlesgroup) . " \n";
-
-if ( (@bundlesgroup) #ZZZ
-#and (-e "./scripts/opts_search.pl") 
-)
-{
-	foreach my $el (@bundlesgroup)
-	{
-		my @bundleref = @{$el};
-		say "\@bundleref" . Dumper(@bundleref);
-
-		foreach my $el (@bundleref)
-		{
-			my @sequence = @{$el};
-			say "\@sequence" . Dumper(@sequence);
-
-			foreach my $el (@sequence)
+		if ( $dowhat[0] eq "y" ) 
+		{ 
 			{
-				my @block = @{$el};
-				say "\@block" . Dumper(@block);
+			&morph(); } 
+		}
 
+		if ( $dowhat[1] eq "y" )
+		{ 
+			&sim( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+			\@simtitles, $preventsim, $exeonfiles, $fileconfig, 
+			\@themereports, \@reporttitles, \@retrievedata );
+		}
+		
+		if ( $dowhat[2] eq "y" )
+		{ 
+			&retrieve( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+			\@simtitles, $preventsim, $exeonfiles, $fileconfig, 
+			\@themereports, \@reporttitles, \@retrievedata );
+		}
+		
+		if ( $dowhat[4] eq "y" ) 
+		{ 
+			&report( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+			\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
+			\@rankdata, \@rankcolumn, \@reporttempsdata,
+			\@reportcomfortdata, \@reportradiationenteringdata, $stripcheck ); }
+
+		if ( $dowhat[5] eq "y" )
+		{ &merge_reports( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+			\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
+			\@rankdata, \@rankcolumn, \@reporttempsdata, 
+			\@reportcomfortdata, \@reportradiationenteringdata, $stripcheck ); 
+		}
+
+		if ( $dowhat[6] eq "y" )
+		{
+			&convert_report( \@varthemes_variations, \@varthemes_steps, $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+			\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
+			\@rankdata, \@rankcolumn, \@reporttempsdata, 
+			\@reportcomfortdata, \@reportradiationenteringdata, $stripcheck  ); # NAMES VARIABLES IN REPORTS
+		}
+		if ( $dowhat[10] eq "y" )
+		{
+			&takeoptima( $to, $mypath, $file, $filenew, $sortmerged, $winnerline); # CHECK THE WINNING CASE AND USES IT FOR BLOCK SEARCH IF POSSIBLE
+		}
+		if ( $dowhat[7] eq "y" )
+		{
+			&filter_reports( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+			\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
+			\@rankdata, \@rankcolumn, \@reporttempsdata, \@reportcomfortdata,
+			\@reportradiationenteringdata, $stripcheck ); # FILTERS ALREADY CONVERTED REPORTS
+		}
+		if ( $dowhat[8] eq "y" )
+		{
+			&convert_filtered_reports( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+			\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
+			\@rankdata, \@rankcolumn, \@reporttempsdata, \@reportcomfortdata,
+			\@reportradiationenteringdata, $stripcheck ); # CONVERTS ALREADY FILTERED REPORTS
+		}
+		if ( $dowhat[9] eq "y" )
+		{
+			&maketable( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+			\@simtitles, $preventsim, $exeonfiles, $fileconfig, \@themereports, \@reporttitles, \@retrievedata,
+			\@rankdata, \@rankcolumn, \@reporttempsdata,
+			\@reportcomfortdata, \@reportradiationenteringdata, $stripcheck ); # CONVERTS TO TABLE ALREADY FILTERED REPORTS
+		}
+	} # END SUB exec
+	###########################################################################################
+	###########################################################################################
+	###########################################################################################
+
+
+	###########################################################################################
+	###########################################################################################
+	# BELOW THE PROGRAM THAT LAUNCHES OPTS.
+
+			
+	if ( (@casegroup) #ZZZ
+	#and (-e "./scripts/opts_search.pl") 
+	)
+	{
+		my $countcase = 0;
+		foreach my $case (@casegroup)
+		{
+			my @blocks = @{$case};
+			my $countblock = 1;
+			foreach my $blockref (@blocks)
+			{
+				my @blockelts = @{$blockref};
+				
+				my @nextblockelts = @{$blockref[$countblock+1]};
+
+				
+				if ( scalar(@{$varn[$countcase]}) == 1 ) { @varn = @{$varn[$countcase][0]}; }
+				else { @varn = @{$varn[$countcase][$countblock]}; }
+				
+				my $counterfn = 0;
+				sub def_filenew
+				{
+					$filenew = "$mypath/models/$file" . "_";
+					#print OUTFILE "FILENAMEOUT: $filename\n";
+					#print OUTFILE "SCALAR @ VARNUMBERS: " . scalar(@varnumbers) . "\n";
+					#print OUTFILE "SCALAR @ VARN: " . scalar(@varn) . "\n";
+					foreach my $el (@varn)
+					{
+						#print OUTFILE "COUNTERFN: " . "$counterfn\n";
+						#print OUTFILE "\$FILENAMEIN: $filename\n";
+						#print OUTFILE "\$varn[\$counterfn]: $varn[$counterfn]\n";
+						$filenew = "$filenew" . "$varn[$counterfn]" . "-" . "$midvalues[$countblock]" . "_" ;
+						$counterfn++;
+						#print OUTFILE "DOING \$filenew: $filenew\n\n";
+					}
+					#print OUTFILE "OUT \$filenew: $filenew\n\n";
+				}
+				if ($countblock == 1) { &def_filenew; }
+	
+	
+	
 				if (-e $chanchefile)
 				{
 					open(CHANCEFILE, $chanchefile) or die;
 					@lines = <CHANCEFILE>;
 					close CHANCEFILE;
-					foreach my $line (@lines)
+					$line = $lines[$countblock];
+					@chance = split(/\s+|,/, $line);
+					@varnumbers = @chance[ $block[0] .. ( $block[0] + $block[1] - 1 ) ];
+					
+					$nextline = $lines[$countblock+1];
+					unless ($countblock == $#blocks)
 					{
-						@chance = split(/\s+|,/, $line);
-						@varnumbers = @chance[ $block[0] .. ( $block[0] + $block[1] - 1 ) ];
+						@nextchance = @chance;
 					}
+					else
+					{
+						$nextline = $lines[$countblock+1];
+						@nextchance = split(/\s+|,/, $line);
+					}
+					@nextvarnumbers = @nextchance[ $nextblockelts[0] .. ( $nextblockelts[0] + $nextblockelts[1] - 1 ) ];
 				}
 				else
 				{
 					my @chance;
 					push (@chance, @varn, @varn, @varn);
-					say "THESE ARE THE CHANCES  IN LAUNCHER: " . Dumper(@chance);
-					@varnumbers = @chance[ $block[0] .. ( $block[0] + $block[1] - 1 ) ];
-					say "THESE ARE VARNUMBERS IN LAUNCHER: " . Dumper(@varnumbers); 
+					say OUTFILE "THESE ARE THE CHANCES  IN LAUNCHER: " . Dumper(@chance);
+					@varnumbers = @chance[ $blockelts[0] .. ( $blockelts[0] + $blockelts[1] - 1 ) ];
+					say OUTFILE "THESE ARE VARNUMBERS IN LAUNCHER: " . Dumper(@varnumbers); 
+					
+					@nextvarnumbers = @chance[ $nextblockelts[0] .. ( $nextblockelts[0] + $nextblockelts[1] - 1 ) ];
+					
 				} 
-				if (@varnumbers)
+				
+				if ($countblock == 1) 
 				{
-					&exec(\@varnumbers);
-					say "I CALL EXEC WITH \@VARNUMBERS " . Dumper(@varnumbers);
+					@uplift = ($filenew); 
+					@downlift = ($filenew);
 				}
+							
+				say OUTFILE "HERE CALLING \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
+		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
+		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
+		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+
+				&exec(\@varnumbers, $countblock, $countcase, \@nextvarnumbers, \@uplift, \@downlift, \@blocks, \@blockelts);
+				
+				$countblock++;
 			}
+		$countcase++;
 		}
 	}
-}
-else
-{  
-	&exec; 
-	print "I CALL EXEC AND \@VARNUMBERS IS: " . Dumper(@varnumbers) . "\n";
-}
+	else
+	{  
+		&exec; 
+		print OUTFILE "I CALL EXEC AND \@VARNUMBERS IS: " . Dumper(@varnumbers) . "\n";
+	}
 
-# END OF THE PROGRAM THAT LAUNCHES OPTS.
-##########################################################################################
-##########################################################################################
+	# END OF THE PROGRAM THAT LAUNCHES OPTS.
+	##########################################################################################
+	##########################################################################################
 
-
-close(OUTFILE);
-close(TOSHELL);
-exit;
+	close(OUTFILE);
+	close(TOSHELL);
+	exit;
 
 } # END OF SUB OPTS
 #############################################################################
