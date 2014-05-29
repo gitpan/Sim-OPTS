@@ -13,11 +13,12 @@ no strict;
 no warnings;
 use Math::Trig;
 use List::Util qw[min max reduce];
+use List::MoreUtils qw(uniq);
 use Data::Dumper;
 $Data::Dumper::Indent = 0;
 $Data::Dumper::Useqq  = 1;
 $Data::Dumper::Terse  = 1;
-use Array::Diff; #  my $diff = Array::Diff->diff( \@old, \@new );
+#use Array::Diff; #  my $diff = Array::Diff->diff( \@old, \@new );
 #use Set::Intersection; # my @intersection = get_intersection(\@arr1, \@arr2);
 
 @ISA = qw(Exporter); # our @ISA = qw(Exporter);
@@ -33,7 +34,7 @@ use Array::Diff; #  my $diff = Array::Diff->diff( \@old, \@new );
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(opts prepare); # our @EXPORT = qw( );
-$VERSION = '0.33__3'; # our $VERSION = '';
+$VERSION = '0.35'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 # use Sim::OPTS::prepare; # HERE IS THE FUNCTION 'prepare', a text interface to the function 'opts'.
@@ -43,49 +44,11 @@ $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations throu
 #################################################################################
 
 # BEGINNING OF THE OPTS PROGRAM
-
-sub odd 
-{
-    my $number = shift;
-    return !even ($number);
-}
-
-sub even 
-{
-    my $number = abs shift;
-    return 1 if $number == 0;
-    return odd ($number - 1);
-}
-
-sub setop
-{
-	(@union, @intersection, @difference) = ();
-	my $swap = shift;
-	my @first = @$swap;
-	my $swap = shift;
-	my @second = @$swap;
-	foreach $e (@first, @second) { $count{$e}++ }
-	foreach $e (keys %count) 
-	{
-		push(@union, $e);
-		if ($count{$e} == 2) 
-		{
-			push(@intersection, $e);
-		} 
-		else 
-		{
-			push(@difference, $e);
-		}
-	}
-}
-        
 	
 sub opts 
 { 
-	my ( $filenew, $winnerline, $loserline, $configfile, $morphfile, $simlistfile, $sortmerged, @totvarnumbers, @uplift, @downlift, $fileuplift, $filedownlift );
-
+	my ( $filenew, $winnerline, $loserline, $configfile, $morphfile, $simlistfile, $sortmerged, @totvarnumbers, @uplift, @downlift, $fileuplift, $filedownlift, @varnumbers, @newvarnumbers, @newblockelts, $countvar, @seedfiles );
 	sub start
-
 	{
 		###########################
 print "THIS IS OPTS.
@@ -130,7 +93,6 @@ Insert the name of a configuration file (local path):\n";
 
 	#################################################################################
 	#################################################################################
-	#my $filename;
 	sub exec
 	{
 		my $swap = shift;
@@ -138,7 +100,7 @@ Insert the name of a configuration file (local path):\n";
 		my $countblock = shift;
 		my $countcase = shift;
 		my $swap = shift;
-		my @nextvarnumbers = @$swap;
+		my @newvarnumbers = @$swap;
 		my $swap = shift;
 		my @uplift = @$swap;
 		my $swap = shift;
@@ -147,47 +109,57 @@ Insert the name of a configuration file (local path):\n";
 		my @blocks = @$swap;
 		my $swap = shift;
 		my @blockelts = @$swap;
+		my $swap = shift;
+		my @newblockelts = @$swap;
+		my $swap = shift;
+		my @overlap = @$swap;
 		
 		$morphfile = "$mypath/$file-morphfile-$countblock";
 		$simlistfile = "$mypath/$file-simlist-$countblock";
 		
 		open (MORPHFILE, ">$morphfile") or die;
 		
-		say OUTFILE "\nHERE RECEIVING \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
-		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
-		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
-		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
-		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
-		
-		
-		push (@totvarnumbers, @varnumbers);
-		&setop(\@totvarnumbers, \@varnumbers);
-		@totvarnumbers = @union;
-		
+		say OUTFILE "\nHERE BEGIN ";
+				
+						
+		@totvarnumbers = (@totvarnumbers, @varnumbers);
+		@totvarnumbers = uniq(@totvarnumbers);
+		@totvarnumbers = sort(@totvarnumbers);
 
-		sub morph    # This function generates the test case variables 
-		# and modifies them.
-		# HERE THE VARIABLES ARE ASSIGNED A 
-		# NUMBERED NAME ON THE FLY AT EACH SEARCH ITERATION (PHASE).
-		# THE VARIABLE $varnumber COUNTS THE MORPHING PHASE.
-		# THE VARIABLE DESIGNING THE MORHING PHASE IS $stepsvar.
-		# THE VARIABLE $counterzone DOES NOT EXACTLY COUNT A ZONE (IT 
-		# JUST MAY. IT COUNTS A MORPHING PHASE NESTED INTO ANOTHER
-		# ONE: A MORPHING SUB-PHASE.
+		sub morph
 		{
-			say OUTFILE "\nHERE 2 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
-		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
-		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
-		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
-		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
-			my $countvar = 0;
+			my $to = shift;
+			my $mypath = shift;
+			my $file = shift;
+			my $filenew = shift;
+			my $swap = shift;
+			my @dowhat = @$swap;
+			my $swap = shift;
+			my @simdata = @$swap;
+			my $simnetwork = shift;
+			my $swap = shift;
+			my @simtitles = @$swap;
+			my $preventsim = shift;
+			my $exeonfiles = shift;
+			my $fileconfig = shift;
+			my $swap = shift;
+			my @themereports = @$swap;
+			my $swap = shift;
+			my @reporttitles = @$swap;
+			my $swap = shift;
+			my @retrievedata = @$swap;
+			my $swap = shift;
+			my @varnumbers = @$swap;
+			my $countblock = shift;
+			my $countcase = shift;
+		
+			say OUTFILE "\nHERE 2 ";
+			$countvar = 0;
 			foreach $varnumber (@varnumbers)
 			{
-				say OUTFILE "\nHERE 3 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
-		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
-		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
-		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
-		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+				my @casemorphed;
+				say OUTFILE "\nHERE 3 ";
+					
 				if ( $countvar == $#varnumbers )
 				{
 					$$general_variables[0] = "n";
@@ -232,7 +204,6 @@ Insert the name of a configuration file (local path):\n";
 				@constrain_net = @{ "constrain_net" . "$varnumber" };
 				@propagate_constraints = @{ "propagate_constraints" . "$varnumber" };
 				@change_climate = @{ "change_climate" . "$varnumber" };
-
 				my @cases_to_sim;
 				my @files_to_convert;
 				my (@v, @obs, @node, @component, @loopcontrol, @flowcontrol); # THINGS GLOBAL AS REGARDS COUNTER ZONE CYCLES
@@ -243,7 +214,7 @@ Insert the name of a configuration file (local path):\n";
 				
 				my $generate  = $$general_variables[0];
 				my $sequencer = $$general_variables[1];
-				my $dffile = "df-$file.txt";			
+				my $dffile = "df-$file.txt";	
 				
 				if ( ( $countvar == 0 ) and ( $countblock == 1 ) and ( $countcase == 0 ) )
 				{
@@ -251,25 +222,17 @@ Insert the name of a configuration file (local path):\n";
 					print TOSHELL "cp -r $mypath/$file $filenew\n\n";
 				}
 
+
 				@cases_to_sim = grep -d, <$mypath/models/$file*_>;
 
 				foreach $case_to_sim (@cases_to_sim)
 				{
-					say OUTFILE "\nHERE 4 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
-		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
-		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
-		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
-		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
-					print OUTFILE "\$case_to_sim: $case_to_sim\n";
+					say OUTFILE "\nHERE 4 ";
+				
 					$counterstep = 1;
 				
 					while ( $counterstep <= $stepsvar )
 					{
-						say OUTFILE "\nHERE 5 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
-		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
-		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
-		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
-		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
 						my $from = "$case_to_sim";
 						my $almost_to = $from;
 						$almost_to =~ s/$varnumber-\d+/$varnumber-$counterstep/ ;
@@ -324,45 +287,45 @@ Insert the name of a configuration file (local path):\n";
 							$to = "$almost_to";
 						}
 						
-						say OUTFILE "\nHERE BEFORE \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
-		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
-		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
-		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
-		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
-						
 						if ($countvar == $#varnumbers)
 						{
 							$to =~ s/_$//;
 							print MORPHFILE "$to\n";
 						}
 						
-						say OUTFILE "\nHERE AFTER \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
-		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
-		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
-		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
-		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
-
-
-
+						say OUTFILE "\nHERE AFTER ";
+			
 						unless (-e $something)###ZZZ
 						{
 							if (     ( $generate eq "y" )
 								 and ( $counterstep == $stepsvar )
 								 and ( ( $sequencer eq "n" ) or ( $sequencer eq "last" ) ) )
 							{
-								if ($exeonfiles eq "y") { `cp -R $from $to\n`; }
-								print TOSHELL "cp -R $from $to\n\n";
-								#if ($exeonfiles eq "y") { print `chmod -R 777 $to\n`; }
-								#print TOSHELL "chmod -R 777 $to\n\n";
-							} else
+								unless (-e $to)
+								{
+									if ($exeonfiles eq "y") { `cp -R $from $to\n`; }
+									print TOSHELL "cp -R $from $to\n\n";
+									#if ($exeonfiles eq "y") { print `chmod -R 777 $to\n`; }
+									#print TOSHELL "chmod -R 777 $to\n\n";
+								}
+							} 
+							else
 							{
-								if ($exeonfiles eq "y") { `cp -R $from $to\n`; }
-								print TOSHELL "cp -R $from $to\n\n";
-								#if ($exeonfiles eq "y") { print `chmod -R 777 $to\n`; }
-								#print TOSHELL "chmod -R 777 $to\n\n";
+								unless (-e $to)
+								{
+									
+									if ($exeonfiles eq "y") { `cp -R $from $to\n`; }
+									print TOSHELL "cp -R $from $to\n\n";
+									#if ($exeonfiles eq "y") { print `chmod -R 777 $to\n`; }
+									#print TOSHELL "chmod -R 777 $to\n\n";
+								}
 							}
 						}
+						
+						push(@morphed, $to);
+			
 						$counterzone = 0;
+						
 						unless (-e $something)###ZZZ
 						{	
 							foreach my $zone (@applytype)
@@ -400,11 +363,8 @@ Insert the name of a configuration file (local path):\n";
 									"cp -f $to/cfg/$applytype[$counterzone][1] $to/cfg/$applytype[$counterzone][2]\n\n"; 
 									# ORDINARILY, REMOVE THIS LINE
 								}
-								
-								
 								print CASELIST "$to\n";
-								
-								
+													
 								
 								#########################################################################################
 #########################################################################################
@@ -7082,8 +7042,7 @@ sub propagate_constraints
 #########################################################################################
 #########################################################################################
 								#########################################################################################
-								
-								
+													
 								my $yes_or_no_rotate_obstructions = "$$rotate[$counterzone][1]" ; 
 								# WHY $BRING_CONSTRUCTION_BACK DOES NOT WORK IF THESE TWO VARIABLES ARE PRIVATE?
 								my $yes_or_no_keep_some_obstructions = "$$keep_obstructions[$counterzone][0]";    
@@ -7091,15 +7050,17 @@ sub propagate_constraints
 								print `cd $to`;
 								print TOSHELL "cd $to\n\n";
 								
-								say OUTFILE "\nHERE 6 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
-		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
-		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
-		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
-		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+								say OUTFILE "\nHERE 6 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@newvarnumbers @newvarnumbers, \@uplift @uplift, 
+\@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$morphfile $morphfile, \$simlistfile $simlistfile, 
+\$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, \$fileuplift $fileuplift, \$filedownlift $filedownlift, \$case_to_sim $case_to_sim, 
+\@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", \@blockelts @blockelts, \@nextblockelts @nextblockelts, \$mergefile $mergefile, 
+\$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, \$from: $from, \$almost_to: $almost_to\, \$to: $to , 
+\@overlap: " . Dumper(@overlap) . "\n";
 
-								
 								my $countercycles_transl_surfs = 0;				
 								
+								eval `cat /home/luca/Sim-OPTS/stuff1.pl`; # ZZZZ HERE stuff1.pl
 								if ( $stepsvar > 1)
 								{	
 									sub dothings
@@ -7343,11 +7304,13 @@ sub propagate_constraints
 										&dothings;
 									}
 								}
+								
 								$counterzone++;
 								print `cd $mypath`;
 								print TOSHELL "cd $mypath\n\n";
 							}#DDD1
-						}
+						}					
+						
 						$counterstep++ ; 
 					}
 				}
@@ -7369,9 +7332,8 @@ sub propagate_constraints
 		##############################################################################
 		##############################################################################
 		##############################################################################	
-	
-	
-		# BEGINNING OF SUB SIM
+
+# BEGINNING OF SUB SIM
 		##############################################################################
 ##############################################################################
 ##############################################################################
@@ -7417,11 +7379,12 @@ sub sim    # This function launch the simulations in ESP-r
 	my @ress;
 	my @flfs;
 	
-	say OUTFILE "\nHERE SIM \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
-		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
-		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
-		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
-		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+	say OUTFILE "\nHERE SIM \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@newvarnumbers @newvarnumbers, \@uplift @uplift, 
+		\@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$morphfile $morphfile, \$simlistfile $simlistfile, 
+		\$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, \$fileuplift $fileuplift, \$filedownlift $filedownlift, \$case_to_sim $case_to_sim, 
+		\@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", \@blockelts @blockelts, \@nextblockelts @nextblockelts, \$mergefile $mergefile, 
+		\$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, \$from: $from, \$almost_to: $almost_to\, \$to: $to ";
 
 	open (SIMLIST, ">$simlistfile") or die;
 	
@@ -7433,11 +7396,12 @@ sub sim    # This function launch the simulations in ESP-r
 	my $countdir = 0;
 	foreach my $dir_to_simulate (@dirs_to_simulate)
 	{
-		say OUTFILE "\nHERE SIM2 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
-		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
-		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
-		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
-		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+		say OUTFILE "\nHERE SIM2 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@newvarnumbers @newvarnumbers, \@uplift @uplift, 
+		\@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$morphfile $morphfile, \$simlistfile $simlistfile, 
+		\$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, \$fileuplift $fileuplift, \$filedownlift $filedownlift, \$case_to_sim $case_to_sim, 
+		\@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", \@blockelts @blockelts, \@nextblockelts @nextblockelts, \$mergefile $mergefile, 
+		\$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, \$from: $from, \$almost_to: $almost_to\, \$to: $to ";
 
 		chomp($dir_to_simulate);
 		my $countersim = 0;	
@@ -7453,7 +7417,7 @@ sub sim    # This function launch the simulations in ESP-r
 				push (@ress, $resfile); 
 				push (@flfs, $flfile);
 					
-				unless ( -e $resfile )
+				unless (-e $resfile )
 				{
 					if ( $simnetwork eq "n" )
 					{
@@ -7576,8 +7540,7 @@ XXX
 	}
 	
 	close SIMLIST;
-}    # END SUB sim;
-				
+}    # END SUB sim;				
 				
 # END OF THE CONTENT OF THE "opts_sim.pl" FILE.
 ##############################################################################
@@ -7619,11 +7582,12 @@ sub retrieve
 		print TOSHELL "mkdir $mypath/results\n\n"; 
 	}
 	
-	say OUTFILE "\nHERE RETRIEVE \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
-		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
-		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
-		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
-		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
+	say OUTFILE "\nHERE RETRIEVE \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@newvarnumbers @newvarnumbers, \@uplift @uplift, 
+		\@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$morphfile $morphfile, \$simlistfile $simlistfile, 
+		\$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, \$fileuplift $fileuplift, \$filedownlift $filedownlift, \$case_to_sim $case_to_sim, 
+		\@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", \@blockelts @blockelts, \@nextblockelts @nextblockelts, \$mergefile $mergefile, 
+		\$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, \$from: $from, \$almost_to: $almost_to\, \$to: $to ";
 
 
 				
@@ -7644,10 +7608,11 @@ sub retrieve
 		#if ($exeonfiles eq "y") { print `rm -f $existingfile*par\n`; }
 		#print TOSHELL "rm -f $existingfile*par\n";
 		
-		
+		unless (-e "$result-$reporttitle-$theme.grt-")
+		{
 		if ($exeonfiles eq "y")
-		{ 
-			`res -file $resfile -mode script<<YYY
+			{ 
+				`res -file $resfile -mode script<<YYY
 
 3
 $retrievedatatemps[0]
@@ -7679,9 +7644,9 @@ Simulation results $result-$reporttitle-$theme
 YYY
 
 `;
-		}
-		print TOSHELL
-		"res -file $resfile -mode script<<YYY
+			}
+			print TOSHELL
+			"res -file $resfile -mode script<<YYY
 
 3
 $retrievedatatemps[0]
@@ -7713,8 +7678,9 @@ YYY
 
 ";
 
-	#if (-e $existingfile) { print `rm -f $existingfile*par`;}
-	#print TOSHELL "rm -f $existingfile*par\n";
+		#if (-e $existingfile) { print `rm -f $existingfile*par`;}
+		#print TOSHELL "rm -f $existingfile*par\n";
+		}
 	}
 
 	sub retrieve_comfort_results
@@ -7733,9 +7699,12 @@ YYY
 		#print TOSHELL "rm $existingfile\n";
 		#if ($exeonfiles eq "y") { print `rm -f $existingfile*par\n`;}
 		#print TOSHELL "rm -f $existingfile*par\n";
-		if ($exeonfiles eq "y") 
-		{ 
-			`res -file $resfile -mode script<<ZZZ
+		
+		unless (-e "$result-$reporttitle-$theme.grt-")
+		{
+			if ($exeonfiles eq "y") 
+			{ 
+				`res -file $resfile -mode script<<ZZZ
 
 3
 $retrievedatacomf[0]
@@ -7766,9 +7735,9 @@ Simulation results $result-$reporttitle-$theme
 ZZZ
 
 `;
-		}
-		print TOSHELL
-		"res -file $resfile -mode script<<ZZZ
+			}
+			print TOSHELL
+			"res -file $resfile -mode script<<ZZZ
 
 3
 $retrievedatacomf[0]
@@ -7799,8 +7768,9 @@ Simulation results $result-$reporttitle-$theme
 ZZZ
 
 ";
-	#if (-e $existingfile) { `rm -f $existingfile*par\n`;}
-	#print TOSHELL "rm -f $existingfile*par\n";
+		#if (-e $existingfile) { `rm -f $existingfile*par\n`;}
+		#print TOSHELL "rm -f $existingfile*par\n";
+		}
 	}
 
 	sub retrieve_loads_results
@@ -7817,13 +7787,15 @@ ZZZ
 		#print TOSHELL "chmod 777 $existingfile\n";
 		#if (-e $existingfile) { `rm $existingfile\n` ;}
 		#print TOSHELL "rm $existingfile\n";
-
-		if ($exeonfiles eq "y") 
-		{ 	print OUTFILE "CALLED RETRIEVE LOADS RESULTS\n";
-			print OUTFILE "\$resfile: $resfile, \$result: $result, \$retrievedataloads[0]: $retrievedataloads[0], \$retrievedataloads[1]: $retrievedataloads[1], \$retrievedataloads[2]:$retrievedataloads[2]\n";
-			print OUTFILE "\$reporttitle: $reporttitle, \$theme: $theme\n";
-			print OUTFILE "\$result-\$reporttitle-\$theme: $result-$reporttitle-$theme";
-			`res -file $resfile -mode script<<TTT
+		
+		unless (-e "$result-$reporttitle-$theme.grt-")
+		{
+			if ($exeonfiles eq "y") 
+			{ 	print OUTFILE "CALLED RETRIEVE LOADS RESULTS\n";
+				print OUTFILE "\$resfile: $resfile, \$result: $result, \$retrievedataloads[0]: $retrievedataloads[0], \$retrievedataloads[1]: $retrievedataloads[1], \$retrievedataloads[2]:$retrievedataloads[2]\n";
+				print OUTFILE "\$reporttitle: $reporttitle, \$theme: $theme\n";
+				print OUTFILE "\$result-\$reporttitle-\$theme: $result-$reporttitle-$theme";
+				`res -file $resfile -mode script<<TTT
 
 3
 $retrievedataloads[0]
@@ -7846,9 +7818,9 @@ a
 -
 TTT
 `;
-		}
-		print TOSHELL
-		"res -file $resfile -mode script<<TTT
+			}
+			print TOSHELL
+			"res -file $resfile -mode script<<TTT
 
 3
 $retrievedataloads[0]
@@ -7872,24 +7844,24 @@ a
 TTT
 
 ";
-		print RETRIEVELIST "$result-$reporttitle-$theme.grt ";
-		
-		if ($stripcheck)
-		{
-			open (CHECKDATUM, "$result-$reporttitle-$theme.grt") or die;
-			open (STRIPPED, ">$result-$reporttitle-$theme.grt-") or die;
-			my @lines = <CHECKDATUM>;
-			foreach my $line (@lines)
+			print RETRIEVELIST "$result-$reporttitle-$theme.grt ";
+			if ($stripcheck)
 			{
-				$line =~ s/^\s+//;
-				@lineelms = split(/\s+|,/, $line);
-				if ($lineelms[0] eq $stripcheck) 
+				open (CHECKDATUM, "$result-$reporttitle-$theme.grt") or die;
+				open (STRIPPED, ">$result-$reporttitle-$theme.grt-") or die;
+				my @lines = <CHECKDATUM>;
+				foreach my $line (@lines)
 				{
-					print STRIPPED "$line";
+					$line =~ s/^\s+//;
+					@lineelms = split(/\s+|,/, $line);
+					if ($lineelms[0] eq $stripcheck) 
+					{
+						print STRIPPED "$line";
+					}
 				}
+				close STRIPPED;
+				close CHECKDATUM;
 			}
-			close STRIPPED;
-			close CHECKDATUM;
 		}
 	}
 
@@ -7909,13 +7881,16 @@ TTT
 		#print TOSHELL "rm $existingfile\n";
 		#if (-e $existingfile) { `rm -f $existingfile*par\n`;}
 		#print TOSHELL "rm -f $existingfile*par\n";
-		if ($exeonfiles eq "y") 
-		{ 
-			print OUTFILE "CALLED RETRIEVE TEMPS STATS\n";
-			print OUTFILE "\$resfile: $resfile, \$retrievedataloads[0]: $retrievedataloads[0], \$retrievedataloads[1]: $retrievedataloads[1], \$retrievedataloads[2]:$retrievedataloads[2]\n";
-			print OUTFILE "\$reporttitle: $reporttitle, \$theme: $theme\n";
-			print OUTFILE "\$resfile-\$reporttitle-\$theme: $resfile-$reporttitle-$theme";
-			`res -file $resfile -mode script<<TTT
+		
+		unless (-e "$result-$reporttitle-$theme.grt-")
+		{
+			if ($exeonfiles eq "y") 
+			{ 
+				print OUTFILE "CALLED RETRIEVE TEMPS STATS\n";
+				print OUTFILE "\$resfile: $resfile, \$retrievedataloads[0]: $retrievedataloads[0], \$retrievedataloads[1]: $retrievedataloads[1], \$retrievedataloads[2]:$retrievedataloads[2]\n";
+				print OUTFILE "\$reporttitle: $reporttitle, \$theme: $theme\n";
+				print OUTFILE "\$resfile-\$reporttitle-\$theme: $resfile-$reporttitle-$theme";
+				`res -file $resfile -mode script<<TTT
 
 3
 $retrievedatatempsstats[0]
@@ -7935,9 +7910,9 @@ m
 TTT
 
 `;
-		}
-		print TOSHELL
-		"res -file $resfile -mode script<<TTT
+			}
+			print TOSHELL
+			"res -file $resfile -mode script<<TTT
 
 3
 $retrievedatatempsstats[0]
@@ -7957,26 +7932,26 @@ m
 TTT
 
 ";
-		#if ($exeonfiles eq "y") { print `rm -f $existingfile*par\n`;}
-		#print TOSHELL "rm -f $existingfile*par\n";
-		print RETRIEVELIST "$resfile-$reporttitle-$theme.grt ";
-		
-		if ($stripcheck)
-		{
-			open (CHECKDATUM, "$result-$reporttitle-$theme.grt") or die;
-			open (STRIPPED, ">$result-$reporttitle-$theme.grt-") or die;
-			my @lines = <CHECKDATUM>;
-			foreach my $line (@lines)
+			#if ($exeonfiles eq "y") { print `rm -f $existingfile*par\n`;}
+			#print TOSHELL "rm -f $existingfile*par\n";
+			print RETRIEVELIST "$resfile-$reporttitle-$theme.grt ";
+			if ($stripcheck)
 			{
-				$line =~ s/^\s+//;
-				@lineelms = split(/\s+|,/, $line);
-				if ($lineelms[0] eq $stripcheck) 
+				open (CHECKDATUM, "$result-$reporttitle-$theme.grt") or die;
+				open (STRIPPED, ">$result-$reporttitle-$theme.grt-") or die;
+				my @lines = <CHECKDATUM>;
+				foreach my $line (@lines)
 				{
-					print STRIPPED "$line";
+					$line =~ s/^\s+//;
+					@lineelms = split(/\s+|,/, $line);
+					if ($lineelms[0] eq $stripcheck) 
+					{
+						print STRIPPED "$line";
+					}
 				}
+				close STRIPPED;
+				close CHECKDATUM;
 			}
-			close STRIPPED;
-			close CHECKDATUM;
 		}
 	}
 
@@ -8023,7 +7998,6 @@ TTT
 			$countreport++;
 		}
 		$countertheme++;
-
 	}
 	print `rm -f ./results/*.grt`;
 	print TOSHELL "rm -f ./results/*.grt\n";
@@ -8036,11 +8010,8 @@ TTT
 		##############################################################################
 		# END SUB RETRIEVE
 
+		sub report { ; } # NO MORE USED # This function retrieved the results of interest from the text file created by the "retrieve" function
 
-sub report # This function retrieveg the results of interest from the text file created by the "retrieve" function
-{ ; } # NO MORE USED
-
-		
 		# BEGINNING OF SUB MERGE_REPORTS
 		##############################################################################
 ##############################################################################
@@ -8081,7 +8052,6 @@ sub merge_reports    # Self-explaining
 	my $swap = shift;
 	my @reportradiationenteringdata = @$swap;
 	my $stripcheck = shift;
-
 	my @columns_to_report           = @{ $reporttempsdata[1] };
 	my $number_of_columns_to_report = scalar(@columns_to_report);
 	my $counterlines;
@@ -8089,16 +8059,15 @@ sub merge_reports    # Self-explaining
 	my @dates                    = @simtitles;
 	my $mergefile = "$mypath/$file-merge-$countblock";
 		
-	say OUTFILE "\nHERE MERGE1 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
-		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
-		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
-		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
-		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
-
+	say OUTFILE "\nHERE MERGE1 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@newvarnumbers @newvarnumbers, \@uplift @uplift, 
+		\@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$morphfile $morphfile, \$simlistfile $simlistfile, 
+		\$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, \$fileuplift $fileuplift, \$filedownlift $filedownlift, \$case_to_sim $case_to_sim, 
+		\@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", \@blockelts @blockelts, \@nextblockelts @nextblockelts, \$mergefile $mergefile, 
+		\$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, \$from: $from, \$almost_to: $almost_to\, \$to: $to ";
 
 	sub merge
 	{
-
 		open (MERGEFILE, ">$mergefile") or die;
 		open (FILECASELIST, "$simlistfile") or die;
 		my @lines = <FILECASELIST>;
@@ -8270,14 +8239,12 @@ sub merge_reports    # Self-explaining
 			$countcolm++;
 		}
 		#print OUTFILE "CONTAINERTWO " . Dumper(@containertwo) . "\n";
-		
-		
+				
 		my $countline = 0;
 		foreach my $line (@lines)
 		{
 			$line =~ s/^[\n]//;
-			my @elts = split(/\s+|,/, $line);
-			
+			my @elts = split(/\s+|,/, $line);		
 			my $countcolm = 0;
 			foreach $eltref (@containertwo)
 			{
@@ -8305,7 +8272,6 @@ sub merge_reports    # Self-explaining
 				push (@elts, $rescaledel);
 				$countcolm++;
 			}
-
 			
 			$countline++;
 			
@@ -8337,8 +8303,7 @@ sub merge_reports    # Self-explaining
 		open (WEIGHT, $weight) or die;
 		my @lines = <WEIGHT>;
 		close WEIGHT;
-		open (WEIGHTTWO, ">$weighttwo") or die;
-		
+		open (WEIGHTTWO, ">$weighttwo") or die;		
 		my $counterline;
 		foreach my $line (@lines)
 		{
@@ -8386,12 +8351,12 @@ sub merge_reports    # Self-explaining
 	}
 	&weighttwo();	
 	
-	say OUTFILE "\nHERE MERGE2 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
-		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
-		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
-		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
-		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
-
+	say OUTFILE "\nHERE MERGE2 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@newvarnumbers @newvarnumbers, \@uplift @uplift, 
+		\@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
+		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$morphfile $morphfile, \$simlistfile $simlistfile, 
+		\$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, \$fileuplift $fileuplift, \$filedownlift $filedownlift, \$case_to_sim $case_to_sim, 
+		\@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", \@blockelts @blockelts, \@nextblockelts @nextblockelts, \$mergefile $mergefile, 
+		\$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, \$from: $from, \$almost_to: $almost_to\, \$to: $to ";
 
 	$sortmerged = "$mergefile-sortmerged";
 	sub sortmerged
@@ -8404,7 +8369,8 @@ sub merge_reports    # Self-explaining
 		$line =~ s/^[\n]//;
 		my @eltstemp = split(/\s+|,/, $line);
 		my $numberelts = scalar(@eltstemp);
-		print SORTMERGED `sort -n -k$numberelts,$numberelts -t , $weighttwo`;
+		if ($numberelts > 0) { print SORTMERGED `sort -n -k$numberelts,$numberelts -t , $weighttwo`; }
+		# print SORTMERGED `sort -n -k$numberelts -n $weighttwo`; 
 		close SORTMERGED;
 	}
 	&sortmerged();
@@ -8416,132 +8382,6 @@ sub merge_reports    # Self-explaining
 		# END OF SUB MERGE_REPORTS
 		
 		
-		# BEGINNING OF SUB TAKEOPTIMA
-		#################################################################
-#################################################################
-#################################################################
-sub takeoptima
-{
-	$fileuplift = "$mypath/$file-uplift-$countblock";
-	$filedownlift = "$mypath/$file-downlift-$countblock";
-	open(UPLIFT, ">$fileuplift") or die;
-	
-	my $to = shift;
-	my $mypath = shift;
-	my $file = shift;
-	my $filenew = shift;
-	my $sortmerged = shift;
-	
-	my $tempwinner = "$file" . "_";
-	@uplift = ();
-	@downlift = ();
-
-	say OUTFILE "BEGINNINGtempwinner: $tempwinner";
-	say OUTFILE "\@totvarnumbers" . Dumper(@totvarnumbers) ;
-	
-	open (SORTMERGED, $sortmerged) or die;
-	say OUTFILE "\$sortmerged: $sortmerged";
-	my @lines = <SORTMERGED>;
-	close SORTMERGED;
-	
-	my $winnerentry = $lines[0];
-	chomp $winnerentry;
-	say OUTFILE "\$winnerentry: $winnerentry";
-	my @winnerelts = split(/\s+|,/, $winnerentry);
-	$winnerline = $winnerelts[0];
-	
-	my $loserentry = $lines[$#lines];
-	chomp $loserentry;
-	say OUTFILE "\$loserentry: $loserentry";
-	my @loserelts = split(/\s+|,/, $loserentry);
-	$loserline = $loserelts[0];
-	
-	say OUTFILE "\$winnerline: $winnerline, \$loserline: $loserline";
-	
-##############################################################################
-	
-	my @provcontainer;
-	my @winnerarray;
-	
-	unless ( ($countvar == $#varnumbers) and ($countblocks == $#blockrefs) )
-	{
-		&setop(\@varnumbers, \@nextvarnumbers);
-		my @overlap = @intersection;
-		
-		if (@overlap)
-		{
-			foreach my $el ( @overlap )
-			{
-				my $stepsvarthat = ${ "stepsvar" . "$el" };
-				my $counter = 0;
-				while ($counter < $el)
-				{
-					my $piecetoadd = "$stepsvarthat-" . "$counter";
-					push(@provcontainer, $piecetoadd);
-					$counter++;
-					say OUTFILE "\@provcontainere " . Dumper(@provcontainer);
-				}
-			}
-			
-			my $count = 0;
-			foreach my $el (@provcontainer)
-			{
-				my $newwinnerline = $winnerline;
-				if ( $winnerline =~ /($el-\d+)/ )
-				{
-					my $fragment = $1; 		
-					say OUTFILE "\$fragment: $fragment";
-					my $addfragment = "$el-$count";
-					if ( $newwinnerline =~ s/$fragment/$addfragment/ )
-					{
-						push (@winnerarray, $newwinnerline);
-					}
-					say OUTFILE "\@winnerarraye " . Dumper(@winnerarray);
-				}
-			}
-		}
-		else
-		{
-			push(@winnerarray, $winnerline);
-		}
-	}
-	@uplift = @winnerarray;
-	say OUTFILE "\@uplift: " . Dumper(@uplift);
-	
-	foreach (@uplift)
-	{
-		unless (-e $_)
-		{
-			my $oldup = $_;
-			$_ = "$_" . "_";
-			if ($exeonfiles eq "y") { print `cp -R $oldup $_` ; }
-			print TOSHELL "cp -R $oldup $_\n\n" ;
-		}
-	}
-	
-	say OUTFILE "\nHERE TAKEOPTIMA \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
-		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
-		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
-		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
-		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
-		
-	## HERE ZZZ
-			
-	foreach my $el ( @uplift )
-	{
-		print UPLIFT "$el";
-	}
-	close UPLIFT;
-}
-###################################################################
-#################################################################
-		#################################################################
-		# END OF SUB TAKEOPTIMA
-		
-
-sub rank_reports  { ; }  # ERASED
-
-
 		# BEGINNING OF SUB CONVERT_REPORT
 		###################################################################
 ###################################################################
@@ -8638,10 +8478,8 @@ sub convert_report # ZZZ THIS HAS TO BE PUT IN ORDER BECAUSE JUST ONE ITEM WORKS
 ###################################################################
 		###################################################################
 		# END OF SUB CONVERT_REPORT
-		
 
-sub filter_reports { ; } # ERASED
-
+		sub filter_reports { ; } # ERASED
 		
 		# BEGINNING OF SUB FILTER_REPORTS
 		###################################################################
@@ -8669,7 +8507,6 @@ sub convert_filtered_reports  # STALE. TO BE RE-CHECKED.
 	my @reporttitles = @$swap;
 	my $swap = shift;
 	my @retrievedata = @$swap;
-
 
 	sub do_convert_filtered_reports
 	{
@@ -8704,7 +8541,6 @@ sub convert_filtered_reports  # STALE. TO BE RE-CHECKED.
 			my $step = 0;
 			if ( $number_of_steps > 1 )
 			{
-
 				until ( $step > ( $number_of_steps - 1 ) )
 				{
 					my $value;
@@ -8751,7 +8587,6 @@ sub convert_filtered_reports  # STALE. TO BE RE-CHECKED.
 			}
 			close OUTFILECONVERT;
 			
-
 			open(INFILE2PUTCOMMAS, "$outfileconvert") or die "Can't open infile2putcommas $outfileconvert: $!";
 			my @new_lines_to_convert = <INFILE2PUTCOMMAS>;
 			close INFILE2PUTCOMMAS;
@@ -8797,7 +8632,6 @@ sub convert_filtered_reports  # STALE. TO BE RE-CHECKED.
 		###################################################################
 		# END OF SUB CONVERT_REPORTS
 
-
 		# BEGINNING OF SUB MAKETABLE
 		###################################################################
 ###################################################################
@@ -8824,7 +8658,6 @@ sub maketable  # STALE. TO BE RE-CHECKED.
 	my @reporttitles = @$swap;
 	my $swap = shift;
 	my @retrievedata = @$swap;
-
 
 	sub do_maketable
 	{
@@ -8922,23 +8755,236 @@ sub maketable  # STALE. TO BE RE-CHECKED.
 		###################################################################
 		# END OF SUB MAKETABLE
 		
-		
 		# END OF THE CONTENT OF THE "opts_format.pl" FILE.
 		##############################################################################
 		##############################################################################
 		##############################################################################
+		
+		
+		# BEGINNING OF SUB TAKEOPTIMA
+		#################################################################
+#################################################################
+#################################################################
+sub takeoptima
+{
+	$fileuplift = "$file-uplift-$countblock";
+	open(UPLIFT, ">$fileuplift") or die;
+	my $to = shift;
+	my $mypath = shift;
+	my $file = shift;
+	my $filenew = shift;
+	my $sortmerged = shift;
+	my (@winnerarray_tested, @winnerarray_nontested, @winnerarray, @nontested, @provcontainer);
+	@uplift = ();
+	@downlift = ();
+	
+	open (SORTMERGED, $sortmerged) or die;
+	say OUTFILE "\$sortmerged: $sortmerged";
+	my @lines = <SORTMERGED>;
+	close SORTMERGED;
+	
+	my $winnerentry = $lines[0];
+	chomp $winnerentry;
+	say OUTFILE "\$winnerentry: $winnerentry";
+	my @winnerelts = split(/\s+|,/, $winnerentry);
+	my $winnerline = $winnerelts[0];
+	
+	say OUTFILE "YESHERE TAKEOPTIMA 1 ";
+		
+	foreach my $var (@totvarnumbers)
+	{
+		say OUTFILE "YESHERE TAKEOPTIMA 2 ";
+	
+		if ( $winnerline =~ /($var-\d+)/ )
+		{
+			say OUTFILE "YESHERE TAKEOPTIMA 3 ";
+	
+			my $fragment = $1; 
+			say OUTFILE "\$fragment: $fragment";
+			push (@winnerarray_tested, $fragment);
+		}
+	}	
+	
+	foreach my $elt (@varn)
+	{
+		unless ( $elt ~~ @totvarnumbers)
+		{
+			push (@nontested, $elt);
+		}
+	}
+	@nontested = uniq(@nontested);
+	@nontested = sort(@nontested);
+	
+	say OUTFILE "YESHERE TAKEOPTIMA 4 ";
+	
+	foreach my $el ( @nontested )
+	{
+		say OUTFILE "YESHERE TAKEOPTIMA 5 ";
+	
+		my $item = "$el-" . "$midvalues[$el]";
+		push(@winnerarray_nontested, $item);
+	}
+	@winnerarray = (@winnerarray_tested, @winnerarray_nontested);
+	@winnerarray = uniq(@winnerarray);
+	@winnerarray = sort(@winnerarray);
+	
+	say OUTFILE "YESHERE TAKEOPTIMA 6 ";
+	
+	$winnermodel = "$filenew"; #BEGINNING
+	$count = 0;
+	foreach $elt (@winnerarray)
+	{
+		say OUTFILE "YESHERE TAKEOPTIMA 7 ";
+		unless ($count == $#winnerarray)
+		{
+			say OUTFILE "YESHERE TAKEOPTIMA 8 ";
+			$winnermodel = "$winnermodel" . "$elt" . "_";
+		}
+		else
+		{
+			say OUTFILE "YESHERE TAKEOPTIMA 9 ";
+			$winnermodel = "$winnermodel" . "$elt";
+		}
+		$count++;
+	}
+	
+	say OUTFILE "YESHERE TAKEOPTIMA 10 ";
+	
+	unless ( ($countvar == $#varnumbers) and ($countblock == $#blocks) )
+	{
+		say OUTFILE "YESHERE TAKEOPTIMA 11 ";
+		
+		if (@overlap)
+		{
+			say OUTFILE "YESHERE TAKEOPTIMA 12 ";
+			
+			my @nonoverlap;
+			foreach my $elm (@varn)
+			{
+				unless (  $elm ~~ @overlap)
+				{
+					push ( @nonoverlap, $elm);
+				}
+			}
+			
+			my @present;
+			foreach my $elt (@nonoverlap)
+			{
+				if ( $winnermodel =~ /($elt-\d+)/ )
+				{
+					push(@present, $1);
+				}
+			}
+			
+			my @extraneous;
+			foreach my $el (@nonoverlap)
+			{
+				my $stepsvarthat = ${ "stepsvar" . "$el" };
+				my $step = 1;
+				while ( $step <= $stepsvarthat )
+				{
+					say OUTFILE "YESHERE TAKEOPTIMA 13 ";
+					
+					my $item = "$el" . "-" . "$step";
+					unless ( $item ~~ @present )
+					{
+						say OUTFILE "YESHERE TAKEOPTIMA 13B ";
+	
+						push(@extraneous, $item);
+					}
+					$step++;
+				}
+			}
+			
+			open(MORPHFILE, "$morphfile") or die;
+			my @models = <MORPHFILE>;
+			close MORPHFILE;
+			
+			say OUTFILE "YESHERE TAKEOPTIMA 14 ";
+	
+			foreach my $model (@models)
+			{
+				chomp($model);
+				say OUTFILE "YESHERE TAKEOPTIMA 15 ";
+				my $counter = 0;
+				foreach my $elt (@extraneous)
+				{
+					say OUTFILE "YESHERE TAKEOPTIMA 16 ";
+	
+					if( $model =~ /$elt/ )
+					{
+						$counter++;
+						
+						say OUTFILE "YESHERE TAKEOPTIMA 17 ";
+					}
+				}
+				if ($counter == 0)
+				{
+					push(@seedfiles, $model);
+				}
+			}
+		}
+		else
+		{
+			say OUTFILE "YESHERE TAKEOPTIMA 19 ";
+	
+			push(@seedfiles, $winnermodel);
+		}
+	}
+	
+	@seedfiles = uniq(@seedfiles);
+	@seedfiles = sort(@seedfiles);
+	foreach my $seed (@seedfiles)
+	{
+		say OUTFILE "YESHERE TAKEOPTIMA 20 ";
+	
+		my $touchfile = $seed;
+		$touchfile =~ s/_+$//; 
+		$touchfile = "$touchfile" . "_";
+		push(@uplift, $touchfile);
+		unless (-e "$touchfile")
+		{
+			if ( $exeonfiles eq "y" ) { print `cp -r $seed $touchfile` ; }
+			print TOSHELL "cp -r $seed $touchfile\n\n";
+			#if ( $exeonfiles eq "y" ) { print `mv -f $seed $touchfile` ; }
+			#print TOSHELL "mv -f $seed $touchfile\n\n";
+		}
+		else
+		{
+			#if ( $exeonfiles eq "y" ) { print `rm -R $seed` ; }
+			#print TOSHELL "rm -R $seed\n\n";
+		}
+	}
+	
+	say OUTFILE "YESHERE TAKEOPTIMA 21 ";
+	
+	foreach my $elt ( @uplift )
+	{
+		print UPLIFT "$elt\n";
+	}
+	close UPLIFT;
+}
+
+###################################################################
+#################################################################
+		#################################################################
+		# END OF SUB TAKEOPTIMA
+		
+
+		sub rank_reports  { ; }  # ERASED
 
 		if ( $dowhat[0] eq "y" ) 
 		{ 
-			{
-			&morph(); } 
+			{ &morph( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
+			\@simtitles, $preventsim, $exeonfiles, $fileconfig, 
+			\@themereports, \@reporttitles, \@retrievedata, \@varnumbers, $countblock, $countcase); } 
 		}
 
 		if ( $dowhat[1] eq "y" )
 		{ 
 			&sim( $to, $mypath, $file, $filenew, \@dowhat, \@simdata, $simnetwork,
 			\@simtitles, $preventsim, $exeonfiles, $fileconfig, 
-			\@themereports, \@reporttitles, \@retrievedata );
+			\@themereports, \@reporttitles, \@retrievedata);
 		}
 		
 		if ( $dowhat[2] eq "y" )
@@ -8971,7 +9017,7 @@ sub maketable  # STALE. TO BE RE-CHECKED.
 		}
 		if ( $dowhat[10] eq "y" )
 		{
-			&takeoptima( $to, $mypath, $file, $filenew, $sortmerged, $winnerline); # CHECK THE WINNING CASE AND USES IT FOR BLOCK SEARCH IF POSSIBLE
+			&takeoptima( $to, $mypath, $file, $filenew, $sortmerged); # CHECK THE WINNING CASE AND USES IT FOR BLOCK SEARCH IF POSSIBLE
 		}
 		if ( $dowhat[7] eq "y" )
 		{
@@ -8999,100 +9045,102 @@ sub maketable  # STALE. TO BE RE-CHECKED.
 	###########################################################################################
 	###########################################################################################
 
-
 	###########################################################################################
 	###########################################################################################
-	# BELOW THE PROGRAM THAT LAUNCHES OPTS.
+	# BELOW IS THE PART OF THE PROGRAM THAT LAUNCHES OPTS.
+	
+	
+	# HERE IS A SPACE FOR GENERAL FUNCTIONS USED BY THE PROGRAM
+	###########################################################
+	###########################################################
+	sub odd 
+	{
+	    my $number = shift;
+	    return !even ($number);
+	}
 
-			
-	if ( (@casegroup) #ZZZ
-	#and (-e "./scripts/opts_search.pl") 
-	)
+	sub even 
+	{
+	    my $number = abs shift;
+	    return 1 if $number == 0;
+	    return odd ($number - 1);
+	}
+	###########################################################
+	###########################################################
+	# END OF THE SPACE FOR GENERAL FUNCTIONS
+	
+	
+	if (@casegroup)
 	{
 		my $countcase = 0;
 		foreach my $case (@casegroup)
 		{
 			my @blocks = @{$case};
 			my $countblock = 1;
+			my (@varnumbers, @newvarnumbers, @chance, @newchance);
 			foreach my $blockref (@blocks)
 			{
+				my @overlap;
 				my @blockelts = @{$blockref};
-				
-				my @nextblockelts = @{$blockref[$countblock+1]};
-
-				
+				my @newblockelts = @{$blocks[$countblock]};
 				if ( scalar(@{$varn[$countcase]}) == 1 ) { @varn = @{$varn[$countcase][0]}; }
-				else { @varn = @{$varn[$countcase][$countblock]}; }
-				
-				my $counterfn = 0;
+				else { @varn = @{$varn[$countcase][$countblock-1]}; }
+
 				sub def_filenew
 				{
 					$filenew = "$mypath/models/$file" . "_";
-					#print OUTFILE "FILENAMEOUT: $filename\n";
-					#print OUTFILE "SCALAR @ VARNUMBERS: " . scalar(@varnumbers) . "\n";
-					#print OUTFILE "SCALAR @ VARN: " . scalar(@varn) . "\n";
+					my $counterfn = 0;
 					foreach my $el (@varn)
 					{
-						#print OUTFILE "COUNTERFN: " . "$counterfn\n";
-						#print OUTFILE "\$FILENAMEIN: $filename\n";
-						#print OUTFILE "\$varn[\$counterfn]: $varn[$counterfn]\n";
 						$filenew = "$filenew" . "$varn[$counterfn]" . "-" . "$midvalues[$countblock]" . "_" ;
 						$counterfn++;
-						#print OUTFILE "DOING \$filenew: $filenew\n\n";
 					}
-					#print OUTFILE "OUT \$filenew: $filenew\n\n";
 				}
-				if ($countblock == 1) { &def_filenew; }
-	
-	
+				if ($countblock == 1) 
+				{ 
+					&def_filenew;
+					@uplift = ($filenew); 
+					@downlift = ($filenew);
+				}
 	
 				if (-e $chanchefile)
 				{
 					open(CHANCEFILE, $chanchefile) or die;
 					@lines = <CHANCEFILE>;
 					close CHANCEFILE;
-					$line = $lines[$countblock];
+					$line = $lines[$countblock-1];
+					$newline = $lines[$countblock];
 					@chance = split(/\s+|,/, $line);
-					@varnumbers = @chance[ $block[0] .. ( $block[0] + $block[1] - 1 ) ];
-					
-					$nextline = $lines[$countblock+1];
-					unless ($countblock == $#blocks)
-					{
-						@nextchance = @chance;
-					}
-					else
-					{
-						$nextline = $lines[$countblock+1];
-						@nextchance = split(/\s+|,/, $line);
-					}
-					@nextvarnumbers = @nextchance[ $nextblockelts[0] .. ( $nextblockelts[0] + $nextblockelts[1] - 1 ) ];
+					@newchance = split(/\s+|,/, $newline);
+					@varnumbers = @chance[ $blockelts[0] .. ( $blockelts[0] + $blockelts[1] - 1 ) ];
+					@newvarnumbers = @newchance[ $newblockelts[0] .. ( $newblockelts[0] + $newblockelts[1] - 1 ) ];
 				}
 				else
 				{
-					my @chance;
 					push (@chance, @varn, @varn, @varn);
+					@newchance = @chance;
 					say OUTFILE "THESE ARE THE CHANCES  IN LAUNCHER: " . Dumper(@chance);
 					@varnumbers = @chance[ $blockelts[0] .. ( $blockelts[0] + $blockelts[1] - 1 ) ];
 					say OUTFILE "THESE ARE VARNUMBERS IN LAUNCHER: " . Dumper(@varnumbers); 
-					
-					@nextvarnumbers = @chance[ $nextblockelts[0] .. ( $nextblockelts[0] + $nextblockelts[1] - 1 ) ];
-					
-				} 
-				
-				if ($countblock == 1) 
-				{
-					@uplift = ($filenew); 
-					@downlift = ($filenew);
+					@newvarnumbers = @newchance[ $newblockelts[0] .. ( $newblockelts[0] + $newblockelts[1] - 1 ) ];
 				}
-							
-				say OUTFILE "HERE CALLING \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@nextvarnumbers @nextvarnumbers, \@uplift @uplift, \@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
-		\$filenew, $filenew, \$winnerline $winnerline, \$loserline $loserline, \$configfile $configfile, \$response1 $response1, \$morphfile $morphfile, \$simlistfile $simlistfile, \$sortmerged $sortmerged, \@totvarnumbers @totvarnumbers, @uplift @uplift, @downlift @downlift, 
-		\$fileuplift $fileuplift, \$filedownlift $filedownlift, \$fileupgrown, $fileupgrown \$filedowngrown $filedowngrown\n, \$case_to_sim $case_to_sim, \@cases_to_sim: @cases_to_sim, \@blocks " . Dumper(@blocks) . ", 
-		\@blockelts @blockelts, \@nextblockelts @nextblockelts, \$morphfile: $morphfile, \$simlistfile: $simlistfile, \$mergefile $mergefile, \$cleanfile  $cleanfile, \$selectmerged $selectmerged, \$weight $weight, \$weighttwo $weighttwo, 
-		\$sortmerged $sortmerged, \$fileupgrown $fileupgrown, \$filedowngrown $filedowngrown, \$from: $from, \$almost_to: $almost_to\, \$to: $to \n\n";
-
-				&exec(\@varnumbers, $countblock, $countcase, \@nextvarnumbers, \@uplift, \@downlift, \@blocks, \@blockelts);
 				
+				foreach my $el (@varnumbers)
+				{
+					foreach my $elt (@newvarnumbers)
+					{
+						if ( $el eq $elt)
+						{
+							push (@overlap, $el);
+						}
+					}
+				}
+				@overlap = sort(@overlap);
+						
+				say OUTFILE "HERE CALLING ";
+				say OUTFILE "OTHER CALLING ";
+				
+				&exec(\@varnumbers, $countblock, $countcase, \@newvarnumbers, \@uplift, \@downlift, \@blocks, \@blockelts, \@newblockelts, \@overlap);	
 				$countblock++;
 			}
 		$countcase++;
@@ -9124,7 +9172,7 @@ __END__
 
 =head1 NAME
 
-Sim::OPTS manages parametric esplorations through the use of the ESP-r building performance simulation platform
+Sim::OPTS is a command-line morpher and optimizer managing parametric esplorations through the ESP-r building performance simulation platform
 
 =head1 SYNOPSIS
 
@@ -9133,11 +9181,15 @@ Sim::OPTS manages parametric esplorations through the use of the ESP-r building 
 
 =head1 DESCRIPTION
 
-OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.
+OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform. 
+
+More specifically, the program is capable to morph models and perform multiobjective optimizartion through overlapping block coordinate search.
 
 (Information about ESP-r is available at the web address http://www.esru.strath.ac.uk/Programs/ESP-r.htm.)
 
-OPTS may modify directories and files in your work directory. So it is necessary to examine how it works before attempting to use it. To install OPTS it is necessary to issue the following command in the shell as a superuser: < cpanm Sim::OPTS >. This way Perl will take care to install all necessary dependencies. After loading the module, which is made possible by the commands < use Sim::OPTS >, only the command < opts > will be available to the user. That command will activate the OPTS functions following the setting specified in a previously prepared OPTS configuration file.
+OPTS may modify directories and files in your work directory. So it is necessary to examine how it works before attempting to use it. Furthermore, it is full of rough edges and needs testing and much further debugging.
+
+To install OPTS it is necessary to issue the following command in the shell as a superuser: < cpanm Sim::OPTS >. This way Perl will take care to install all necessary dependencies. After loading the module, which is made possible by the commands < use Sim::OPTS >, only the command < opts > will be available to the user. That command will activate the OPTS functions following the setting specified in a previously prepared OPTS configuration file.
 
 The command < prepare > would be also present in the capability of the code, but it is not possible to use it, because it has not been updated to the last several versions of OPTS, so it is no more usable at the moment. The command would open a text interface made to facilitate the preparation of OPTS configuration files. Due to this, currently the OPTS configuration files can only be prepared by example.
 
@@ -9161,7 +9213,7 @@ The propagation of constraints on which some OPTS operations on models may be ba
 
 OPTS presently works for UNIX. There would be lots of functionality to add to it and bugs to correct. 
 
-OPTS is a program I have written for my personal use as a side project since 2008. It was the first real program I attempted to write, well over forty. From time to time I add some parts to it. The parts of it that have been written earlier are the ones that are coded in the strangest manner.
+OPTS is a program I have written as a side project since 2008. It was the first real program I attempted to write. From time to time I add some parts to it. The parts of it that have been written earlier are the ones that are coded in the strangest manner.
 
 =head2 EXPORT
 
