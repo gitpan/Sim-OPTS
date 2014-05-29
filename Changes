@@ -1,6 +1,6 @@
 Revision history for Perl extension Sim::OPTS.
 
-0.35  Tue May 29 18:59:01 2014
+0.36  Tue May 29 19:29:01 2014
 	- original version; created by h2xs 1.23 with options
 		-AX Sim::OPTS
 

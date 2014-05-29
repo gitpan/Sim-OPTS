@@ -34,7 +34,7 @@ $Data::Dumper::Terse  = 1;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(opts prepare); # our @EXPORT = qw( );
-$VERSION = '0.35'; # our $VERSION = '';
+$VERSION = '0.36'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 # use Sim::OPTS::prepare; # HERE IS THE FUNCTION 'prepare', a text interface to the function 'opts'.
@@ -9172,7 +9172,7 @@ __END__
 
 =head1 NAME
 
-Sim::OPTS is a command-line morpher and optimizer managing parametric esplorations through the ESP-r building performance simulation platform
+Sim::OPTS is a command-line morpher and optimizer managing parametric esplorations through the ESP-r building performance simulation platform.
 
 =head1 SYNOPSIS
 
@@ -9181,9 +9181,7 @@ Sim::OPTS is a command-line morpher and optimizer managing parametric esploratio
 
 =head1 DESCRIPTION
 
-OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform. 
-
-More specifically, the program is capable to morph models and perform multiobjective optimizartion through overlapping block coordinate search.
+Sim::OPTS is a command-line morpher and optimizer managing parametric esplorations through the ESP-r building performance simulation platform. More specifically, it is capable to morph models and perform multiobjective optimization through overlapping block coordinate search.
 
 (Information about ESP-r is available at the web address http://www.esru.strath.ac.uk/Programs/ESP-r.htm.)
 

@@ -1,4 +1,4 @@
-Sim-OPTS version 0.35
+Sim-OPTS version 0.36
 ============================
 
 INSTALLATION
@@ -24,9 +24,7 @@ COPYRIGHT AND LICENCE
 Copyright (C) 2008-2014 by Gian Luca Brunetti and Politecnico di Milano.
 This is free software.  You can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2 or later.
 
-OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform. 
-
-More specifically, the program is capable to morph models and perform multiobjective optimizartion through overlapping block coordinate search.
+Sim::OPTS is a command-line morpher and optimizer managing parametric esplorations through the ESP-r building performance simulation platform. More specifically, it is capable to morph models and perform multiobjective optimization through overlapping block coordinate search.
 
 (Information about ESP-r is available at the web address http://www.esru.strath.ac.uk/Programs/ESP-r.htm.)
 
