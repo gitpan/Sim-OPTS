@@ -14,13 +14,16 @@ $absmax = "";
 $absmin = "";
 # $varsnum;
 
-@varn = ( [ [1, 2, 3, 4] ] );
+@varn = ( [ [1, 2, 3, 4] ] ); # VARIABLE NUMBERS. THE PROGRAM TRIPLES THE SERIES: IT TRANSFORMS IT IN 1, 2, 1, 2, 1, 2.
 $chancefile; 
 $reportfile = "";
 $steps = 3;
-@midvalues = (2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2); 
+@midvalues = (2, 2); # POINT TO POINT CORRENSPODENCE WITH THE ABOVE. THE MID ITERATION NUMBER FOR EACH PARAMETER.
+# I.E. THREE ITERATION PER PARAMETER, VALUE "2" FOR EACH $midvalue (@midvalues). 
 
-@casegroup = ( [ [4, 4] ] ) ;
+@casegroup = ( [ [4, 4] ] ) ; # BETWEEN SQUARE BRACKETS ARE THE BLOCKS OF BLOCK COORDINATE SEARCH. THE FIRST ITEM IN 
+# EACH SQUARE BRACKET IS THE POSITION OF THE FIRST ITEM IN THE ACTIVE BLOCK (INDEX FROM 0). THE SECOND ITEM IS THE DIMENSION OF THE ACTIVE BLOCK,
+# IN TERMS OF NUMBER OF PARAMETERS.
 $casegroupfile;
 
 # END OF THE SECTION TO CONFIGURE BLOCK SEARCH
