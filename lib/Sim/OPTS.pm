@@ -33,7 +33,7 @@ $Data::Dumper::Terse  = 1;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(opts prepare); # our @EXPORT = qw( );
-$VERSION = '0.36.5'; # our $VERSION = '';
+$VERSION = '0.36.7'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 # use Sim::OPTS::prepare; # HERE IS THE FUNCTION 'prepare', a text interface to the function 'opts'.
@@ -113,8 +113,8 @@ Insert the name of a configuration file (local path):\n";
 		my $swap = shift;
 		my @overlap = @$swap;
 		
-		$morphfile = "$mypath/$file-morphfile-$countblock";
-		$simlistfile = "$mypath/$file-simlist-$countblock";
+		$morphfile = "$mypath/$file-morphfile-$countcase-$countblock";
+		$simlistfile = "$mypath/$file-simlist-$countcase-$countblock";
 		
 		open (MORPHFILE, ">$morphfile") or die;
 		
@@ -281,7 +281,7 @@ Insert the name of a configuration file (local path):\n";
 						} 
 						elsif ( ( $generate eq "n" ) and ( $sequencer eq "n" ) )
 						{
-							 $almost_to =~ s/[§|_|£]$// ;
+							 $almost_to =~ s/[_|£]$// ;
 							#$to = "$case_to_sim$varnumber-$counterstep";
 							$to = "$almost_to";
 						}
@@ -8056,7 +8056,7 @@ sub merge_reports    # Self-explaining
 	my $counterlines;
 	my $number_of_dates_to_merge = scalar(@simtitles);
 	my @dates                    = @simtitles;
-	my $mergefile = "$mypath/$file-merge-$countblock";
+	my $mergefile = "$mypath/$file-merge-$countcase-$countblock";
 		
 	say OUTFILE "\nHERE MERGE1 \@varnumbers: @varnumbers, \$countblock $countblock, \$countcase $countcase , \@newvarnumbers @newvarnumbers, \@uplift @uplift, 
 		\@downlift @downlift\n, \$countblock, $countblock, \$countvar $countvar, \$counterstep $counterstep, \$counterzone $counterzone, 
@@ -8766,7 +8766,7 @@ sub maketable  # STALE. TO BE RE-CHECKED.
 #################################################################
 sub takeoptima
 {
-	$fileuplift = "$file-uplift-$countblock";
+	$fileuplift = "$file-uplift-$countcase-$countblock";
 	open(UPLIFT, ">$fileuplift") or die;
 	my $to = shift;
 	my $mypath = shift;
@@ -9184,31 +9184,33 @@ Sim::OPTS is a command-line morpher and optimizer managing parametric exploratio
 
 (Information about ESP-r is available at the web address http://www.esru.strath.ac.uk/Programs/ESP-r.htm.)
 
-OPTS may modify directories and files in your work directory. So it is necessary to examine how it works before attempting to use it. Also, it would need further testing.
+OPTS may modify directories and files in a work directory, so it is necessary to examine how it works before attempting to use it.
 
-To install OPTS it is necessary to issue the following command in the shell as a superuser: < cpanm Sim::OPTS >. That way Perl will take care to install all the  dependencies. After loading the module, which is made possible by the commands < use Sim::OPTS >, only the command < opts > will be available to the user. That command will activate the OPTS functions following the setting specified in a previously prepared OPTS configuration file.
+To install OPTS, the following command should be issued in the shell as a superuser: < cpanm Sim::OPTS >. That way Perl will take care to install all the   dependencies. After loading the program (which is made possible by the commands < use Sim::OPTS >) only the command < opts > will be available to the user. That command will activate the OPTS functions following the setting specified in a previously prepared configuration file. As an anternative, the batch file "opt" (it can be found in the "example" folder in this distribution) may be copied in a work directory. To lauch the program in that case < opt > should be issued at the shell. 
 
-When it is launched, OPTS will ask for the name of an OPTS configuration file. On that file the instructions for the program will have to be written by the user before launching OPTS. All the activity of preparation to run OPTS will happen in an OPTS configuration file, which has to point to an existing ESP-r model.
+When launched, OPTS will ask  to write the path to the OPTS configuration file to be considered. After receiving it, its activity will start and go on until completion, without checking for errors.
 
-In the module distribution, there is a template file with explanations and an example of an OPTS configuration file.
+In the OPTS configuration file the description of the task to be accomplished by the program will have to be specified. Most of the activity of preparation to run OPTS will indeed happen in the OPTS configuration file, which has to point to an existing ESP-r model. In the module distribution, there is a template file with explanations and an example of an OPTS configuration file. Currently, the creation of those file can also be done by example.
 
-To run OPTS without having it act on files, the setting < $exeonfiles = "n"; > should be specified in the OPTS configuration file. Then the path for the  text file that will receive the commands in place of the shell shuld be specified, by setting < $outfilefeedbacktoshell = _address_of_the_text_file_ >.
+To run OPTS without having it act on files, the setting < $exeonfiles = "n"; > should be specified in the configuration file. The path for the text file that will receive the commands in place of the shell should also be specified in it, by setting the variable < $outfilefeedbacktoshell > to the address of it.
 
-The OPTS configuration file could make, if asked, OPTS give instruction to ESP-r in order to make it modify a model in several different copies, run simulations, retrieve the results, extract some of them and order them in a required manner.
+OPTS can give instruction to ESP-r in order to make it modify a model in several different copies. OPTS will make ESP-r perform actions on a target ESP-r model by copying it several times and morphing each copy. Them it will run simulations and retrieve the results. After that, it can extract some results and order them as requested. 
 
-To run OPTS, you may copy the batch file "opt" into your work directory. It can be found in the "example" folder in this distribution. To lauch the program you then should issue < opt >. When launched, OPTS will ask  to write the name (with path) of the OPTS configuration file to be considered. After that, its activity will start and go on until completion.
-
-OPTS will make ESP-r perform actions on a certain ESP-r model by copying it several times and morphing each copy. A target ESP-r model must also therefore be present in advance and its name (with path) has to be specified in the OPTS configuration file. The OPTS configuration file will also contain the address of the work directory.
-
-Besides OPTS configuration files, also configuration files for propagation of constraints may be specified.
+Besides an OPTS configuration file, also configuration files for propagation of constraints may be specified by the user. The same morphing operations that can be obtained without propagation of constraints can also be obtained through propagation of contraints in OPTS, plus many others, in series or parallel.
 
 The model folders and the result files that will be created through ESP-r will be named as the root model, followed by a "_" character,  followed by a variable number referred to the first morphing phase, followed by a "-" character, followed by an iteration number for the variable in question, and so on for all morphing phases. For example, the model instance produced in the first iteration for a model named "model" in a search constituted by 3 morphing phases and 5 iteration steps each may be named "model_1-1_2-1_3-1"; and the last one may be named "model_1-5_2-5_3-5".
 
-The propagation of constraints on which some OPTS operations on models may be based can regard the geometry of the model, solar shadings, mass/flow network, and/or controls, and how they affect each other and daylighting (as calculated throuch the Radiance lighting simulation program). To examine what propagation on constraint can do for the program, the template file included in the OPTS Perl module distribution may be looked at.
+The propagation of constraints on which some OPTS operations on models may be based can regard the geometry of the model, solar shadings, mass/flow network, and/or controls, and how they affect each other and daylighting (as calculated throuch the Radiance lighting simulation program). To examine what propagation on constraint can do for the program, the template file included in the OPTS Perl module distribution may be inspected.
 
-OPTS presently works for UNIX. There would be lots of functionality to add to it and bugs to correct.
+To describe a block search, the most important variables to be taken into account in the configuration file are @varn (which is the sequence of variable numbers) and @casegroup (which is the sequence of decomposition cases to be taken into account). OPTS joins @varnumbers with two copies of itself, then works in the middle of the so-obtained sequence. How @varn and @casegroup should be specified is more quikcly described with a couple of examples. 
 
-OPTS is a program I have written as a side project since 2008. It was the first real program I attempted to write. From time to time I add some parts to it. The parts of it that have been written earlier are the ones that are coded in the strangest manner.
+a) If brute force optimization is wanted on for 1 case composed by 4 parameters, the following settings should be specified: @varn = (1, 2, 3, 4); @casegroup = ( [ [4, 4] ] ) ;
+
+b) If a block search is wanted based on 3 parameters, with 2 overlapping active block composed by 2 parameters each having the leftmost parameters in position 3 and 4 repectively of the mentioned tripled list, the following settings should be specified: @varn = ( [ [1, 2, 3] ] ); @casegroup = ( [ [3, 2], [4, 2] ] ) ;
+
+OPTS presently works for UNIX and UNIX-like systems, but could be easily adapted to Windows.
+
+OPTS is a program I have written as a side project since 2008 with no funding. It was the first real program I attempted to write. From time to time I add some parts to it. The parts of it that have been written earlier are the ones that are coded in the strangest manner. For instance, I wrote many functions nested in other functions to avoid specifying the calling parameters and write more quickly (in theory), but I have not finished to disentangle the code and split it in parts.
 
 =head2 EXPORT
 
@@ -9217,7 +9219,7 @@ OPTS is a program I have written as a side project since 2008. It was the first 
 
 =head1 SEE ALSO
 
-The available documentation is mostly collected in the readme.txt file. An example of ESP-r model inclusive an "opts" folder contanining files of instruction for propagation of constraints in OPTS are uploaded in my page at the Politecnico di Milano (www.polimi.it). Its web address may vary, so I don't list it here.
+The available documentation is mostly collected in the readme.txt file. An example of instruction for propagation of constraints in OPTS are uploaded in my page at the Politecnico di Milano (www.polimi.it). Its web address may vary, so I don't list it here. But it may be googled.
 
 =head1 AUTHOR
 
