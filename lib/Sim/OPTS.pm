@@ -12,7 +12,7 @@ no strict;
 no warnings;
 use Math::Trig;
 use List::Util qw[min max reduce];
-use List::MoreUtils qw(uniq);
+use List::MoreUtils qw{uniq};
 use Data::Dumper;
 $Data::Dumper::Indent = 0;
 $Data::Dumper::Useqq  = 1;
@@ -33,7 +33,7 @@ $Data::Dumper::Terse  = 1;
 %EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw(opts prepare); # our @EXPORT = qw( );
-$VERSION = '0.36.9'; # our $VERSION = '';
+$VERSION = '0.36.10'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 # use Sim::OPTS::prepare; # HERE IS THE FUNCTION 'prepare', a text interface to the function 'opts'.
@@ -9093,7 +9093,7 @@ To install OPTS, the following command should be issued in the shell as a superu
 
 When launched, OPTS will ask  to write the path to the OPTS configuration file to be considered. After receiving it, its activity will start and go on until completion, without checking for errors.
 
-In the OPTS configuration file the description of the task to be accomplished by the program will have to be specified. Most of the activity of preparation to run OPTS will indeed happen in the OPTS configuration file, which has to point to an existing ESP-r model. In the module distribution, there is a template file with explanations and an example of an OPTS configuration file. Currently, the creation of those file can also be done by example.
+In the OPTS configuration file the description of the task to be accomplished by the program will have to be specified. Most of the activity of preparation to run OPTS will indeed happen in the OPTS configuration file, which has to point to an existing ESP-r model. In the module distribution, there is a template file with explanations and an example of an OPTS configuration file. Currently, the creation of those file can only be done by example.
 
 To run OPTS without having it act on files, the setting < $exeonfiles = "n"; > should be specified in the configuration file. The path for the text file that will receive the commands in place of the shell should also be specified in it, by setting the variable < $outfilefeedbacktoshell > to the address of it.
 
@@ -9113,7 +9113,7 @@ b) If a block search is wanted based on 3 parameters, with 2 overlapping active 
 
 OPTS presently works for UNIX and UNIX-like systems, but could be easily adapted to Windows.
 
-OPTS is a program I have written as a side project since 2008 with no funding. It was the first real program I attempted to write. From time to time I add some parts to it. The parts of it that have been written earlier are the ones that are coded in the strangest manner. For instance, I wrote many functions nested in other functions to avoid specifying the calling parameters and write more quickly (in theory), but I have not finished to disentangle the code and split it in parts.
+OPTS is a program I have written as a side project since 2008 with no funding. It was the first real program I attempted to write. From time to time I add some parts to it. The parts of it that have been written earlier are the ones that are coded in the strangest manner. For instance, I wrote many functions nested in other functions to avoid specifying the calling parameters and write more quickly (in theory), but I have not finished extract the functions from the main file to split it in parts.
 
 =head2 EXPORT
 
