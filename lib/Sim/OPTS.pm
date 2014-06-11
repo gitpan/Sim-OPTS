@@ -6,13 +6,14 @@ package Sim::OPTS;
 
 use 5.014001;
 use Exporter; # require Exporter;
-use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
+use vars qw( $VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS );
 use feature 'say';
 no strict; 
 no warnings;
 use Math::Trig;
-use List::Util qw[min max reduce];
-use List::MoreUtils qw{uniq};
+use List::Util qw[ min max reduce ];
+use List::MoreUtils;
+
 use Data::Dumper;
 $Data::Dumper::Indent = 0;
 $Data::Dumper::Useqq  = 1;
@@ -20,7 +21,7 @@ $Data::Dumper::Terse  = 1;
 #use Array::Diff; #  my $diff = Array::Diff->diff( \@old, \@new );
 #use Set::Intersection; # my @intersection = get_intersection(\@arr1, \@arr2);
 
-@ISA = qw(Exporter); # our @ISA = qw(Exporter);
+@ISA = qw(Exporter); # our @adamkISA = qw(Exporter);
 
 # Items to export into callers namespace by default. Note: do not export
 # names by default without a very good reason. Use EXPORT_OK instead.
@@ -30,10 +31,10 @@ $Data::Dumper::Terse  = 1;
 # will save memory.
 
 
-%EXPORT_TAGS = ( DEFAULT => [qw(&opts &prepare)]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
+%EXPORT_TAGS = ( DEFAULT => [qw( &opts &prepare )]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-@EXPORT = qw(opts prepare); # our @EXPORT = qw( );
-$VERSION = '0.36.10'; # our $VERSION = '';
+@EXPORT = qw( opts prepare ); # our @EXPORT = qw( );
+$VERSION = '0.36.11'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 # use Sim::OPTS::prepare; # HERE IS THE FUNCTION 'prepare', a text interface to the function 'opts'.
