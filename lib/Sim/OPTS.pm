@@ -34,7 +34,7 @@ $Data::Dumper::Terse  = 1;
 %EXPORT_TAGS = ( DEFAULT => [qw( &opts &prepare )]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw( opts prepare ); # our @EXPORT = qw( );
-$VERSION = '0.36.11'; # our $VERSION = '';
+$VERSION = '0.36.12'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 # use Sim::OPTS::prepare; # HERE IS THE FUNCTION 'prepare', a text interface to the function 'opts'.
@@ -9090,27 +9090,27 @@ Sim::OPTS is a command-line morpher and optimizer managing parametric exploratio
 
 OPTS may modify directories and files in a work directory, so it is necessary to examine how it works before attempting to use it.
 
-To install OPTS, the following command should be issued in the shell as a superuser: < cpanm Sim::OPTS >. That way Perl will take care to install all the   dependencies. After loading the program (which is made possible by the commands < use Sim::OPTS >) only the command < opts > will be available to the user. That command will activate the OPTS functions following the setting specified in a previously prepared configuration file. As an anternative, the batch file "opt" (it can be found in the "example" folder in this distribution) may be copied in a work directory. To lauch the program in that case < opt > should be issued at the shell. 
+To install OPTS, the following command should be issued in the shell as a superuser: < cpanm Sim::OPTS >. That way Perl will take care to install all the dependencies. After loading the program (which is made possible by the commands < use Sim::OPTS >) the command < opts > will be available to the user. That command will activate the OPTS functions following the settings specified in a previously prepared configuration file. As an alternative, the batch file "opt" (it can be found in the "example" folder in this distribution) may be copied in a work directory. To lauch the program in that case < opt > should be issued. 
 
-When launched, OPTS will ask  to write the path to the OPTS configuration file to be considered. After receiving it, its activity will start and go on until completion, without checking for errors.
+When launched, OPTS will ask  to write the path to the OPTS configuration file to be considered. After receiving it, its activity will start and go on until completion.
 
-In the OPTS configuration file the description of the task to be accomplished by the program will have to be specified. Most of the activity of preparation to run OPTS will indeed happen in the OPTS configuration file, which has to point to an existing ESP-r model. In the module distribution, there is a template file with explanations and an example of an OPTS configuration file. Currently, the creation of those file can only be done by example.
+In the OPTS configuration file the description of the task to be accomplished by the program will have to be specified. Most of the activity of preparation to run OPTS will happen in the OPTS configuration file, which has to point to an existing ESP-r model. In the module distribution, there is a template file with explanations and an example of an OPTS configuration file. Currently, the creation of those files can only be done by example.
 
-To run OPTS without having it act on files, the setting < $exeonfiles = "n"; > should be specified in the configuration file. The path for the text file that will receive the commands in place of the shell should also be specified in it, by setting the variable < $outfilefeedbacktoshell > to the address of it.
+To run OPTS without having it act on files, the setting < $exeonfiles = "n"; > should be specified in the configuration file. The path for the text file that will receive the commands in place of the shell should also be specified in it, by setting the variable < $toshell > to the address of it.
 
 OPTS can give instruction to ESP-r in order to make it modify a model in several different copies. OPTS will make ESP-r perform actions on a target ESP-r model by copying it several times and morphing each copy. Them it will run simulations and retrieve the results. After that, it can extract some results and order them as requested. 
 
-Besides an OPTS configuration file, also configuration files for propagation of constraints may be specified by the user. The same morphing operations that can be obtained without propagation of constraints can also be obtained through propagation of contraints in OPTS, plus many others, in series or parallel.
+Besides an OPTS configuration file, also configuration files for propagation of constraints may be specified by the user. The same morphing operations that can be obtained without propagation of constraints can also be obtained through propagation of constraints in OPTS, plus many others, in series or parallel.
 
 The model folders and the result files that will be created through ESP-r will be named as the root model, followed by a "_" character,  followed by a variable number referred to the first morphing phase, followed by a "-" character, followed by an iteration number for the variable in question, and so on for all morphing phases. For example, the model instance produced in the first iteration for a model named "model" in a search constituted by 3 morphing phases and 5 iteration steps each may be named "model_1-1_2-1_3-1"; and the last one may be named "model_1-5_2-5_3-5".
 
-The propagation of constraints on which some OPTS operations on models may be based can regard the geometry of the model, solar shadings, mass/flow network, and/or controls, and how they affect each other and daylighting (as calculated throuch the Radiance lighting simulation program). To examine what propagation on constraint can do for the program, the template file included in the OPTS Perl module distribution may be inspected.
+The propagation of constraints on which some OPTS operations on models may be based can regard the geometry of the model, solar shadings, mass/flow network, and/or controls, and how they affect each other and daylighting (as calculated through the Radiance lighting simulation program). To examine what propagation on constraint can do for the program, the template file included in the OPTS Perl module distribution may be inspected.
 
-To describe a block search, the most important variables to be taken into account in the configuration file are @varn (which is the sequence of variable numbers) and @casegroup (which is the sequence of decomposition cases to be taken into account). OPTS joins @varnumbers with two copies of itself, then works in the middle of the so-obtained sequence. How @varn and @casegroup should be specified is more quikcly described with a couple of examples. 
+To describe a block search, the most important variables to be taken into account in the configuration file are @varn (which is the sequence of variable numbers) and @casegroup (which is the sequence of decomposition cases to be taken into account). OPTS joins @varn with two copies of itself, then works in the middle of the so-obtained sequence. How @varn and @casegroup should be specified is more quickly described with a couple of examples. 
 
 a) If brute force optimization is wanted on for 1 case composed by 4 parameters, the following settings should be specified: @varn = (1, 2, 3, 4); @casegroup = ( [ [4, 4] ] ) ;
 
-b) If a block search is wanted based on 3 parameters, with 2 overlapping active block composed by 2 parameters each having the leftmost parameters in position 3 and 4 repectively of the mentioned tripled list, the following settings should be specified: @varn = ( [ [1, 2, 3] ] ); @casegroup = ( [ [3, 2], [4, 2] ] ) ;
+b) If a block search is wanted based on 3 parameters, with 2 overlapping active block composed by 2 parameters each having the leftmost parameters in position 3 and 4 respectively of the mentioned tripled list, the following settings should be specified: @varn = ( [ [1, 2, 3] ] ); @casegroup = ( [ [3, 2], [4, 2] ] ) ;
 
 OPTS presently works for UNIX and UNIX-like systems, but could be easily adapted to Windows.
 

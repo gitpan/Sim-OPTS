@@ -17,5 +17,6 @@ no_index:
   directory:
     - t
     - inc
-requires: {}
-version: v0.36.11
+requires:
+  List::MoreUtils: 0
+version: v0.36.12
