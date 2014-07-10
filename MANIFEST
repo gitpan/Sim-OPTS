@@ -4,7 +4,6 @@ MANIFEST
 README
 t/Sim-OPTS.t
 lib/Sim/OPTS.pm
-lib/Sim/OPTS/prepare.pm
 examples/opt
 examples/example-of_opts_configuration_file.pl
 examples/template-of_opts_configuration_file.pl

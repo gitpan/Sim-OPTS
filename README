@@ -1,4 +1,4 @@
-Sim-OPTS version 0.36.12
+Sim-OPTS version 0.36.13
 ============================
 
 INSTALLATION
@@ -24,11 +24,7 @@ COPYRIGHT AND LICENCE
 Copyright (C) 2008-2014 by Gian Luca Brunetti and Politecnico di Milano.
 This is free software.  You can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2 or later.
 
-Sim::OPTS is a command-line morpher and optimizer managing parametric explorations through the ESP-r building performance simulation platform. It morphs models by propagation of constraints and performs multiobjective optimization through overlapping block coordinate search.
-
-(Information about ESP-r is available at the web address http://www.esru.strath.ac.uk/Programs/ESP-r.htm.)
-
-OPTS may modify directories and files in a work directory, so it is necessary to examine how it works before attempting to use it.
+Sim::OPTS is a morphing and optimization program managing parametric explorations through the ESP-r building performance simulation platform. It morphs models by propagation of constraints and performs multiobjective optimization through overlapping block coordinate descent. (Information about ESP-r can be found at the web address http://www.esru.strath.ac.uk/Programs/ESP-r.htm.)
 
 To install OPTS, the following command should be issued in the shell as a superuser: < cpanm Sim::OPTS >. That way Perl will take care to install all the dependencies. After loading the program (which is made possible by the commands < use Sim::OPTS >) the command < opts > will be available to the user. That command will activate the OPTS functions following the settings specified in a previously prepared configuration file. As an alternative, the batch file "opt" (it can be found in the "example" folder in this distribution) may be copied in a work directory. To lauch the program in that case < opt > should be issued. 
 
@@ -54,8 +50,7 @@ b) If a block search is wanted based on 3 parameters, with 2 overlapping active 
 
 OPTS presently works for UNIX and UNIX-like systems, but could be easily adapted to Windows.
 
-OPTS is a program I have written as a side project since 2008 with no funding. It was the first real program I attempted to write. From time to time I add some parts to it. The parts of it that have been written earlier are the ones that are coded in the strangest manner. For instance, I wrote many functions nested in other functions to avoid specifying the calling parameters and write more quickly (in theory), but I have not finished extract the functions from the main file to split it in parts.
-
+OPTS is a program I have written as a side project since 2008 with no funding. It was the first real program I attempted to write. From time to time I add some parts to it. The parts of it that have been written earlier are the ones that are coded in the strangest manner. For instance, I wrote many functions nested in other functions to avoid specifying the calling parameters and write more quickly (in theory), then I have not finished to correct this.
 
 Gian Luca Brunetti, Politecnico di Milano
 gianluca.brunetti@polimi.it
