@@ -18,20 +18,18 @@ use Data::Dumper;
 $Data::Dumper::Indent = 0;
 $Data::Dumper::Useqq  = 1;
 $Data::Dumper::Terse  = 1;
-#use Array::Diff; #  my $diff = Array::Diff->diff( \@old, \@new );
-#use Set::Intersection; # my @intersection = get_intersection(\@arr1, \@arr2);
 
 @ISA = qw(Exporter); # our @adamkISA = qw(Exporter);
 
 %EXPORT_TAGS = ( DEFAULT => [qw( &opts &prepare )]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw( opts prepare ); # our @EXPORT = qw( );
-$VERSION = '0.36.13'; # our $VERSION = '';
+$VERSION = '0.36.14'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 #################################################################################
 #################################################################################
-# BEGINNING OF THE OPTS PROGRAM
+# BEGINNING OF OPTS 
 	
 sub opts 
 { 
@@ -73,6 +71,11 @@ Insert the name of a configuration file (local path):\n";
 	if ($toshell) { open( TOSHELL, ">$toshell" ) or die "Can't open $toshell: $!"; }	
 	unless (-e "$mypath/models") { `mkdir $mypath/models`; }
 	unless (-e "$mypath/models") { print TOSHELL "mkdir $mypath/models\n\n"; }
+	
+	if (-e "./SIM/OPTS/prepare.pm")
+	{
+		eval `cat ./SIM/OPTS/prepare.pm`; 
+	}
 
 	#################################################################################
 	#################################################################################
@@ -8324,379 +8327,15 @@ TTT
 		#################################################################
 		# END OF SUB MERGE_REPORTS
 		
-		
-		# BEGINNING OF SUB CONVERT_REPORT
-		###################################################################
-		###################################################################
-		###################################################################
-		sub convert_report # ZZZ THIS HAS TO BE PUT IN ORDER BECAUSE JUST ONE ITEM WORKS.
+		if (-e "./SIM/OPTS/convertandfilter.pl")
 		{
-			my $swap = shift;
-			my @varthemes_variations = @$swap;
-			my $swap = shift;
-			my @varthemes_steps = @$swap; 
-			my $to = shift;
-			my $mypath = shift;
-			my $file = shift;
-			my $filenew = shift;
-			my $swap = shift;
-			my @dowhat = @$swap;
-			my $swap = shift;
-			my @simdata = @$swap;
-			my $simnetwork = shift;
-			my $swap = shift;
-			my @simtitles = @$swap;
-			my $preventsim = shift;
-			my $exeonfiles = shift;
-			my $fileconfig = shift;
-			my $swap = shift;
-			my @themereports = @$swap;
-			my $swap = shift;
-			my @reporttitles = @$swap;
-			my $swap = shift;
-			my @retrievedata = @$swap;
-			my $themereport = $_[0];
-			my $convertcriterium = $themereport;
-			my @varthemes_values;
-
-			my $count = 0;
-			foreach my $varnumber (@varnumbers)
-			{
-				$basevalue       = $varthemes_variations[$count][0];
-				$roofvalue       = $varthemes_variations[$count][1];
-				$number_of_steps = $varthemes_steps[$count];
-				$range           = ( $roofvalue - $basevalue );
-				my @values;
-				my $step = 0;
-				if ( $number_of_steps > 1 )
-				{
-					until ( $step > ( $number_of_steps - 1 ) )
-					{
-						my $value;
-						$value = ( $basevalue + ( ( $range / ( $number_of_steps - 1 ) ) * $step ) );
-						$value = sprintf( "%.2f", $value );
-						push( @values, $value );
-						$step++;
-					}
-				}
-				push( @varthemes_values, [@values] );
-				$write = "VARTHEMES VALUES: " . Dumper(@varthemes_values) . "\n";
-				$count++;
-			}
-					
-			open( INFILECONVERT, "$sortmerged" ) or die;
-			my @lines_to_convert = <INFILECONVERT>;
-			close INFILECONVERT;
-			$outfileconvert = "$sortmerged" . "-named.txt";
-			#if (-e $outfileconvert) { `chmod 777 $outfileconvert\n`; `mv -b $outfileconvert-bak\n`;}
-			#print TOSHELL "chmod 777 $outfileconvert\n"; print TOSHELL "mv -b $outfileconvert-bak\n"; 
-			open( OUTFILECONVERT, ">$outfileconvert" ) or die;
-			
-			foreach my $line_to_convert (@lines_to_convert)
-			{
-				my $counter = 0;
-				foreach my $varnumber (@varnumbers)
-				{
-					my $stepper         = 1;
-					my $number_of_steps = $varthemes_steps[$counter];
-					my $varthemes_values_refs = $varthemes_values[$counter];
-					my @varthemes_values = @{$varthemes_values_refs};
-					foreach my $value ( @varthemes_values )
-					{
-						$line_to_convert =~ s/_$varnumber\-$stepper/$value /;
-						$stepper++;
-					}
-					$line_to_convert =~ s/$mypath\/results\/$file//;
-					#$line_to_convert =~ s/_\+$varnumber/ $varthemes_report[$counter]/;
-					$line_to_convert =~ s/[§£]/ /;
-					#$line_to_convert =~ s/loads-sum-up.txt-filtered.txt//;
-					$counter++;
-				}
-				print OUTFILECONVERT "$line_to_convert";
-			}
-			close OUTFILECONVERT;
-
-		} # END sub convert_report
-		###################################################################
-		###################################################################
-		###################################################################
-		# END OF SUB CONVERT_REPORT
-
-		sub filter_reports { ; } # ERASED
-		
-		# BEGINNING OF SUB FILTER_REPORTS
-				###################################################################
-		###################################################################
-		###################################################################
-		sub convert_filtered_reports  # STALE. TO BE RE-CHECKED. 
-		{
-			my $to = shift;
-			my $mypath = shift;
-			my $file = shift;
-			my $filenew = shift;
-			my $swap = shift;
-			my @dowhat = @$swap;
-			my $swap = shift;
-			my @simdata = @$swap;
-			my $simnetwork = shift;
-			my $swap = shift;
-			my @simtitles = @$swap;
-			my $preventsim = shift;
-			my $exeonfiles = shift;
-			my $fileconfig = shift;
-			my $swap = shift;
-			my @themereports = @$swap;
-			my $swap = shift;
-			my @reporttitles = @$swap;
-			my $swap = shift;
-			my @retrievedata = @$swap;
-
-			sub do_convert_filtered_reports
-			{
-				my $themereport = $_[0];
-				my $convertcriterium = $themereport;
-				my $count = 0;
-				my $counter = 0;
-				my $counterfile = 0;
-				my @varthemes_values;
-				my @files_to_convert;
-				my $write;
-				foreach $date (@simtitles)
-				{
-					foreach my $theme_to_filter (@files_to_filter)
-					{
-						if ($counter > 0)
-						{			    
-							$file_to_convert = "$mypath/$filenew-$date-$convertcriterium-sum-up.txt-$theme_to_filter-filtered.txt";
-							push @files_to_convert, $file_to_convert;
-						}
-						$counter++;
-					}
-				}
-
-				foreach my $varnumber (@varnumbers)
-				{
-					my $basevalue       = $varthemes_variations[$count][0];
-					my $roofvalue       = $varthemes_variations[$count][1];
-					my $number_of_steps = $varthemes_steps[$count];
-					my $range           = ( $roofvalue - $basevalue );
-					my @values;
-					my $step = 0;
-					if ( $number_of_steps > 1 )
-					{
-						until ( $step > ( $number_of_steps - 1 ) )
-						{
-							my $value;
-							$value = ( $basevalue + ( ( $range / ( $number_of_steps - 1 ) ) * $step ) );
-							$value = sprintf( "%.2f", $value );
-							push( @values, $value );
-							$step++;
-						}
-					}
-					push( @varthemes_values, [@values] );
-					$write = Dumper(@varthemes_values);
-					$count++;
-				}
-						
-				foreach my $file_to_convert (@files_to_convert)
-				{
-					open( INFILECONVERT, "$file_to_convert" ) or die "Can't open file_to_convert $file_to_convert: $!";
-					my @lines_to_convert = <INFILECONVERT>;
-					close INFILECONVERT;
-					my $outfileconvert = "$file_to_convert" . "-converted.txt";
-					#if (-e $outfileconvert) { `chmod 777 $outfileconvert\n`; `mv -b $outfileconvert-bak\n`;}
-					#print TOSHELL "chmod 777 $outfileconvert\n"; print TOSHELL "mv -b $outfileconvert-bak\n"; 
-					open( OUTFILECONVERT, ">$outfileconvert" ) or die "Can't open $outfileconvert: $!";
-					
-					foreach my $line_to_convert (@lines_to_convert)
-					{
-						my $counter = 0;
-						foreach my $varnumber (@varnumbers)
-						{
-							my $stepper         = 1;
-							my $number_of_steps = $varthemes_steps[$counter];
-							foreach my $value ( @{ $varthemes_values[$counter] } )
-							{
-								$line_to_convert =~ s/_\+$varnumber\-$stepper/$value /;
-								$stepper++;
-							}
-							$line_to_convert =~ s/$mypath\/$file//;
-							$line_to_convert =~ s/_\+$varnumber/ $varthemes_report[$counter]/;
-							$line_to_convert =~ s/[§£]/ /;
-							$line_to_convert =~ s/loads-sum-up.txt-filtered.txt//;
-							$counter++;
-						}
-						print OUTFILECONVERT "$line_to_convert";
-					}
-					close OUTFILECONVERT;
-					
-					open(INFILE2PUTCOMMAS, "$outfileconvert") or die "Can't open infile2putcommas $outfileconvert: $!";
-					my @new_lines_to_convert = <INFILE2PUTCOMMAS>;
-					close INFILE2PUTCOMMAS;
-					my $outfile2putcommas = "$outfileconvert".".csv";
-					#if (-e $outfile2putcommas) { `chmod 777 $outfile2putcommas\n`; `mv -b $outfile2putcommas-bak\n`;}
-					#print TOSHELL "chmod 777 $outfile2putcommas\n"; print TOSHELL "mv -b $outfile2putcommas-bak\n"; 
-					open( OUTFILE2PUTCOMMAS, ">$outfile2putcommas" ) or die "Can't open outfile2putcommas $outfile2putcommas: $!";
-					foreach my $new_line_to_convert (@new_lines_to_convert)
-					{
-						$new_line_to_convert =~ s/ /,/g;
-
-						my @roww = split( /,/, $new_line_to_convert );
-						my $number_of_items = ( scalar(@roww) -1);
-						my $count = 0;
-						foreach my $row (@roww)
-						{
-							foreach my $filter_column (@filter_columns)
-							{
-								if ( $count == $filter_column  )
-								{
-									if ( $count < $number_of_items )
-									{
-										print OUTFILE2PUTCOMMAS "$row,";	
-									}
-									else {print OUTFILE2PUTCOMMAS "$row";}
-								}
-							}
-							$count++;
-						}
-						print OUTFILE2PUTCOMMAS "\n";
-					}
-					close OUTFILE2PUTCOMMAS;
-				}
-			}
-			
-			foreach my $themereport (@themereports)
-			{
-				do_convert_filtered_reports($themereport);
-			}
-		}### END SUB convert_reports. THIS IS NOT WORKING. IT IS NOT MODIFYING THE FILTERED FILES.
-		###################################################################
-		###################################################################
-		###################################################################
-		# END OF SUB CONVERT_REPORTS
-
-		# BEGINNING OF SUB MAKETABLE
-		###################################################################
-		###################################################################
-		###################################################################
-		sub maketable  # STALE. TO BE RE-CHECKED. 
-		{
-			my $to = shift;
-			my $mypath = shift;
-			my $file = shift;
-			my $filenew = shift;
-			my $swap = shift;
-			my @dowhat = @$swap;
-			my $swap = shift;
-			my @simdata = @$swap;
-			my $simnetwork = shift;
-			my $swap = shift;
-			my @simtitles = @$swap;
-			my $preventsim = shift;
-			my $exeonfiles = shift;
-			my $fileconfig = shift;
-			my $swap = shift;
-			my @themereports = @$swap;
-			my $swap = shift;
-			my @reporttitles = @$swap;
-			my $swap = shift;
-			my @retrievedata = @$swap;
-
-			sub do_maketable
-			{
-				$themereport = $_;
-				my $convertcriterium = $themereport;
-						
-				foreach $date (@simtitles)
-				{
-					my $countmaketable = 0;
-					my @rowelements;
-					foreach my $theme_to_filter (@files_to_filter)
-					{
-						my @gatherarray;
-						if ($countmaketable > 0)		
-						{
-							$file_to_maketable = "$mypath/$filenew-$date-$convertcriterium-sum-up.txt-$theme_to_filter-filtered.txt-converted.txt";
-							open(INFILE,  "$file_to_maketable")   or die "Can't open file_to_maketable $file_to_maketable: $!\n";
-							my @lines = <INFILE>;
-							close(INFILE);
-							my $number_of_rows = $maketabledata[$countmaketable][0];
-							my $number_of_columns = $maketabledata[$countmaketable][1];
-							my $x_column = $base_columns[$countmaketable][0];
-							my $y_column = $base_columns[$countmaketable][1];
-							my $report_column = $base_columns[$countmaketable][2];			
-							my $countline = 0;
-							my @temparray;
-							
-							foreach my $line (@lines) 
-							{
-								@rowelements = split(/\s+/, $line);
-								push @gatherarray, [@rowelements];
-							#}
-							print OUTFILE "\nGATHERARRAY: \n"; print OUTFILE Dumper(@gatherarray); print OUTFILE "\n\n";
-
-								if ($countline < $number_of_columns)
-								{
-									push @temparray, " $rowelements[$y_column]";
-								}
-								$countline++;
-							}
-							my $countline = 0;
-							push my @array, ["\" \"", @temparray ];
-							my $countrow = 0;
-							until ($countrow >= $number_of_rows)
-							{
-								push @array, [];
-							$countrow++;
-							}
-							print OUTFILE "THIS 1\n" ; print OUTFILE Dumper(@array);
-							my $countlinearray = 0;
-							
-							foreach my $linearray (@array)
-							{
-								if ($countlinearray > 0)
-								{
-									for ( $i = 0 ; $i <  $number_of_columns ; $i++)
-									{
-										if ($i == 0)
-										{
-											push @{$array[$countlinearray]}, $gatherarray[$countline][$x_column], $gatherarray[$countline][$report_column];
-										}
-										elsif ($i > 0)
-										{
-											push @{$array[$countlinearray]}, $gatherarray[$countline][$report_column];
-
-										}
-										$countline++;
-									}
-								}
-								$countlinearray++;
-							}
-							
-							my $outfile = "$file_to_maketable"."-madetable.txt";
-							#if (-e $outfile) { `chmod 777 $outfile\n`; `mv -b $outfile-bak\n`;}
-							#print TOSHELL "chmod 777 $outfile\n"; print TOSHELL "mv -b $outfile-bak\n"; 
-							open(OUTFILE, ">$outfile") or die "Can't open $outfile: $!\n";
-							foreach my $line (@array)
-							{
-								print OUTFILE "@{$line}\n";
-							}
-							close OUTFILE;
-						}
-						$countmaketable++;
-					}
-				}
-			}
-			
-			foreach my $themereport (@themereports)
-			{
-				do_maketable($themereport);
-			}
+			eval `cat ./SIM/OPTS/convertandfilter.pl`; 
 		}
-		###################################################################
-		###################################################################
-		###################################################################
-		# END OF SUB MAKETABLE
+
+		if (-e "./SIM/OPTS/maketable.pl")
+		{
+			eval `cat ./SIM/OPTS/maketable.pl`; 
+		}
 		
 		# END OF THE CONTENT OF THE "opts_format.pl" FILE.
 		##############################################################################
