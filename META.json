@@ -1,5 +1,5 @@
 {
-   "abstract" : "Manages parametric explorations by the means of the ESP-r building performance simulation platform.",
+   "abstract" : "Sim::OPTS manages parametric explorations by the means of the ESP-r building performance simulation platform.",
    "author" : [
       "Gian Luca Brunetti <gianluca.brunetti@polimi.it>"
    ],
@@ -37,5 +37,5 @@
       }
    },
    "release_status" : "stable",
-   "version" : "v0.36.14"
+   "version" : "v0.36.14.1"
 }
