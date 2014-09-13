@@ -2,6 +2,7 @@ Changes
 Makefile.PL
 MANIFEST
 README
+License
 t/Sim-OPTS.t
 lib/Sim/OPTS.pm
 examples/opt

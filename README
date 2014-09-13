@@ -1,4 +1,4 @@
-Sim-OPTS version 0.36.14.1
+Sim-OPTS version 0.36.14.2
 ============================
 
 INSTALLATION
@@ -24,33 +24,29 @@ COPYRIGHT AND LICENCE
 Copyright (C) 2008-2014 by Gian Luca Brunetti and Politecnico di Milano.
 This is free software.  You can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2 or later.
 
-Sim::OPTS morphs models by propagation of constraints and performs multiobjective optimization through overlapping block coordinate descent. 
+Sim::OPTS morphs models by propagation of constraints through the ESP-r building performance simulation platform and performs multiobjective optimization by overlapping block coordinate descent.
 
-Information about ESP-r can be found at the web address http://www.esru.strath.ac.uk/Programs/ESP-r.htm. A working knowledge of ESP-r is necessary to run OPTS.
+A working knowledge of ESP-r is necessary to use OPTS.  Information about ESP-r can be found at http://www.esru.strath.ac.uk/Programs/ESP-r.htm.
 
-To install OPTS, the command < cpanm Sim::OPTS > has to be issued in the shell. Perl will take care to install dependencies. OPTS can be loaded through the command < use Sim::OPTS > in Perl. For that purpose, the Devel::REPL module may be installed, which is launched through the < re.pl > command. After OPTS is loaded, the command < opts > will be available to the user. That command will activate the OPTS functions following the settings specified in a previously prepared configuration file. As an alternative, the batch file "opt" (which can be found in the "example" folder in this distribution) may be copied in a work directory. In that case, to launch the program the command < opt > may be issued. 
+To install OPTS, the command <cpanm Sim::OPTS> has to be issued.  Perl will take care to install all dependencies.  OPTS can be loaded through the command <use Sim::OPTS> in Perl.  For that purpose, the "Devel::REPL" module may be used.  As an alternative, the batch file "opt" (which can be found in the "example" folder in this distribution) may be copied in a work directory.  In that case, to launch the program the command <opt> may be issued.  That command will activate the OPTS functions, following the settings specified in a previously prepared configuration file.  When launched, OPTS will ask the path to that file.  Its activity will start after receiving that information.
 
-When launched, OPTS will ask  to specify the path to the OPTS configuration file to be considered. After receiving that information, its activity will start.
+The OPTS configuration file have to contain a suitable description of the operations to be accomplished.  A great deal of instructions which are necessary to run OPTS will usually be specified in that file, which has to point to an existing ESP-r model.  In this distribution there is a template file with explanations and an example of OPTS configuration file.
 
-In the OPTS configuration file, the description of the tasks to be accomplished will have to be specified. A great deal of instructions necessary to run OPTS will usually be specified in the OPTS configuration file, which has to point to an existing ESP-r model. In the module distribution, there is a template file with explanations and an example of an OPTS configuration file. The creation of OPTS configuration files has to be done by example. 
+To run OPTS without making it act on files, the setting <$exeonfiles = "n";> should be specified in the configuration file.  By setting the variable "$toshell" to the chosen path, the path for the text file that will receive the commands in place of the shell should be specified.
 
-To run OPTS without having it act on files, the setting < $exeonfiles = "n"; > should be specified in the configuration file. The path for the text file that will receive the commands in place of the shell should be specified in it as well, which is done by setting the variable < $toshell > to the chosen path.
+OPTS will give instruction to ESP-r via shell to make it modify the building model in different copies.  Then, if asked, it will run simulations, retrieve the results, extract some information from them and order it as requested.
 
-OPTS will give instruction to ESP-r to make it modify the building model in different copies. Then, if asked, following the same scheme it will run simulations, retrieve the results, extract some information from them and order it as requested.
+Besides an OPTS configuration file, also configuration files for propagation of constraints may be created.  This will give to the morphing operations much greater flexibility.  Propagation of constraints can regard the geometry of a model, solar shadings, mass/flow network, and/or controls; and also, how those pieces of information affect each other and daylighting (calculated through the Radiance lighting simulation program).  To get some hints about what propagation on constraints can be used for in the program, an example file included in this distribution may be studied.
 
-Besides an OPTS configuration file, also configuration files for propagation of constraints may be created. The same morphing operations that can be obtained without propagation of constraints can also be obtained through it OPTS, and many others, in series or parallel.
+The ESP-r model folders and the result files that will be created in a parametric search will be named as the root model, followed by a "_" character,  followed by a variable number referred to the first morphing phase, followed by a "-" character, followed by an iteration number for the variable in question, and so on for all morphing phases.  For example, the model instance produced in the first iteration for a root model named "model" in a search constituted by 3 morphing phases and 5 iteration steps each will be named "model_1-1_2-1_3-1"; and the last one "model_1-5_2-5_3-5".
 
-The model folders and the result files that will be created will be named as the root model, followed by a "_" character,  followed by a variable number referred to the first morphing phase, followed by a "-" character, followed by an iteration number for the variable in question, and so on for all morphing phases. For example, the model instance produced in the first iteration for a model named "model" in a search constituted by 3 morphing phases and 5 iteration steps each will be named "model_1-1_2-1_3-1"; and the last one "model_1-5_2-5_3-5".
+To describe a block search, the most important variables to be taken into account in a configuration file are "@varn" - which represents the sequence of design variables - and "@casegroup" - which represent the sequence of decompositions to be taken into account.  After joining "@varn" with two copies of itself, OPTS will work in the middle of the so-obtained sequence.  How "@varn" and "@casegroup" should be specified is more quickly described with a couple of examples. 
 
-To describe a block search, the most important variables to be taken into account in a configuration file are "@varn" - which represents the sequence of design variables - and "@casegroup" - which represent the sequence of decompositions to be taken into account. After joining "@varn" with two copies of itself, OPTS will work in the middle of the so-obtained sequence. How "@varn" and "@casegroup" should be specified is more quickly described with a couple of examples. 
+1) If brute force optimization is sought for a case composed by 4 parameters, the following settings should be specified: <@varn = (1, 2, 3, 4);> and <@casegroup = ( [ [4, 4] ] ) ;>.
 
-a) If brute force optimization is wanted on for a case composed by 4 parameters, the following settings should be specified: @varn = (1, 2, 3, 4); @casegroup = ( [ [4, 4] ] ) ;
+b) If a block search is sought on the basis of 3 parameters, with 2 overlapping active blocks composed by 2 parameters each having the leftmost parameters in position 3 and 4 of the mentioned joined list, the following settings should be specified: <@varn = ( [ [1, 2, 3] ] );> and <@casegroup = ( [ [3, 2], [4, 2] ] );>.
 
-b) If a block search is wanted based on 3 parameters, with 2 overlapping active blocks composed by 2 parameters each having the leftmost parameters in position 3 and 4 of the mentioned joined list, the following settings should be specified: @varn = ( [ [1, 2, 3] ] ); @casegroup = ( [ [3, 2], [4, 2] ] ) ;
-
-The propagation of constraints on which some OPTS operations may be based can regard the geometry of a model, solar shadings, mass/flow network, and/or controls; and also, how those pieces of information affect each other and daylighting (as calculated through the Radiance lighting simulation program). To get some hint about what propagation on constraints can be used for in the program, the template file included in this distribution may be inspected.
-
-OPTS is a program I have written as a side project since 2008 with no funding. It was the first real program I attempted to write. From time to time I add some parts to it. The parts of it that have been written earlier are the ones that are coded in the strangest manner.
+OPTS is a program I have written as a side project since 2008 with no funding.  It was the first real program I attempted to write.  From time to time I add some parts to it.  The parts of it that have been written earlier are the ones that are coded in the strangest manner.
 
 Gian Luca Brunetti, Politecnico di Milano
 gianluca.brunetti@polimi.it
