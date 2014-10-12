@@ -6,7 +6,7 @@ License
 t/Sim-OPTS.t
 lib/Sim/OPTS.pm
 examples/opt
-examples/example-of_opts_configuration_file.pl
+examples/example-of_opts_configuration_file(previous_version).pl
 examples/template-of_opts_configuration_file.pl
 examples/examples_of_costraint_files/amoeba.reshape_backwindow.pl
 examples/examples_of_costraint_files/amoeba.reshape_frontwindow.pl

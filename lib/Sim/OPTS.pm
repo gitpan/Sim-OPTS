@@ -24,7 +24,7 @@ $Data::Dumper::Terse  = 1;
 %EXPORT_TAGS = ( DEFAULT => [qw( &opts &prepare )]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw( opts prepare ); # our @EXPORT = qw( );
-$VERSION = '0.36.15'; # our $VERSION = '';
+$VERSION = '0.36.16'; # our $VERSION = '';
 $ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
 
 #################################################################################
@@ -191,6 +191,7 @@ Insert the name of a configuration file (local path):\n";
 				@propagate_constraints = @{ "propagate_constraints" . "$varnumber" };
 				@change_climate = @{ "change_climate" . "$varnumber" };
 				$skip = ${ "skip" . "$varnumber" };
+				$constrain = ${ "constrain" . "$varnumber" };
 				my @cases_to_sim;
 				my @files_to_convert;
 				my (@v, @obs, @node, @component, @loopcontrol, @flowcontrol); # THINGS GLOBAL AS REGARDS COUNTER ZONE CYCLES
@@ -1005,10 +1006,10 @@ sub translate_vertexes #STILL UNFINISHED, NOT WORKING. PROBABLY ALMOST FINISHED.
 		my $counterlines = 0;
 		my $countervert = 0;
 		
-		my @vertexletters;
+		my @vertex_letters;
 			if ($longmenu eq "y")
 			{
-				@vertexletters = ("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", 
+				@vertex_letters = ("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", 
 				"n", "o", "p", "0\nb\nq", "0\nb\nr", "0\nb\ns", "0\nb\nt", "0\nb\nu", "0\nb\nv", 
 				"0\nb\nw", "0\nb\nx", "0\nb\ny", "0\nb\nz", "0\nb\na", "0\nb\nb","0\nb\nc","0\nb\nd",
 				"0\nb\ne","0\nb\n0\nb\nf","0\nb\n0\nb\ng","0\nb\n0\nb\nh","0\nb\n0\nb\ni",
@@ -1018,7 +1019,7 @@ sub translate_vertexes #STILL UNFINISHED, NOT WORKING. PROBABLY ALMOST FINISHED.
 			}
 			else
 			{
-				@vertexletters = ("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", 
+				@vertex_letters = ("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", 
 				"n", "o", "p", "0\nq", "0\nr", "0\ns", "0\nt", "0\nu", "0\nv", "0\nw", "0\nx", 
 				"0\ny", "0\nz", "0\na", "0\nb","0\n0\nc","0\n0\nd","0\n0\ne","0\n0\nf","0\n0\ng",
 				"0\n0\nh","0\n0\ni","0\n0\nj","0\n0\nk","0\n0\nl","0\n0\nm","0\n0\nn","0\n0\no",
@@ -1055,7 +1056,7 @@ sub translate_vertexes #STILL UNFINISHED, NOT WORKING. PROBABLY ALMOST FINISHED.
 
 			my $countervertex = 0;
 														
-			foreach my $vertex_letter (@vertexletters)
+			foreach my $vertex_letter (@vertex_letters)
 			{
 				if ($countervertex > 0)
 				{
@@ -3049,7 +3050,7 @@ sub checkfile # THIS FUNCTION DOES BETTER WHAT IS ALSO DONE BY THE PREVIOUS ONE.
 } # END SUB checkfile	
 
 
-sub change_climate ### IT HAS TO BE DEBUGGED. WHY DOES IT BLOCK IF PRINTED TO THE SHELL?
+sub change_climate ### THIS HAS TO BE DEBUGGED. WHY DOES IT BLOCK ITSELF IF PRINTED TO THE SHELL?
 {	# THIS FUNCTION CHANGES THE CLIMATE FILES. 
 	my $to = shift;
 	my $fileconfig = shift;
@@ -3224,6 +3225,9 @@ sub recalculatenet
 	my $windimyeast;
 	my $windimxwest; 
 	my $windimywest;
+	
+	if (-e $constrain) { eval "$constrain"; } # HERE THE INSTRUCTION WRITTEN IN THE OPTS CONFIGURATION FILE CAN BE SPEFICIED
+	# FOR PROPAGATION OF CONSTRAINTS
 	
 	if ($y_or_n_reassign_cp == "y")
 	{										
@@ -3688,6 +3692,9 @@ sub apply_constraints
 				"0\n0\nh","0\n0\ni","0\n0\nj","0\n0\nk","0\n0\nl","0\n0\nm","0\n0\nn","0\n0\no",
 				"0\n0\np","0\n0\nq","0\n0\nr","0\n0\ns","0\n0\nt");
 			}
+			
+			if (-e $constrain) { eval "$constrain"; } # HERE THE INSTRUCTION WRITTEN IN THE OPTS CONFIGURATION FILE CAN BE SPEFICIED
+			# FOR PROPAGATION OF CONSTRAINTS
 
 			if (-e $configaddress) 
 			{	
@@ -3695,6 +3702,11 @@ sub apply_constraints
 				# IS EVALUATED, AND HERE BELOW CONSTRAINTS ARE PROPAGATED.
 				# THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE 
 				# DIRECTLY WRITTEN IN THE CALLING FILE.
+				
+				if (-e $constrain) { eval "$constrain"; } # HERE THE INSTRUCTION WRITTEN IN THE OPTS CONFIGURATION FILE CAN BE SPEFICIED
+				# FOR PROPAGATION OF CONSTRAINTS
+		
+		
 				my $countervertex = 0;
 				foreach (@v)
 				{
@@ -3878,7 +3890,10 @@ sub reshape_windows # IT APPLIES CONSTRAINTS
 				eval `cat $configaddress`;	# HERE AN EXTERNAL FILE FOR PROPAGATION OF CONSTRAINTS 
 				# IS EVALUATED, AND HERE BELOW CONSTRAINTS ARE PROPAGATED.
 				# THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE DIRECTLY 
-				# WRITTEN IN THE CALLING FILE.							
+				# WRITTEN IN THE CALLING FILE.
+				
+				if (-e $constrain) { eval "$constrain"; } # HERE THE INSTRUCTION WRITTEN IN THE OPTS CONFIGURATION FILE CAN BE SPEFICIED
+				# FOR PROPAGATION OF CONSTRAINTS					
 			
 				my $countervertex = 0;
 				
@@ -4123,6 +4138,10 @@ YYY
 			eval `cat $configfile`; # HERE AN EXTERNAL FILE FOR PROPAGATION OF CONSTRAINTS IS EVALUATED 
 			# AND PROPAGATED. THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE 
 			# DIRECTLY WRITTEN IN THE CALLING FILE.
+			
+			if (-e $constrain) { eval "$constrain"; } # HERE THE INSTRUCTION WRITTEN IN THE OPTS CONFIGURATION FILE CAN BE SPEFICIED
+			# FOR PROPAGATION OF CONSTRAINTS
+		
 		}
 		# THIS SECTION SHIFTS THE VERTEX TO LET THE BASE SURFACE AREA UNCHANGED AFTER THE WARPING.
 
@@ -4357,13 +4376,17 @@ sub read_geo_constraints
 	my $y = 1;
 	my $z = 2;
 	unshift (@myv, [ "vertexes of  $sourceaddress. \$counterzone: $counterzone ", [], [] ]);
-	
+			
 	if (-e $configaddress)
 	{	
 		push (@v, [@myv]); #
 		eval `cat $configaddress`; # HERE AN EXTERNAL FILE FOR PROPAGATION OF CONSTRAINTS IS EVALUATED.
 		# THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE DIRECTLY 
 		# WRITTEN IN THE CALLING FILE.
+				
+		if (-e $constrain) { eval "$constrain"; } # HERE THE INSTRUCTION WRITTEN IN THE OPTS CONFIGURATION FILE CAN BE SPEFICIED
+		# FOR PROPAGATION OF CONSTRAINTS
+				
 		@dov = @{$v[$#v]}; #
 		shift (@dov); #
 	}
@@ -5057,6 +5080,9 @@ sub read_control_constraints
 		# THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE DIRECTLY 
 		# WRITTEN IN THE CALLING FILE.		
 		
+		if (-e $constrain) { eval "$constrain"; } # HERE THE INSTRUCTION WRITTEN IN THE OPTS CONFIGURATION FILE CAN BE SPEFICIED
+		# FOR PROPAGATION OF CONSTRAINTS
+		
 		@doloopcontrol = @{$loopcontrol[$#loopcontrol]}; # ;)
 		@doflowcontrol = @{$flowcontrol[$#flowcontrol]}; # ;)
 		# print OUTFILE "BEFORE loopcontrol: " . Dumper(@loopcontrol) . "\n\n";
@@ -5503,6 +5529,10 @@ sub read_obs_constraints
 		eval `cat $configaddress`; # HERE AN EXTERNAL FILE FOR PROPAGATION OF CONSTRAINTS IS EVALUATED.
 		# THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE DIRECTLY 
 		# WRITTEN IN THE CALLING FILE.
+		
+		if (-e $constrain) { eval "$constrain"; } # HERE THE INSTRUCTION WRITTEN IN THE OPTS CONFIGURATION FILE CAN BE SPEFICIED
+		# FOR PROPAGATION OF CONSTRAINTS
+		
 		@doobs = @{$obs[$#obs]}; # ;)
 		shift @doobs;
 	}
@@ -6803,7 +6833,10 @@ sub read_net_constraints
 		
 		# print OUTFILE "BEFORE nodes: " . Dumper(@node) . "\n\n";
 		# print OUTFILE "BEFORE components " . Dumper(@component) . "\n\n";
-
+		
+		if (-e $constrain) { eval "$constrain"; } # HERE THE INSTRUCTION WRITTEN IN THE OPTS CONFIGURATION FILE CAN BE SPEFICIED
+		# FOR PROPAGATION OF CONSTRAINTS
+		
 		@donode = @{$node[$#node]}; # ;) 
 		@docomponent = @{$component[$#component]}; # ;) 
 
@@ -8732,7 +8765,7 @@ A working knowledge of ESP-r is necessary to use OPTS.  Information about ESP-r 
 
 To install OPTS, the command <cpanm Sim::OPTS> has to be issued.  Perl will take care to install all dependencies.  OPTS can be loaded through the command <use Sim::OPTS> in Perl.  For that purpose, the "Devel::REPL" module may be used.  As an alternative, the batch file "opt" (which can be found in the "example" folder in this distribution) may be copied in a work directory.  In that case, to launch the program the command <opt> may be issued.  That command will activate the OPTS functions, following the settings specified in a previously prepared configuration file.  When launched, OPTS will ask the path to that file.  Its activity will start after receiving that information.
 
-The OPTS configuration file have to contain a suitable description of the operations to be accomplished.  A great deal of instructions which are necessary to run OPTS will usually be specified in that file, which has to point to an existing ESP-r model.  In this distribution there is a template file with explanations and an example of OPTS configuration file.
+The OPTS configuration file have to contain a suitable description of the operations to be accomplished.  A great deal of instructions which are necessary to run OPTS will usually be specified in that file, which has to point to an existing ESP-r model.  In this distribution there is a template file with explanations and an example of OPTS configuration file.  There is also the example of an OPTS configuration file that has been used in production in combination with a previous version of the program and will not work with the present one.
 
 To run OPTS without making it act on files, the setting <$exeonfiles = "n";> should be specified in the configuration file.  By setting the variable "$toshell" to the chosen path, the path for the text file that will receive the commands in place of the shell should be specified.
 

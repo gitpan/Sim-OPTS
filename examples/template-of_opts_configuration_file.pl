@@ -639,6 +639,9 @@ $keep_obstructions1 = ##### BRING SOME OBSTRUCTIONS BACK IN THE ORIGINAL POSITIO
 # TYPICALLY, IT WILL BE USED FOR A ZONE, BUT NOTHING PREVENTS THAT SEVERAL OF THEM CHAINED ONE AFTER 
 # THE OTHER ARE APPLIED TO THE SAME ZONE.
 # $counterstep, WHICH TELLS THE PROGRAM WHAT THE CURRENT ITERATION STEP IS.
+# If the alphabetical order is not accepted as an order to propagate constraints, a new order can be specificed
+# WITH THE FOLLOWING VARIABLE: @vertexletters
+
 
 @constrain_controls1 = ( # to apply contraints to and from controls.
 ["y", # apply constraints to controls? "y" or "n".
@@ -676,7 +679,8 @@ $keep_obstructions1 = ##### BRING SOME OBSTRUCTIONS BACK IN THE ORIGINAL POSITIO
 # TYPICALLY, IT WILL BE USED FOR A ZONE, BUT NOTHING PREVENTS THAT SEVERAL OF THEM CHAINED ONE AFTER 
 # THE OTHER ARE APPLIED TO THE SAME ZONE.
 # $counterstep, WHICH TELLS THE PROGRAM WHAT THE CURRENT ITERATION STEP IS.
-
+# If the alphabetical order is not accepted as an order to propagate constraints, a new order can be specificed
+# WITH THE FOLLOWING VARIABLES: @letters AND @period_letters
 
 @constrain_obstructions1 = ( # To apply constraints to and from obstructions.
  ["y", # apply constraints to obstructions? "y" or "n".
@@ -710,7 +714,8 @@ $keep_obstructions1 = ##### BRING SOME OBSTRUCTIONS BACK IN THE ORIGINAL POSITIO
 # TYPICALLY, IT WILL BE USED FOR A ZONE, BUT NOTHING PREVENTS THAT SEVERAL OF THEM CHAINED ONE AFTER 
 # THE OTHER ARE APPLIED TO THE SAME ZONE.
 # $counterstep, WHICH TELLS THE PROGRAM WHAT THE CURRENT ITERATION STEP IS.
-
+# If the alphabetical order is not accepted as an order to propagate constraints, a new order can be specificed
+# WITH THE FOLLOWING VARIABLE:  @obs_letters 
 
 @vary_net1 = ( [
 "/nets/cell.afn", # source file
@@ -763,7 +768,9 @@ $keep_obstructions1 = ##### BRING SOME OBSTRUCTIONS BACK IN THE ORIGINAL POSITIO
 [unused], # OPTIONAL. THIRD SEQUENCE OF OPERATIONS IN THIS MORPHING PHASE.
 [unused], # OPTIONAL. FOURTH SEQUENCE OF OPERATIONS IN THIS MORPHING PHASE.
 [unused] # OPTIONAL. FIFTH SEQUENCE OF OPERATIONS IN THIS MORPHING PHASE. YOU CAN ADD NEW SEQUENCES.
-);
+); # If the alphabetical order is not accepted as an order to propagate constraints, a new order can be specificed
+# WITH THE FOLLOWING VARIABLES:
+# @node_letters AND @component_letters 
 
 
 @constrain_net1 = (
@@ -815,7 +822,9 @@ $keep_obstructions1 = ##### BRING SOME OBSTRUCTIONS BACK IN THE ORIGINAL POSITIO
 # TYPICALLY, IT WILL BE USED FOR A ZONE, BUT NOTHING PREVENTS THAT SEVERAL OF THEM CHAINED ONE AFTER 
 # THE OTHER ARE APPLIED TO THE SAME ZONE.
 # $counterstep, WHICH TELLS THE PROGRAM WHAT THE CURRENT ITERATION STEP IS.
-
+# If the alphabetical order is not accepted as an order to propagate constraints, a new order can be specificed
+# WITH THE FOLLOWING VARIABLES: @vertexletters (FOR GEOMETRY EDITING), @obs_letters (FOR OBSTRUCTIONS), 
+# @node_letters AND @component_letters (FOR NETS), @letters AND @period_letters (FOR CONTROLS)
 
 @propagate_constraints1 = (
 ["y", # apply constraints to nets? "y" or "n".
@@ -937,6 +946,11 @@ $keep_obstructions1 = ##### BRING SOME OBSTRUCTIONS BACK IN THE ORIGINAL POSITIO
 # 11) $flow_control[$countflow][$countflowcontrol][$flow_fraction] # Same as above.
 # EXAMPLE : $flow_control[1][2][$flow_fraction] = 0.7
 # OTHER EXAMPLE: $flow_control[1][2][$flow_fraction] = $flow_control[2][1][$flow_fraction]
+# If the alphabetical order is not accepted as an order to propagate constraints, a new order can be specificed
+# WITH THE FOLLOWING VARIABLES: @vertexletters (FOR GEOMETRY EDITING), @obs_letters (FOR OBSTRUCTIONS), 
+# @node_letters AND @component_letters (FOR NETS), @letters AND @period_letters (FOR CONTROLS)
+# FINALLY, ALL THE VARIABLES SPECIFIED IN THIS FILE CAN BE ACCESSED. FOR EXAMPLE: $recalculateish1, $translate2, ETC.
+# THE VARIABLE AT THE CURRENT SEARCH STEP CAN BE NAMED WITHOUT THE NUMBER. EXAMPLE: $recalculateish, $translate, ETC.
 
 
 $recalculateish1 = 
@@ -978,10 +992,24 @@ $recalculateish1 =
 # name of daylight factor file
 ); #
 
+
 $skip1 = "if ( ($$translate[$counterzone][2][0] > 2) or ($$translate[$counterzone][2][0] < 8 ) )"; 
 # THIS IS AN EXAMPLE OF CONDITION TO SKIP SOME TESTS. THIS IS A CONDITION WRITTEN IN PERL AND CAN BE AS COMPLEX AS YOU WANT.
 # IT WILL BE EVALED BY THE PROGRAM TO SKIP AN INSTANCE IF CONDITION YOU HAVE SPECIFIED IS MET.
 
+
+$constrain1 = "
+if ( ($$translate[$counterzone][2][0] > 2) or ($$translate[$counterzone][2][0] < 8 ) )
+"; # perl instructions for propagation of constraints can be specified here.
+# All the variables here specified in the comments to "@propagate_constraints" can be used,
+# If the alphabetical order is not accepted as an order to propagate constraints, a new order can be specificed
+# WITH THE FOLLOWING VARIABLES: @vertexletters (FOR GEOMETRY EDITING), "@obs_letters" (FOR OBSTRUCTIONS), 
+# "@node_letters" AND "@component_letters" (FOR NETS), "@letters" AND "@period_letters" (FOR CONTROLS)
+# To propagate dhe constraints, the "$constrain" variable must be used together with an operation
+# activated by the existence of a file for propagation of constraints, even if that file is void.
+# But even if such a file is no void, the condition specified in the variable "$constrain"
+# will be able to access and modify all the variables in the present OPTS condifuration file, as
+# for example "$traslate2", or "$translate" (when referred to the current iteration).
 
 ############################## HERE FOLLOWS THE DESCRIPTION OF MORPHING PHASE NUMBER 2. ##########################
 $stepsvar2 =
