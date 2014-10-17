@@ -24,8 +24,8 @@ $Data::Dumper::Terse  = 1;
 %EXPORT_TAGS = ( DEFAULT => [qw( &opts &prepare )]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw( opts prepare ); # our @EXPORT = qw( );
-$VERSION = '0.36.16'; # our $VERSION = '';
-$ABSTRACT = 'OPTS is a program conceived to manage parametric explorations through the use of the ESP-r building performance simulation platform.';
+$VERSION = '0.36.16.1'; # our $VERSION = '';
+$ABSTRACT = 'Sim::OPTS manages parametric explorations through the ESP-r building performance simulation platform and performs optimization by block coordinate descent.';
 
 #################################################################################
 #################################################################################
@@ -8750,7 +8750,7 @@ __END__
 
 =head1 NAME
 
-Sim::OPTS is a morphing and optimization program that manages parametric explorations by propagation of constraints through the ESP-r building performance simulation platform and performs multiobjective optimization by overlapping block coordinate descent.
+Sim::OPTS manages parametric explorations through the ESP-r building performance simulation platform and performs optimization by block coordinate descent.
 
 =head1 SYNOPSIS
 
@@ -8765,7 +8765,7 @@ A working knowledge of ESP-r is necessary to use OPTS.  Information about ESP-r 
 
 To install OPTS, the command <cpanm Sim::OPTS> has to be issued.  Perl will take care to install all dependencies.  OPTS can be loaded through the command <use Sim::OPTS> in Perl.  For that purpose, the "Devel::REPL" module may be used.  As an alternative, the batch file "opt" (which can be found in the "example" folder in this distribution) may be copied in a work directory.  In that case, to launch the program the command <opt> may be issued.  That command will activate the OPTS functions, following the settings specified in a previously prepared configuration file.  When launched, OPTS will ask the path to that file.  Its activity will start after receiving that information.
 
-The OPTS configuration file have to contain a suitable description of the operations to be accomplished.  A great deal of instructions which are necessary to run OPTS will usually be specified in that file, which has to point to an existing ESP-r model.  In this distribution there is a template file with explanations and an example of OPTS configuration file.  There is also the example of an OPTS configuration file that has been used in production in combination with a previous version of the program and will not work with the present one.
+The OPTS configuration file have to contain a suitable description of the operations to be accomplished.  A great deal of instructions which are necessary to run OPTS will usually be specified in that file, which has to point to an existing ESP-r model.  In this distribution there is a template file with explanations and an example of OPTS configuration file.  There is also the example of an OPTS configuration file that has been used in production in combination with a previous version of the program and will probably not work with the present one due to minor changes in the header variables. The complete set of files for the case linked to that configuration file can be downloaded at http://figshare.com/articles/Dataset_of_a_computational_research_on_block_coordinate_search_based_on_building_performance_simulations/1158993 . 
 
 To run OPTS without making it act on files, the setting <$exeonfiles = "n";> should be specified in the configuration file.  By setting the variable "$toshell" to the chosen path, the path for the text file that will receive the commands in place of the shell should be specified.
 

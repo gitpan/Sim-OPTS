@@ -993,13 +993,13 @@ $recalculateish1 =
 ); #
 
 
-$skip1 = "if ( ($$translate[$counterzone][2][0] > 2) or ($$translate[$counterzone][2][0] < 8 ) )"; 
+$skip1 = " if ( ($$translate[$counterzone][2][0] > 2) or ($$translate[$counterzone][2][0] < 8 ) ) "; 
 # THIS IS AN EXAMPLE OF CONDITION TO SKIP SOME TESTS. THIS IS A CONDITION WRITTEN IN PERL AND CAN BE AS COMPLEX AS YOU WANT.
 # IT WILL BE EVALED BY THE PROGRAM TO SKIP AN INSTANCE IF CONDITION YOU HAVE SPECIFIED IS MET.
 
 
 $constrain1 = "
-if ( ($$translate[$counterzone][2][0] > 2) or ($$translate[$counterzone][2][0] < 8 ) )
+if ( ($$translate[$counterzone][2][0] > 2) or ($$translate[$counterzone][2][0] < 8 ) ) { $something1 = $something2 ; } 
 "; # perl instructions for propagation of constraints can be specified here.
 # All the variables here specified in the comments to "@propagate_constraints" can be used,
 # If the alphabetical order is not accepted as an order to propagate constraints, a new order can be specificed
