@@ -1,5 +1,5 @@
 ---
-abstract: 'Sim::OPTS is a morphing and optimization program that manages parametric explorations by propagation of constraints through the ESP-r building performance simulation platform and performs multiobjective optimization by overlapping block coordinate descent.'
+abstract: 'Sim::OPTS manages parametric explorations by propagation of constraints through the ESP-r building performance simulation platform and performs optimization by overlapping block coordinate descent.'
 author:
   - 'Gian Luca Brunetti <gianluca.brunetti@polimi.it>'
 build_requires:
@@ -19,4 +19,4 @@ no_index:
     - inc
 requires:
   List::MoreUtils: 0
-version: v0.36.16.3
+version: v0.36.16.4
