@@ -1,6 +1,6 @@
 package Sim::OPTS;
 # Copyright (C) 2008-2014 by Gian Luca Brunetti and Politecnico di Milano.
-# This is OPTS, a program conceived to manage parametric esplorations through the use of the ESP-r building performance simulation platform.
+# This is OPTS, a program managing parametric explorations through the ESP-r building performance simulation platform and performing optimization by block coordinate descent.
 # This is free software.  You can redistribute it and/or modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, version 2.
 
@@ -24,7 +24,7 @@ $Data::Dumper::Terse  = 1;
 %EXPORT_TAGS = ( DEFAULT => [qw( &opts &prepare )]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw( opts prepare ); # our @EXPORT = qw( );
-$VERSION = '0.36.16.2'; # our $VERSION = '';
+$VERSION = '0.36.16.3'; # our $VERSION = '';
 $ABSTRACT = 'Sim::OPTS manages parametric explorations through the ESP-r building performance simulation platform and performs optimization by block coordinate descent.';
 
 #################################################################################
@@ -8652,7 +8652,12 @@ TTT
 	###########################################################
 	# END OF THE SPACE FOR GENERAL FUNCTIONS
 	
+
 	
+	##########################################################################################
+	##########################################################################################
+	# BEGINNING OF THE INSTRUCTIONS THAT LAUNCH OPTS AT EACH SUBSPACE SEARCH CYCLE.
+
 	if (@casegroup)
 	{
 		my $countcase = 0;
@@ -8730,7 +8735,7 @@ TTT
 		#print OUTFILE "I CALL EXEC AND \@VARNUMBERS IS: " . Dumper(@varnumbers) . "\n";
 	}
 
-	# END OF THE PROGRAM THAT LAUNCHES OPTS.
+	# END OF THE INSTRUCTIONS LAUNCHING OPTS.
 	##########################################################################################
 	##########################################################################################
 
