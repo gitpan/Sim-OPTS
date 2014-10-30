@@ -1,15 +1,12 @@
 package Sim::OPTS;
 # Copyright (C) 2008-2014 by Gian Luca Brunetti and Politecnico di Milano.
-# This is OPTS, a program managing parametric explorations through the ESP-r building performance simulation platform and performing optimization by block coordinate descent.
+# This is OPTS, a program for detailed metadesign managing parametric explorations through the ESP-r building performance simulation platform and performing optimization by block coordinate descent.
 # This is free software.  You can redistribute it and/or modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, version 2.
 
 use 5.014001;
 use Exporter;
 use vars qw( $VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS );
-use feature 'say';
-no strict; 
-no warnings;
 use Math::Trig;
 use List::Util qw[ min max reduce ];
 use List::MoreUtils;
@@ -19,13 +16,17 @@ $Data::Dumper::Indent = 0;
 $Data::Dumper::Useqq  = 1;
 $Data::Dumper::Terse  = 1;
 
+use feature 'say';
+no strict; 
+no warnings;
+
 @ISA = qw(Exporter); # our @adamkISA = qw(Exporter);
 
 %EXPORT_TAGS = ( DEFAULT => [qw( &opts &prepare )]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw( opts prepare ); # our @EXPORT = qw( );
-$VERSION = '0.36.16.4'; # our $VERSION = '';
-$ABSTRACT = 'Sim::OPTS manages parametric explorations through the ESP-r building performance simulation platform and performs optimization by block coordinate descent.';
+$VERSION = '0.36.16.5'; # our $VERSION = '';
+$ABSTRACT = 'Sim::OPTS it a tool for building detailed metadesign. It manages parametric explorations through the ESP-r building performance simulation platform and performs optimization by block coordinate descent.';
 
 #################################################################################
 #################################################################################
@@ -39,12 +40,12 @@ sub opts
 ###########################################
 print "THIS IS OPTS.
 Copyright by Gian Luca Brunetti and Politecnico di Milano, 2008-14.
-Dipartimento DAStU, Politecnico di Milano.
-Copyright license: GPL.
+DAStU Department, Polytechnic of Milan
+
 -------------------
 
 To use OPTS, an OPTS configuration file and a target ESP-r model should have been prepared.
-Insert the name of a configuration file (local path):\n";
+Please insert the name of a configuration file (Unix path):\n";
 ###########################################
 		$configfile = <STDIN>;
 		chomp $configfile;
@@ -57,13 +58,10 @@ Insert the name of a configuration file (local path):\n";
 	require $configfile; # The file where the program data are
 	if (-e $casegroupfile) { require $casegroupfile; }
 
-	# use Sim::OPTS::morph;
-	# use Sim::OPTS::sim; # HERE THE FUNCTIONS "sim" and "retrieve" are.
-	# use Sim::OPTS::report; 
-	# use Sim::OPTS::format;
+	# use Sim::OPTS::morph; # use Sim::OPTS::sim; # HERE THE FUNCTIONS "sim" and "retrieve" are. # use Sim::OPTS::report; # use Sim::OPTS::format;
 
 	###########################################################################################
-	# BELOW THE OPTS PROGRAM FOLLOWS.
+	# BEGINNING OF THE OPTS PROGRAM.
 
 	print "OPTS - IS - RUNNING.
 -------------------\n";
@@ -104,10 +102,7 @@ Insert the name of a configuration file (local path):\n";
 		$simlistfile = "$mypath/$file-simlist-$countcase-$countblock";
 		
 		open (MORPHFILE, ">$morphfile") or die;
-		
-		say OUTFILE "\nHERE BEGIN ";
-				
-						
+								
 		@totvarnumbers = (@totvarnumbers, @varnumbers);
 		@totvarnumbers = uniq(@totvarnumbers);
 		@totvarnumbers = sort(@totvarnumbers);
@@ -357,7 +352,7 @@ Insert the name of a configuration file (local path):\n";
 #########################################################################################
 
 # HERE FOLLOWS THE CONTENT OF THE FILE "morph.pm", which has been merged here
-# TO AVOID COMPLICATION WITH THE PERL MODULE INSTALLATION.
+# TO AVOID COMPLICATIONS WITH THE PERL MODULE INSTALLATION.
 
 ##############################################################################
 sub translate
@@ -471,7 +466,7 @@ my $countercycles_transl_surfs = 0;
 
 
 ##############################################################################					
-sub translate_surfaces_simple # THIS IS VERSION 1: THE OLD ONE. DISMISSED? IN DOUBT, DO NOT USE IT. 
+sub translate_surfaces_simple # THIS IS VERSION 1, THE OLD ONE. DISMISSED? IN DOUBT, DO NOT USE IT. 
 {
 	my $to = shift;
 	my $fileconfig = shift;
@@ -963,7 +958,7 @@ YYY
 
 
 ##############################################################################
-sub translate_vertexes #STILL UNFINISHED, NOT WORKING. PROBABLY ALMOST FINISHED. ON THE BRINK OF IT. The reference to @base_coordinates is not working
+sub translate_vertexes #STILL UNFINISHED, NOT WORKING. PROBABLY ALMOST FINISHED. The reference to @base_coordinates is not working.
 {
 	my $to = shift;
 	my $fileconfig = shift;
@@ -1051,8 +1046,6 @@ sub translate_vertexes #STILL UNFINISHED, NOT WORKING. PROBABLY ALMOST FINISHED.
 			{				
 				eval `cat $configaddress`; # HERE AN EXTERNAL FILE FOR PROPAGATION OF CONSTRAINTS 
 				# IS EVALUATED, AND HERE BELOW CONSTRAINTS ARE PROPAGATED.
-				# THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE DIRECTLY
-				# WRITTEN IN THE CALLING FILE.
 
 			my $countervertex = 0;
 														
@@ -2501,11 +2494,11 @@ sub bring_obstructions_back # TO BE REWRITTEN BETTER
 			my $obstruction_letter =
 			  "$obstruction_to_keep[0]";
 			my $rotation_z = "$obstruction_to_keep[1]";
-			my $rotation_y = "$obstruction_to_keep[2]"; #NOT IMPLEMENTED YET
+			my $rotation_y = "$obstruction_to_keep[2]"; # NOT YET IMPLEMENTED 
 			my $x_origin   = "$obstruction_to_keep[3]";
 			my $y_origin   = "$obstruction_to_keep[4]";
 			my $z_origin   = "$obstruction_to_keep[5]";
-			# KEEP IN MIND THAT $rotation_degrees used here is absolute, not local. 
+			# $rotation_degrees used here is absolute, not local. 
 			# This is dangerous and it has to change.
 			 
 			if ($exeonfiles eq "y") 
@@ -2582,7 +2575,7 @@ YYY
 			$keep_obs_counter++;
 		}
 
-		#NOW THE XZ GRID RESOLUTION WILL BE PUT TO THE SPECIFIED VALUE				 
+		# NOW THE XZ GRID RESOLUTION WILL BE PUT TO THE SPECIFIED VALUE				 
 		if ($exeonfiles eq "y") 
 		{ 
 			print
@@ -2856,7 +2849,7 @@ cd $mypath
 
 	
 ##############################################################################	
-sub daylightcalc_other # NOT USED. THE DIFFERENCE WITH THE ABOVE IS THAT IS WORKS IF THE RAD DIRECTORY IS NOT EMTY. 
+sub daylightcalc_other # NOT USED. THE DIFFERENCE WITH THE ABOVE IS THAT IS WORKS IF THE RAD DIRECTORY IS NOT EMPTY. 
 {
 	my $to = shift;
 	my $fileconfig = shift;
@@ -3025,9 +3018,9 @@ $counterconfig++;
 } # END SUB copy_config
 
 
-sub checkfile # THIS FUNCTION DOES BETTER WHAT IS ALSO DONE BY THE PREVIOUS ONE.
+sub checkfile # THIS FUNCTION DOES WHAT IS DONE BY THE PREVIOUS ONE, BUT BETTER.
 {
-	# THIS CHECKS IF A SOURCE FILE MUST BE SUBSTITUTED BY ANOTHER BEFORE THE TRANSFORMATIONS BEGIN.
+	# THIS CHECKS IF A SOURCE FILE MUST BE SUBSTITUTED BY ANOTHER ONE BEFORE THE TRANSFORMATIONS BEGIN.
 	# IT HAS TO BE CALLED WITH: checkfile($sourceaddress, $targetaddress);
 	my $sourceaddress = shift;
 	my $targetaddress = shift;
@@ -3050,7 +3043,7 @@ sub checkfile # THIS FUNCTION DOES BETTER WHAT IS ALSO DONE BY THE PREVIOUS ONE.
 } # END SUB checkfile	
 
 
-sub change_climate ### THIS HAS TO BE DEBUGGED. WHY DOES IT BLOCK ITSELF IF PRINTED TO THE SHELL?
+sub change_climate ### THIS SIMPLE SCRIPT HAS TO BE DEBUGGED. WHY DOES IT BLOCK ITSELF IF PRINTED TO THE SHELL?
 {	# THIS FUNCTION CHANGES THE CLIMATE FILES. 
 	my $to = shift;
 	my $fileconfig = shift;
@@ -3113,7 +3106,7 @@ ZZZ
 
 
 ##############################################################################	
-# THIS FUNCTION HAS BEEN UTDATED BY THOSE FOR CONSTRAINING THE NETS, BELOW				
+# THIS FUNCTION HAS BEEN OUTDATED BY THOSE FOR CONSTRAINING THE NETS, BELOW				
 sub recalculatenet
 {
 	my $to = shift;
@@ -3233,8 +3226,6 @@ sub recalculatenet
 	{										
 		eval `cat $configaddress`; # HERE AN EXTERNAL FILE FOR PROPAGATION OF CONSTRAINTS 
 		# IS EVALUATED, AND HERE BELOW CONSTRAINTS ARE PROPAGATED. 
-		# THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE 
-		# AS THEY WERE DIRECTLY WRITTEN IN THE CALLING FILE.
 	}
 
 	
@@ -3700,8 +3691,6 @@ sub apply_constraints
 			{	
 				eval `cat $configaddress`; # HERE AN EXTERNAL FILE FOR PROPAGATION OF CONSTRAINTS 
 				# IS EVALUATED, AND HERE BELOW CONSTRAINTS ARE PROPAGATED.
-				# THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE 
-				# DIRECTLY WRITTEN IN THE CALLING FILE.
 				
 				if (-e $constrain) { eval "$constrain"; } # HERE THE INSTRUCTION WRITTEN IN THE OPTS CONFIGURATION FILE CAN BE SPEFICIED
 				# FOR PROPAGATION OF CONSTRAINTS
@@ -3889,8 +3878,6 @@ sub reshape_windows # IT APPLIES CONSTRAINTS
 			
 				eval `cat $configaddress`;	# HERE AN EXTERNAL FILE FOR PROPAGATION OF CONSTRAINTS 
 				# IS EVALUATED, AND HERE BELOW CONSTRAINTS ARE PROPAGATED.
-				# THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE DIRECTLY 
-				# WRITTEN IN THE CALLING FILE.
 				
 				if (-e $constrain) { eval "$constrain"; } # HERE THE INSTRUCTION WRITTEN IN THE OPTS CONFIGURATION FILE CAN BE SPEFICIED
 				# FOR PROPAGATION OF CONSTRAINTS					
@@ -4084,7 +4071,7 @@ YYY
 			$counterrotate++;
 		}
 	
-		# THIS SECTION READS THE CONFIGFILE FOR DIMENSIONS
+		# THIS SECTION READS THE CONFIG FILE FOR DIMENSIONS
 		open( SOURCEFILE, $sourcefile ) or die "Can't open $sourcefile: $!\n";
 		my @lines = <SOURCEFILE>;
 		close SOURCEFILE;
@@ -4136,8 +4123,7 @@ YYY
 		if (-e $configfile)
 		{				
 			eval `cat $configfile`; # HERE AN EXTERNAL FILE FOR PROPAGATION OF CONSTRAINTS IS EVALUATED 
-			# AND PROPAGATED. THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE 
-			# DIRECTLY WRITTEN IN THE CALLING FILE.
+			# AND PROPAGATED.
 			
 			if (-e $constrain) { eval "$constrain"; } # HERE THE INSTRUCTION WRITTEN IN THE OPTS CONFIGURATION FILE CAN BE SPEFICIED
 			# FOR PROPAGATION OF CONSTRAINTS
@@ -4344,9 +4330,9 @@ sub read_geometry
 
 sub read_geo_constraints
 {	
-	# THIS FILE IS FOR OPTS TO READ GEOMETRY USER-IMPOSED CONSTRAINTS
+	# THIS FILE IS FOR OPTS TO READ GEOMETRY USER-IMPOSED CONSTRAINTS.
 	# IT IS CALLED WITH: read_geo_constraints($configaddress);
-	# THIS MAKES AVAILABLE TO THE USER FOR MANIPULATION THE VERTEXES IN THE GEOMETRY FILES, IN THE FOLLOWING FORM:
+	# THIS MAKES AVAILABLE THE VERTEXES IN THE GEOMETRY FILES TO THE USER FOR MANIPULATION, IN THE FOLLOWING FORM:
 	# $v[$counterzone][$number][$x], $v[$counterzone][$number][$y], $v[$counterzone][$number][$z]. EXAMPLE: $v[0][4][$x] = 1. 
 	# OR: @v[0][4][$x] =  @v[0][4][$y]. OR EVEN: @v[1][4][$x] =  @v[0][3][$z].
 	# The $counterzone that is actuated is always the last, the one which is active. 
@@ -4381,8 +4367,6 @@ sub read_geo_constraints
 	{	
 		push (@v, [@myv]); #
 		eval `cat $configaddress`; # HERE AN EXTERNAL FILE FOR PROPAGATION OF CONSTRAINTS IS EVALUATED.
-		# THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE DIRECTLY 
-		# WRITTEN IN THE CALLING FILE.
 				
 		if (-e $constrain) { eval "$constrain"; } # HERE THE INSTRUCTION WRITTEN IN THE OPTS CONFIGURATION FILE CAN BE SPEFICIED
 		# FOR PROPAGATION OF CONSTRAINTS
@@ -4402,14 +4386,11 @@ sub apply_geo_constraints
 	my @v = @$swap;
 	my $swap = shift;
 	my @vertexletters = @$swap;
-	# print OUTFILE "\@vertexletters: " . Dumper(@vertexletters) . "\n\n";
 	
 	my $swap = shift;
 	my @work_letters = @$swap;
-	# print OUTFILE "\@work_letters" . Dumper(@work_letters) . "\n\n";
 	
 	my $exeonfiles = shift;
-	# print OUTFILE "exeonfiles: $exeonfiles\n\n";
 	my $zone_letter = shift;
 	my $toshell = shift;
 	my $outfile = shift;
@@ -4420,7 +4401,6 @@ sub apply_geo_constraints
 	
 	my $countervertex = 0;
 	
-	# print OUTFILE "\@v: " . Dumper(@v) . "\n\n";
 	foreach my $v (@v)
 	{
 		my $vertexletter = $vertexletters[$countervertex];
@@ -4437,7 +4417,6 @@ sub apply_geo_constraints
 		{ 
 			if ($exeonfiles eq "y") 
 			{
-				# print OUTFILE "YES. \$v:" . Dumper($v) . "\n\n";
 				print
 #################################
 `prj -file $to/cfg/$fileconfig -mode script<<YYY
@@ -4527,7 +4506,6 @@ sub vary_controls
 	my @vary_controls = @$swap;
 
 	
-	# print OUTFILE "FIRST: \$to:$to, \$fileconfig:$fileconfig, \$stepsvar:$stepsvar, \$counterzone:$counterzone, \$counterstep:$counterstep, \@applytype:@applytype, \@vary_controls:@vary_controls\n\n";
 	my $semaphore_zone;
 	my $semaphore_dataloop;
 	my $semaphore_massflow;
@@ -4553,7 +4531,6 @@ sub vary_controls
 	my $loopcontrol_letter;
 	
 	my @group = @{$vary_controls[$counterzone]};
-	# print OUTFILE "SECOND: \@group: " . Dumper(@group) . "\n\n";
 	my $sourcefile = $group[0];
 	my $targetfile = $group[1];
 	my $configfile = $group[2];
@@ -4566,10 +4543,6 @@ sub vary_controls
 	my $sourceaddress = "$to$sourcefile";
 	my $targetaddress = "$to$targetfile";
 	my $configaddress = "$to$configfile";	
-	# print OUTFILE "Dumper\@vary_controls\: " . Dumper(@vary_controls) ."\n\@\{\$vary_controls\[0\]\} : @{$vary_controls[0]}\n"
-	#. "Dumper\@applytype\: " . Dumper(@applytype) . 
-	# print OUTFILE "THIRD: \$sourcefile:$sourcefile, \$targetfile:$targetfile, \$configfile:$configfile, \@swing_zone_hours:@swing_zone_hours, \@swing_max_heating_powers:@swing_max_heating_powers, \@swing_max_cooling_powers:@swing_max_cooling_powers, \@swing_min_cooling_powers:@swing_min_cooling_powers, \@swing_heating_setpoints:@swing_heating_setpoints, \@swing_cooling_setpoints:@swing_cooling_setpoints, \@swing_zone_hours:@swing_zone_hours, \@swing_zone_setpoints:@swing_zone_setpoints, \$sourceaddress:$sourceaddress, \$targetaddress:$targetaddress, \$configaddress:$configaddress."  .
-	# "\n\n"; 
 
 	#@loopcontrol; # DON'T PUT "my" HERE.
 	#@flowcontrol; # DON'T PUT "my" HERE.
@@ -4588,12 +4561,10 @@ sub vary_controls
 		read_controls($sourceaddress, $targetaddress, \@letters, \@period_letters);
 	}
 				
-	# print OUTFILE "RESULT. ZONE CONTROLS: " . Dumper( @loopcontrol) . "\nFLOW CONTROLS: " . Dumper(@flowcontrol) . "\n\n";
 	
 	calc_newctl($to, $fileconfig, $stepsvar, $counterzone, $counterstep, \@buildbulk, 
 	\@flowbulk, \@loopcontrol, \@flowcontrol);
 	
-	# print OUTFILE "NEW LOOP CONTROLS OUTSIDE " . Dumper(@new_loopcontrols) . "\n\n";
 	
 	
 	sub calc_newctl
@@ -4613,8 +4584,6 @@ sub vary_controls
 		my $swap = shift;
 		my @flowcontrol = @$swap;
 
-	
-		# print OUTFILE "RESULT. ZONE CONTROLS: " . Dumper( @loopcontrol) . "\nFLOW CONTROLS: " . Dumper(@flowcontrol) . "\n\n";
 		my @new_loop_hours;
 		my @new_max_heating_powers;
 		my @new_min_heating_powers;
@@ -4643,24 +4612,19 @@ sub vary_controls
 				my $swing_min_cooling_power = $askloop[6];
 				my $swing_heating_setpoint = $askloop[7];
 				my $swing_cooling_setpoint = $askloop[8];
-				#print OUTFILE "NOW: \$swing_loop_hour:$swing_loop_hour, \$swing_max_heating_power:$swing_max_heating_power, \$swing_min_heating_power:$swing_min_heating_power, \$swing_max_cooling_power:$swing_max_cooling_power, \$swing_min_cooling_power:$swing_min_cooling_power,  \$swing_heating_setpoint:$swing_heating_setpoint, \$swing_cooling_setpoint:$swing_cooling_setpoint\n\n";
 				
 				my $countloop = 0; #IT IS FOR THE FOLLOWING FOREACH. LEAVE IT ATTACHED TO IT.
 				foreach $each_loop (@loopcontrol) # THIS DISTRIBUTES THIS NESTED DATA STRUCTURES IN A FLAT MODE TO PAIR THE INPUT FILE, USER DEFINED ONE.
 				{
 					my $countcontrol = 0;
 					@thisloop = @{$each_loop};
-					# print OUTFILE "\@thisloop:@thisloop\n\n";
 					# my $letterfile = $letters[$countloop];
 					foreach $lp (@thisloop)
 					{
 						my @control = @{$lp};
-						# print OUTFILE "\@control:@control\n";
-						#print OUTFILE "\$countcontrol:$countcontrol\n";
 						# my $letterfilecontrol = $period_letters[$countcontrol];
 						$loop_letter = $loopcontrol[$countloop][$countcontrol][0];
 						$loopcontrol_letter = $loopcontrol[$countloop][$countcontrol][1];
-						#print OUTFILE "\$new_loop_letter:$new_loop_letter, \$loop_letter:$loop_letter, \$new_loopcontrol_letter:$new_loopcontrol_letter, \$loopcontrol_letter:$loopcontrol_letter\n";
 						if ( ( $new_loop_letter eq $loop_letter ) and ($new_loopcontrol_letter eq $loopcontrol_letter ) )
 						{
 							# print OUTFILE "YES!: \n\n\n";
@@ -4671,7 +4635,6 @@ sub vary_controls
 							$min_cooling_power__ = $loopcontrol[$countloop][$countcontrol][$min_cooling_power];
 							$heating_setpoint__ = $loopcontrol[$countloop][$countcontrol][$heating_setpoint];
 							$cooling_setpoint__ = $loopcontrol[$countloop][$countcontrol][$cooling_setpoint];
-							# print OUTFILE "NOW: \$new_loop_letter:$new_loop_letter, \$new_loopcontrol_letter:$new_loopcontrol_letter, \$loop_hour__:$loop_hour__, \$max_heating_power__:$max_heating_power__,  \$min_heating_power__:$min_heating_power__, \$max_cooling_power__:$max_cooling_power__, \$min_cooling_power__:$min_cooling_power__, \$heating_setpoint__:$heating_setpoint__, \$cooling_setpoint__:$cooling_setpoint__\n\n";
 						}
 						$countcontrol++;
 					}
@@ -4705,7 +4668,6 @@ sub vary_controls
 				my $pace_cooling_setpoint =  ( $swing_cooling_setpoint / ($stepsvar - 1) );
 				my $floorvalue_cooling_setpoint = ($cooling_setpoint__ - ($swing_cooling_setpoint / 2) );
 				my $new_cooling_setpoint = $floorvalue_cooling_setpoint + ($counterstep * $pace_cooling_setpoint);
-				# print OUTFILE "NOWNEW: \$new_loop_hour:$new_loop_hour, \$new_max_heating_power:$new_max_heating_power, \$new_min_heating_power:$new_min_heating_power, \$new_max_cooling_power:$new_max_cooling_power, \$new_min_cooling_power:$new_min_cooling_power, \$new_heating_setpoint:$new_heating_setpoint, \$new_cooling_setpoint:$new_cooling_setpoint. \n\n";
 				
 				$new_loop_hour = sprintf("%.2f", $new_loop_hour);
 				$new_max_heating_power = sprintf("%.2f", $new_max_heating_power);
@@ -4721,10 +4683,8 @@ sub vary_controls
 				$new_min_cooling_power, $new_heating_setpoint, $new_cooling_setpoint ] );
 			}
 
-			# print OUTFILE "NEW LOOP CONTROLS INSIDE: " . Dumper(@new_loopcontrols) . "\n\n";
-
 			my $countflow = 0;
-			# print OUTFILE "\@buildbulk: " . Dumper(@buildbulk) . "\n\n"; print OUTFILE "\@flowbulk: " . Dumper(@flowbulk) . "\n\n";
+
 			foreach my $elm (@flowbulk)
 			{
 				my @askflow = @{$elm};
@@ -4736,20 +4696,16 @@ sub vary_controls
 				if ( $swing_flow_onoff eq "ON") { $swing_flow_onoff = 1; }
 				elsif ( $swing_flow_onoff eq "OFF") { $swing_flow_onoff = -1; }
 				my $swing_flow_fraction = $askflow[5];
-				#print OUTFILE "\$new_flow_letter:$new_flow_letter, \$new_flowcontrol_letter:$new_flowcontrol_letter, \$swing_flow_hour:$swing_flow_hour, \$swing_flow_setpoint:$swing_flow_setpoint, \$swing_flow_onoff:$swing_flow_onoff, \$swing_flow_fraction:$swing_flow_fraction. \n\n";
 				
-				my $countflow = 0; #IT IS FOR THE FOLLOWING FOREACH. LEAVE IT ATTACHED TO IT.
-				foreach $each_flow (@flowcontrol) # THIS DISTRIBUTES THIS NESTED DATA STRUCTURES IN A FLAT MODE TO PAIR THE INPUT FILE, USER DEFINED ONE.
+				my $countflow = 0; # IT IS FOR THE FOLLOWING FOREACH. LEAVE IT ATTACHED TO IT.
+				foreach $each_flow (@flowcontrol) # THIS DISTRIBUTES THOSE NESTED DATA STRUCTURES IN A FLAT MODE TO PAIR THE INPUT FILE, USER DEFINED ONE.
 				{
 					my $countcontrol = 0;
 					@thisflow = @{$each_flow};
-					# print OUTFILE "\@thisflow:@thisflow\n\n";
 					# my $letterfile = $letters[$countflow];
 					foreach $elm (@thisflow)
 					{
 						my @control = @{$elm};
-						# print OUTFILE "\@control:@control\n";
-						#print OUTFILE "\$countcontrol:$countcontrol\n";
 						# my $letterfilecontrol = $period_letters[$countcontrol];
 						$flow_letter = $flowcontrol[$countflow][$countcontrol][0];
 						$flowcontrol_letter = $flowcontrol[$countflow][$countcontrol][1];
@@ -4761,7 +4717,6 @@ sub vary_controls
 							if ( $flow_onoff__ eq "ON") { $flow_onoff__ = 1; }
 							elsif ( $flow_onoff__ eq "OFF") { $flow_onoff__ = -1; }
 							$flow_fraction__ = $flowcontrol[$countflow][$countcontrol][$flow_fraction];
-							#print OUTFILE "\$flow_letter:$flow_letter, \$flowcontrol_letter:$flowcontrol_letter, \$flow_hour__:$flow_hour__, \$flow_setpoint__:$flow_setpoint__, \$flow_onoff__:$flow_onoff__, \$flow_fraction__:$flow_fraction__. \n\n";
 						}
 						$countcontrol++;
 					}
@@ -4789,21 +4744,13 @@ sub vary_controls
 				$new_flow_onoff = sprintf("%.2f", $new_flow_onoff);
 				$new_flow_fraction = sprintf("%.2f", $new_flow_fraction);
 				
-				# print OUTFILE "THIS: \$flow_letter:$flow_letter, \$new_flow_hour:$new_flow_hour,  \$new_flow_setpoint:$new_flow_setpoint, \$new_flow_onoff:$new_flow_onoff, \$new_flow_fraction:$new_flow_fraction \n\n";
 				push(@new_flowcontrols, 
 				[ $new_flow_letter, $new_flowcontrol_letter, $new_flow_hour,  $new_flow_setpoint, $new_flow_onoff, $new_flow_fraction ] );
-				# print OUTFILE "IN1: \@new_flowcontrols: " . Dumper(@new_flowcontrols) . "\n\n";
 			}
 			# HERE THE MODIFICATIONS TO BE EXECUTED ON EACH PARAMETERS ARE APPLIED TO THE MODELS THROUGH ESP-r.
 			# FIRST, HERE THEY ARE APPLIED TO THE ZONE CONTROLS, THEN TO THE FLOW CONTROLS
-			#print OUTFILE "IN2: \@new_flowcontrols: " . Dumper(@new_flowcontrols) . "\n\n";
 		}
-		#print OUTFILE "IN3: \@new_flowcontrols: " . Dumper(@new_flowcontrols) . "\n\n";
 	} # END SUB calc_newcontrols
-	# print OUTFILE "OUT4: \@new_loopcontrols: " . Dumper(@new_loopcontrols) . "\n\n";
-	# print OUTFILE "OUT4: \@new_flowcontrols: " . Dumper(@new_flowcontrols) . "\n\n";
-	# print OUTFILE "OUT4: \@loopcontrol: " . Dumper(@loopcontrol) . "\n\n";
-	# print OUTFILE "OUT4: \@flowcontrol: " . Dumper(@flowcontrol) . "\n\n";
 	
 	print OUTFILE "\@new_loopcontrols: " . Dumper(@new_loopcontrols) . "\n\n";
 
@@ -4837,8 +4784,6 @@ sub constrain_controls
 	my $sourceaddress = "$to$sourcefile";
 	my $targetaddress = "$to$targetfile";
 	my $configaddress = "$to$configfile";
-	# print OUTFILE "\$sourcefile:$sourcefile, \$targetfile:$targetfile, \$configfile:$configfile. \n\n";
-	# print OUTFILE "FIRST: \$to:$to, \$fileconfig:$fileconfig, \$stepsvar:$stepsvar, \$counterzone:$counterzone, \$counterstep:$counterstep, \@applytype:@applytype, \@group:@group\n\n";
 	#@loopcontrol; @flowcontrol; @new_loopcontrols; @new_flowcontrols; # DON'T PUT "my" HERE. THEY ARE GLOBAL!!!
 	my $semaphore_zone;
 	my $semaphore_dataloop;
@@ -4941,13 +4886,11 @@ sub read_controls
 		}
 		if ( ($line =~ /ctl type, law/ ) )
 		{
-			# print OUTFILE "\nHERE\n",
 			$countloopcontrol++;
 			my @row = split(/\s+/, $line);
 			$loop_hour = $row[3];
 			$semaphore_loopcontrol = "yes";
 			$loopcontrol_letter = $period_letters[$countloopcontrol];
-			#print OUTFILE "HEREINSIDE PUSH $count: \$countloop:$countloop, \$countloopcontrol:$countloopcontrol, \$loopcontrol_letter:$loopcontrol_letter. \n";
 		}
 
 		if ( ($semaphore_loop eq "yes") and ($semaphore_loopcontrol eq "yes") and ($line =~ /No. of data items/ ) ) 
@@ -4976,7 +4919,6 @@ sub read_controls
 
 		if ($line =~ /Control mass/ )
 		{
-			# print OUTFILE "CON\n\n";
 			$semaphore_flow = "yes";
 			$countflowcontrol = -1;
 			$countflow++;
@@ -4984,18 +4926,15 @@ sub read_controls
 		}
 		if ( ($line =~ /ctl type \(/ ) )
 		{
-			# print OUTFILE "CTL\n\n";
 			$countflowcontrol++;
 			my @row = split(/\s+/, $line);
 			$flow_hour = $row[3];
 			$semaphore_flowcontrol = "yes";
 			$flowcontrol_letter = $period_letters[$countflowcontrol];
-			# print OUTFILE "HEREINSIDE PUSH $count: \$countflow:$countflow, \$countflowcontrol:$countflowcontrol, \$flowcontrol_letter:$flowcontrol_letter. \n";
 		}
 
 		if ( ($semaphore_flow eq "yes") and ($semaphore_flowcontrol eq "yes") and ($line =~ /No. of data items/ ) ) 
 		{  
-			#print OUTFILE "DOLINE\n\n";
 			$doline = $counterlines + 1;
 		}
 		
@@ -5008,14 +4947,10 @@ sub read_controls
 			push(@{$flowcontrol[$countflow][$countflowcontrol]}, 
 			$flow_letter, $flowcontrol_letter, $flow_hour, $flow_setpoint, $flow_onoff, $flow_fraction);
 			$semaphore_flowcontrol = "no";
-			# print OUTFILE "DOTHIS: " . Dumper(@flowcontrol) . "\n\n";
 			$doline = "";
 		}
 		$counterlines++;
-	}
-	
-	# print OUTFILE "loopcontrol: " . Dumper(@loopcontrol) . "\n\n!";
-	# print OUTFILE "flowcontrol: " . Dumper(@flowcontrol) . "\n\n!";			
+	}			
 } # END SUB read_controls.
 
 
@@ -5044,7 +4979,7 @@ sub read_control_constraints
 	# It would have therefore no sense writing $flowcontrol[1][1][2][$flow_fraction] = $flowcontrol[3][2][1][$flow_fraction].
 	# Differentent $counterzones can be referred to the same zone. Different $counterzones just number mutations in series.
 	# ALSO, THIS MAKES AVAILABLE TO THE USER INFORMATIONS ABOUT THE MORPHING STEP OF THE MODELS 
-	# AND THE STEPS THE MODEL HAVE TO FOLLOW. 
+	# AND THE STEPS THE MODEL HAS TO FOLLOW. 
 	# THIS ALLOWS TO IMPOSE EQUALITY CONSTRAINTS TO THESE VARIABLES, 
 	# WHICH COULD ALSO BE COMBINED WITH THE FOLLOWING ONES: 
 	# $stepsvar, WHICH TELLS THE PROGRAM HOW MANY ITERATION STEPS IT HAS TO DO IN THE CURRENT MORPHING PHASE.
@@ -5059,7 +4994,6 @@ sub read_control_constraints
 	my $counterzone = shift;
 	my $counterstep = shift;
 	my $configaddress = shift;
-	# print OUTFILE "\nCONFIGADDRESS: $configaddress\n\n";
 	my $swap = shift;
 	@loopcontrol = @$swap;
 	my $swap = shift;
@@ -5071,22 +5005,18 @@ sub read_control_constraints
 
 	if (-e $configaddress) # TEST THIS, DDD
 	{	# THIS APPLIES CONSTRAINST, THE FLATTEN THE HIERARCHICAL STRUCTURE OF THE RESULTS,
-		# TO BE PREPARED THEN FOR BEING APPLIED TO CHANGE PROCEDURES. IT IS TO BE TESTED.
-		push (@loopcontrol, [@myloopcontrol]); # ;)
-		push (@flowcontrol, [@myflowcontrol]); # ;)
+		# TO BE PREPARED THEN FOR BEING APPLIED TO CHANGE PROCEDURES. IT HAS TO BE TESTED.
+		push (@loopcontrol, [@myloopcontrol]); #
+		push (@flowcontrol, [@myflowcontrol]); #
 
 		eval `cat $configaddress`;	# HERE AN EXTERNAL FILE FOR PROPAGATION OF CONSTRAINTS 
-		# IS EVALUATED, AND HERE BELOW CONSTRAINTS ARE PROPAGATED.
-		# THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE DIRECTLY 
-		# WRITTEN IN THE CALLING FILE.		
+		# IS EVALUATED, AND HERE BELOW CONSTRAINTS ARE PROPAGATED.	
 		
 		if (-e $constrain) { eval "$constrain"; } # HERE THE INSTRUCTION WRITTEN IN THE OPTS CONFIGURATION FILE CAN BE SPEFICIED
 		# FOR PROPAGATION OF CONSTRAINTS
 		
-		@doloopcontrol = @{$loopcontrol[$#loopcontrol]}; # ;)
-		@doflowcontrol = @{$flowcontrol[$#flowcontrol]}; # ;)
-		# print OUTFILE "BEFORE loopcontrol: " . Dumper(@loopcontrol) . "\n\n";
-		# print OUTFILE "BEFORE flowcontrol: " . Dumper(@flowcontrol) . "\n\n";
+		@doloopcontrol = @{$loopcontrol[$#loopcontrol]}; #
+		@doflowcontrol = @{$flowcontrol[$#flowcontrol]}; #
 
 		shift (@doloopcontrol);
 		shift (@doflowcontrol);
@@ -5125,9 +5055,6 @@ sub read_control_constraints
 		
 		shift @new_loopcontrol;
 		shift @new_flowcontrol;
-		
-		# print OUTFILE "AFTER loopcontrol: " . Dumper(@new_loopcontrol) . "\n\n";
-		# print OUTFILE "AFTER flowcontrol: " . Dumper(@new_flowcontrol) . "\n\n";
 	}
 } # END SUB read_control_constraints
 
@@ -5136,19 +5063,15 @@ sub apply_loopcontrol_changes
 { 	# TO BE CALLED WITH: apply_loopcontrol_changes($exeonfiles, \@new_loopcontrol);
 	# THIS APPLIES CHANGES TO LOOPS IN CONTROLS (ZONES)
 	my $exeonfiles = shift;
-	# print OUTFILE "\$exeonfileshere:$exeonfiles\n\n";
 	my $swap = shift;
 	my @new_loop_ctls = @$swap;
 	my $swap = shift;
 	my @temploopcontrol = @$swap;
-	
-	# print OUTFILE "\@new_loop_ctls at \$counterstep $counterstep:" . Dumper(@new_loop_ctls) . "\n\n";
 	my $counterloop = 0;
 	
 	foreach my $elm (@new_loop_ctls)
 	{
 		my @loop = @{$elm};
-		# print OUTFILE "PASSED2: \@loop: @loop \n\n";
 		$new_loop_letter = $loop[0];
 		$new_loopcontrol_letter = $loop[1];
 		$new_loop_hour = $loop[2];
@@ -5160,8 +5083,6 @@ sub apply_loopcontrol_changes
 		$new_cooling_setpoint = $loop[8];
 		unless ( @{$new_loop_ctls[$counterloop]} ~~ @{$temploopcontrol[$counterloop]} )
 		{
-			#print OUTFILE "PRINTONE\n";
-
 			if ($exeonfiles eq "y") 
 			{
 				print 
@@ -5265,8 +5186,6 @@ sub apply_flowcontrol_changes
 	my @new_flowcontrols = @$swap;
 	my $swap = shift;
 	my @tempflowcontrol = @$swap;
-	
-	# print OUTFILE "\@new_flowcontrols at \$counterstep $counterstep:" . Dumper(@new_flowcontrols) . "\n\n";
 	my $counterflow = 0;
 	
 	foreach my $elm (@new_flowcontrols)
@@ -5380,8 +5299,6 @@ sub constrain_obstructions # IT APPLIES CONSTRAINTS TO OBSTRUCTIONS
 		my $configaddress = "$to$configfile";
 		my @work_letters = @{$group[5]}; 
 		my $actonmaterials = $group[6];
-		#my @obs;
-		#my @obs_letters;
 		
 		unless ($to_do eq "justwrite")
 		{
@@ -5406,7 +5323,6 @@ sub read_obstructions
 	my $sourceaddress = shift;
 	my $targetaddress = shift;
 	my $configaddress = shift;
-	# print OUTFILE "\$sourceaddress:$sourceaddress, \$targetaddress:$targetaddress\n\n";
 	my $swap = shift;
 	@work_letters = @$swap;
 	my $actonmaterials = shift;
@@ -5421,13 +5337,11 @@ sub read_obstructions
 	foreach my $line (@lines)
 	{
 		#$line =~ s/^\s+//; 
-		
 		if  ( $line =~ m/\*obs/ ) 
 		{
 			unless ( $line =~ m/\*obs =/ ) 
 			{
 				$counter++;
-				#print $counter;
 			}
 		}
 	}
@@ -5449,12 +5363,10 @@ sub read_obstructions
 		"n", "o", "0\nf", "0\ng", "0\nh", "0\ni", "0\nj", "0\nk", "0\nl", 
 		"0\nm", "0\nn", "0\no");
 	}
-	#print OUTFILE "OBS_LETTERS IN READ" . Dumper(@obs_letters) . "\n\n";
 	
 	my $counter = 0;
 	foreach my $line (@lines)
 	{
-		#print OUTFILE "$line\n";
 		if  ( $line =~ m/\*obs/ ) 
 		{
 			unless ( $line =~ m/\*obs =/ ) 
@@ -5469,7 +5381,6 @@ sub read_obstructions
 			}
 		}
 	}
-	# print OUTFILE "OBS IN READ" . Dumper(@obs) . "\n\n";
 } # END SUB read_obstructions
 
 
@@ -5484,9 +5395,9 @@ sub read_obs_constraints
 	# EXAMPLE: $obs[0][2][$x] = 2. THIS MEANS: AT COUNTERZONE 0, COORDINATE x OF OBSTRUCTION HAS TO BE SET TO 2.
 	# OTHER EXAMPLE: $obs[0][2][$x] = $obs[2][2][$y].
 	# The $counterzone that is actuated is always the last, the one which is active. 
-	# It would have therefore no sense writing $obs[0][4][$x] =  $obs[1][2][$y].
+	# There would be therefore no sense in writing $obs[0][4][$x] =  $obs[1][2][$y].
 	# Differentent $counterzones can be referred to the same zone. Different $counterzones just number mutations in series.
-	# NOTE THAT THE MATERIAL TO BE SPECIFIED IS A MATERIAL LETTER, BETWEEN QUOTES! EXAMPLE: $obs[1][$material] = "a".
+	# NOTE THAT THE MATERIAL TO BE SPECIFIED IS A MATERIAL LETTER, BETWEEN QUOTES. EXAMPLE: $obs[1][$material] = "a".
 	#  $tilt IS PRESENTLY UNUSED.
 	# ALSO, THIS MAKES AVAILABLE TO THE USER INFORMATIONS ABOUT THE MORPHING STEP OF THE MODELS 
 	# AND THE STEPS THE MODEL HAVE TO FOLLOW.
@@ -5525,15 +5436,13 @@ sub read_obs_constraints
 	if (-e $configaddress)
 	{	
 		unshift (@obs, []);	
-		push (@obs, [@myobs]); # ;)		
+		push (@obs, [@myobs]); #	
 		eval `cat $configaddress`; # HERE AN EXTERNAL FILE FOR PROPAGATION OF CONSTRAINTS IS EVALUATED.
-		# THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE DIRECTLY 
-		# WRITTEN IN THE CALLING FILE.
 		
 		if (-e $constrain) { eval "$constrain"; } # HERE THE INSTRUCTION WRITTEN IN THE OPTS CONFIGURATION FILE CAN BE SPEFICIED
 		# FOR PROPAGATION OF CONSTRAINTS
 		
-		@doobs = @{$obs[$#obs]}; # ;)
+		@doobs = @{$obs[$#obs]}; #
 		shift @doobs;
 	}
 } # END SUB read_geo_constraints
@@ -5560,19 +5469,12 @@ sub apply_obs_constraints
 	
 	
 	my $counterobs = 0;
-	#print OUTFILE "WORK LETTERS BEFORE: " . Dumper(@work_letters) . "\n\n";
-	#print OUTFILE "OBS IN APPLY " . Dumper(@obs) . "\n\n";
 	print OUTFILE "OBS_LETTERS IN APPLY" . Dumper(@obs_letters) . "\n\n";
 	foreach my $ob (@obs)
 	{
 		my $obs_letter = $obs_letters[$counterobs];
-		#print OUTFILE "WORK LETTERS: " . Dumper(@work_letters) . "\n\n";
-		#print OUTFILE "OBS_LETTERS " . Dumper(@obs_letters) . "\n\n";
-		#print OUTFILE "OBS_LETTER " . Dumper($obs_letter) . "\n\n";
 		if ( ( @work_letters eq "") or ($obs_letter  ~~ @work_letters))
 		{
-			#print OUTFILE "WORK LETTERS IN " . Dumper(@work_letters) . "\n\n";
-			#print OUTFILE "OBS_LETTERS IN " . Dumper(@obs_letters) . "\n\n";
 			my @obstr = @{$ob};
 			my $x = $obstr[0];
 			my $y = $obstr[1];
@@ -5739,7 +5641,7 @@ YYY
 
 ############################################################## BEGINNING OF GROUP GET AND PIN OBSTRUCTIONS
 sub get_obstructions # IT APPLIES CONSTRAINTS TO ZONE GEOMETRY. TO DO. STILL UNUSED. 
-# NOTE THAT THE SAME FUNCTIONALITIES CAN BE OBTAINED THROUGH APPROPRIATE SETTINGS IN THE OPTS CONFIG FILE.
+# THE SAME FUNCTIONALITIES CAN BE OBTAINED, WITH MORE WORK, BY SPECIFYING APPROPRIATE SETTINGS IN THE OPTS CONFIG FILE.
 {
 	# THIS CONSTRAINS OBSTRUCTION FILES. IT HAS TO BE CALLED FROM THE MAIN FILE WITH:
 	# constrain_obstruction($to, $fileconfig, $stepsvar, $counterzone, $counterstep, $exeonfiles, \@applytype, \@constrain_obstructions);
@@ -5995,7 +5897,6 @@ sub vary_net
 	my $swap = shift;
 	my @vary_net = @$swap;
 	
-	#print OUTFILE "VARYNET: \$to:$to, \$fileconfig:$fileconfig, \$stepsvar:$stepsvar, \$counterzone:$counterzone, \$counterstep:$counterstep, \@applytype:@applytype, \@vary_net:@vary_net\n\n";
 	my $activezone = $applytype[$counterzone][3];
 	my ($semaphore_node, $semaphore_component, $node_letter);
 	my $counter_component = -1;
@@ -6010,7 +5911,6 @@ sub vary_net
 	my $targetfile = $group[1];
 	my $configfile = $group[2];
 	my @nodebulk = @{$group[3]};
-	# print OUTFILE "NODEBULK: " . Dumper(@nodebulk) . "\n\n";
 	my @componentbulk = @{$group[4]};
 	my $countnode = 0;
 	my $countcomponent = 0;
@@ -6030,8 +5930,6 @@ sub vary_net
 	{
 		read_net($sourceaddress, $targetaddress, \@node_letters, \@component_letters);
 	}
-	# print OUTFILE "NODES: " . Dumper(@node) . "\n\n";
-	
 	
 	sub calc_newnet
 	{	# TO BE CALLED WITH: calc_newnet($to, $fileconfig, $stepsvar, $counterzone, $counterstep, \@nodebulk, \@componentbulk, \@node_, \@component);
@@ -6041,7 +5939,6 @@ sub vary_net
 		my $stepsvar = shift;
 		my $counterzone = shift;
 		my $counterstep = shift;
-		#print OUTFILE "\$counterstep:$counterstep\n";
 		my $swap = shift;
 		my @nodebulk = @$swap;
 		my $swap = shift;
@@ -6054,11 +5951,6 @@ sub vary_net
 		my $outfile = shift;
 		my $configfile = shift;
 		
-		# print OUTFILE "NODES: " . Dumper(@node) . "\n\n";
-		# print OUTFILE "NODEBULK: " . Dumper(@nodebulk) . "\n\n";
-		# print OUTFILE "COMPONENTS " . Dumper(@component) . "\n\n";
-		# print OUTFILE "COMPONENTBULK: " . Dumper(@componentbulk) . "\n\n";
-		
 		my @new_volumes_or_surfaces;
 		my @node_heights_or_cps;
 		my @new_azimuths;
@@ -6070,9 +5962,7 @@ sub vary_net
 		{
 			foreach $each_nodebulk (@nodebulk)
 			{
-				# print OUTFILE "EACH NODEBULK: $each_nodebulk\n\n";
 				my @asknode = @{$each_nodebulk};
-				#print OUTFILE "ASKNODE: @asknode\n\n";
 				my $new_node_letter = $asknode[0];
 				my $new_fluid = $asknode[1];
 				my $new_type = $asknode[2];
@@ -6081,28 +5971,21 @@ sub vary_net
 				my $swing_data_2 = $asknode[4];
 				my $new_surface = $asknode[5];
 				my @askcp = @{$asknode[6]};
-				#print OUTFILE "ASKCP: @askcp\n\n";
-				########print OUTFILE "\@askcp:@askcp\n\n";
 				my ($height__, $data_2__, $data_1__, $new_cp);					
 				my $countnode = 0; #IT IS FOR THE FOLLOWING FOREACH. LEAVE IT ATTACHED TO IT.
-				########print OUTFILE "NODES: @node\n\n";
 				foreach $each_node (@node)
 				{
 					@node_ = @{$each_node};
 					my $node_letter = $node_[0]; 
-					#print OUTFILE "\$new_node_letter: $new_node_letter\n";
-					#print OUTFILE "\$node_letter: $node_letter\n";
 					if ( $new_node_letter eq $node_letter ) 
 					{
 						$height__ = $node_[3];
 						$data_2__ = $node_[4];
 						$data_1__ = $node_[5];
 						$new_cp = $askcp[$counterstep-1];
-						#print OUTFILE "IN\$new_cp:$new_cp\n";
 					}
 					$countnode++;
 				}
-				######print OUTFILE "OUT\$new_cp:$new_cp\n\n";
 				my $height = ( $swing_height / ($stepsvar - 1) );
 				my $floorvalue_height = ($height__ - ($swing_height / 2) );
 				my $new_height = $floorvalue_height + ($counterstep * $pace_height);
@@ -6127,9 +6010,7 @@ sub vary_net
 				
 			foreach $each_componentbulk (@componentbulk)
 			{
-				# print OUTFILE "EACH componentBULK: $each_componentbulk\n\n";
 				my @askcomponent = @{$each_componentbulk};
-				# print OUTFILE "ASKcomponent: @askcomponent\n\n";
 				my $new_component_letter = $askcomponent[0];
 
 				my $new_type = $askcomponent[1];
@@ -6143,12 +6024,9 @@ sub vary_net
 				foreach $each_component (@component) # PLURAL
 				{
 					@component_ = @{$each_component};
-					# print OUTFILE "\@component_: @component_\n\n";
 					$component_letter = $component_letters[$countcomponent]; 
-					#print OUTFILE "\$new_component_letter: $new_component_letter; \$component_letter; $component_letter\n";
 					if ( $new_component_letter eq $component_letter ) 
 					{
-						#print OUTFILE "HEY!\n";
 						$new_component_letter = $component_[0];
 						$new_fluid = $component_[1];
 						$new_type = $component_[2];
@@ -6189,14 +6067,9 @@ sub vary_net
 				push(@new_components, [ $new_component_letter, $new_fluid, $new_type, $new_data_1, $new_data_2, $new_data_3, $new_data_4 ] );
 			}
 		}
-		# print  "IN3: \@new_nodes: " . Dumper(@new_nodes) . "\n\n";
-		#print OUTFILE "IN3: \@new_components: " . Dumper(@new_components) . "\n\n";
 	} # END SUB calc_newnet
 
 	calc_newnet($to, $fileconfig, $stepsvar, $counterzone, $counterstep, \@nodebulk, \@componentbulk, \@node, \@component);	# PLURAL
-
-	# print  "OUT: \@new_nodes: " . Dumper(@new_nodes) . "\n\n";
-	# print OUTFILE "OUT: \@new_components: " . Dumper(@new_components) . "\n\n";
 	
 	apply_node_changes($exeonfiles, \@new_nodes);
 	apply_component_changes($exeonfiles, \@new_components);
@@ -6214,11 +6087,9 @@ sub read_net
 	my $swap = shift;
 	my @component_letters = @$swap;
 		
-	# print OUTFILE "CALLED WITH: read_net, \$sourceaddress:$sourceaddress, \$targetaddress:$targetaddress, \@node_letters:@node_letters, \@component_letters:@component_letters)\n\n";
 	open( SOURCEFILE, $sourceaddress ) or die "Can't open $sourcefile : $!\n";
 	my @lines = <SOURCEFILE>;
 	close SOURCEFILE;
-	# print OUTFILE "lines: @lines\n";
 	my $counterlines = 0;
 	my $countnode = -1;
 	my $countcomponent = -1;
@@ -6229,11 +6100,9 @@ sub read_net
 	my ($component_letter, $type, $data_1, $data_2, $data_3, $data_4);
 	foreach my $line (@lines)
 	{
-		#print OUTFILE "line: $line\n";
 		if ( $line =~ m/Fld. Type/ )
 		{
 			$semaphore_node = "yes";
-			#print OUTFILE "SEMAPHORENODE YES\n";
 		}
 		if ( $semaphore_node eq "yes" )
 		{
@@ -6243,7 +6112,6 @@ sub read_net
 		{
 			$semaphore_component = "yes";
 			$semaphore_node = "no";
-			#print OUTFILE "SEMAPHORENODE YES\n";
 		}
 		
 		
@@ -6282,11 +6150,9 @@ sub read_net
 				$component_letter = $component_letters[$countcomp];
 				$fluid = $row[0];
 				$type = $row[1];
-				#print OUTFILE "TYPE!: $type\n\n";
 				if ($type eq "110") { $type = "k";}
 				if ($type eq "120") { $type = "l";}
 				if ($type eq "130") { $type = "m";}
-				#print OUTFILE "TYPEC!: $type\n\n";
 				$countcomp++;
 			}
 			else # $number is even 
@@ -6302,9 +6168,6 @@ sub read_net
 			
 		$counterlines++;
 	}
-	#print OUTFILE "NODES " . Dumper(@node) . "\n\n"; # PLURAL
-
-	#print OUTFILE "COMPONENTS " . Dumper(@component) . "\n\n";		
 } # END SUB read_controls.
 
 
@@ -6312,19 +6175,16 @@ sub apply_node_changes
 { 	# TO BE CALLED WITH: apply_node_changes($exeonfiles, \@new_nodes);
 	# THIS APPLIES CHANGES TO NODES IN NETS
 	my $exeonfiles = shift;
-	# print OUTFILE "\$exeonfileshere:$exeonfiles\n\n";
 	my $swap = shift;
 	my @new_nodes = @$swap;
 	my $swap = shift;
 	my @tempnodes = @$swap;
 	
 	
-	# print  "\@new_nodes at \$counterstep $counterstep:" . Dumper(@new_nodes) . "\n\n";
 	my $counternode = 0;
 	foreach my $elm (@new_nodes)
 	{
 		my @node_ = @{$elm};
-		#print OUTFILE "NODE: @node_\n";
 		my $new_node_letter = $node_[0];
 		my $new_fluid = $node_[1];
 		my $new_type = $node_[2];
@@ -6333,9 +6193,7 @@ sub apply_node_changes
 		my $new_data_2 = $node_[5];
 		my $new_surface = $node_[6];
 		my $new_cp = $node_[7];
-		
-		# print OUTFILE "\$new_node_letter:$new_node_letter, \$new_fluid:$new_fluid, \$new_type:$new_type, \$new_zone:$new_zone, \$new_height:$new_height, \$new_data_2:$new_data_2, \$new_surface:$new_surface, \$new_cp:$new_cp\n\n";
-		# print OUTFILE "NEW_TYPE: $new_type\n\n";
+
 		unless ( @{$new_nodes[$counternode]} ~~ @{$tempnodes[$counternode]} )
 		{
 			if ($new_type eq "a" ) # IF NODES ARE INTERNAL
@@ -6410,7 +6268,6 @@ YYY
 			{
 				if ($exeonfiles eq "y") 
 				{
-					#print OUTFILE "HERE!\n\n";
 					print 
 #########################################
 `prj -file $to/cfg/$fileconfig -mode script<<YYY
@@ -6443,7 +6300,6 @@ YYY
 
 ########################################
 				}
-				#print OUTFILE "HERE2!\n\n";
 				print TOSHELL 
 #################################
 "prj -file $to/cfg/$fileconfig -mode script<<YYY
@@ -6486,15 +6342,11 @@ sub apply_component_changes
 { 	# TO BE CALLED WITH: apply_component_changes($exeonfiles, \@new_components);
 	# THIS APPLIES CHANGES TO COMPONENTS IN NETS
 	my $exeonfiles = shift;
-	# print OUTFILE "\$exeonfileshere:$exeonfiles\n\n";
 	my $swap = shift;
 	my @new_components = @$swap; # [ $new_component_letter, $new_type, $new_data_1, $new_data_2, $new_data_3, $new_data_4 ] 
 	my $swap = shift;
 	my @tempcomponents = @$swap;
 	
-	
-	# print  "\@new_components at \$counterstep $counterstep:" . Dumper(@new_components) . "\n\n";
-	# my $counter = 0;
 	my $countercomponent = 0;
 	foreach my $elm (@new_components)
 	{
@@ -6506,7 +6358,6 @@ sub apply_component_changes
 		my $new_data_2 = $component_[4];
 		my $new_data_3 = $component_[5];
 		my $new_data_4 = $component_[6];
-		# print  "\@new_components at \$counterstep $counterstep:" . Dumper(@new_components) . "\n\n";
 		
 		unless
 		( @{$new_components[$countercomponents]} ~~ @{$tempcomponents[$countercomponents]} )
@@ -6769,7 +6620,6 @@ sub read_net_constraints
 	my $counterzone = shift;
 	my $counterstep = shift;
 	my $configaddress = shift;
-	# print OUTFILE "\nCONFIGADDRESS: $configaddress\n\n";
 	my $swap = shift;
 	@node = @$swap; # PLURAL
 	my $swap = shift;
@@ -6786,13 +6636,11 @@ sub read_net_constraints
 	{	# THIS APPLIES CONSTRAINST, THE FLATTEN THE HIERARCHICAL STRUCTURE OF THE RESULTS,
 		# TO BE PREPARED THEN FOR BEING APPLIED TO CHANGE PROCEDURES. IT IS TO BE TESTED.
 		
-		push (@node, [@mynode]); # ;)
-		push (@component, [@mycomponent]); # ;)
+		push (@node, [@mynode]); #
+		push (@component, [@mycomponent]); #
 
 		eval `cat $configaddress`;	# HERE AN EXTERNAL FILE FOR PROPAGATION OF CONSTRAINTS 
 		# IS EVALUATED, AND HERE BELOW CONSTRAINTS ARE PROPAGATED.
-		# THE USE OF "eval" HERE ALLOWS TO WRITE CONDITIONS IN THE FILE AS THEY WERE DIRECTLY 
-		# WRITTEN IN THE CALLING FILE.	
 		# THIS FILE CAN CONTAIN USER-IMPOSED CONSTRAINTS FOR MASS-FLOW NETWORKS TO BE READ BY OPTS.
 		# IT MAKES AVAILABLE VARIABLES REGARDING THE SETTING OF NODES IN A NETWORK.
 		# CURRENTLY: INTERNAL UNKNOWN AIR NODES AND BOUNDARY WIND-CONCERNED NODES.
@@ -6829,22 +6677,15 @@ sub read_net_constraints
 		# The $counterzone that is actuated is always the last, the one which is active. 
 		# It would have therefore no sense writing $node[0][3][$node] =  $node[1][3][$node].
 		# Differentent $counterzones can be referred to the same zone. Different $counterzones just number mutations in series.
-
-		
-		# print OUTFILE "BEFORE nodes: " . Dumper(@node) . "\n\n";
-		# print OUTFILE "BEFORE components " . Dumper(@component) . "\n\n";
 		
 		if (-e $constrain) { eval "$constrain"; } # HERE THE INSTRUCTION WRITTEN IN THE OPTS CONFIGURATION FILE CAN BE SPEFICIED
 		# FOR PROPAGATION OF CONSTRAINTS
 		
-		@donode = @{$node[$#node]}; # ;) 
-		@docomponent = @{$component[$#component]}; # ;) 
+		@donode = @{$node[$#node]}; #
+		@docomponent = @{$component[$#component]}; #
 
 		shift (@donode);
 		shift (@docomponent);
-		
-		# print OUTFILE "AFTER loopcontrol: " . Dumper(@new_loopcontrol) . "\n\n";
-		# print OUTFILE "AFTER flowcontrol: " . Dumper(@new_flowcontrol) . "\n\n";
 	}
 } # END SUB read_net_constraints
 
@@ -6956,15 +6797,12 @@ sub propagate_constraints
 	
 	
 	my $zone = $applytype[$counterzone][3];
-	# print OUTFILE "ZONE: $zone\n";
 	my $counter = 0;
 	my @group = @{$propagate_constraints[$counterzone]};
-	#print OUTFILE "YUP\n";
 	foreach my $elm (@group)
 	{
 		if ($counter > 0)
 		{
-			#print OUTFILE "YEP\n";
 			my @items = @{$elm};
 			my $what_to_do = $items[0];
 			my $sourcefile = $items[1];
@@ -6972,13 +6810,10 @@ sub propagate_constraints
 			my $configfile = $items[3];
 			if ($what_to_do eq "read_geo")
 			{
-				#print OUTFILE "READGEO\n\n";
 				$to_do = "justread";
 				my @vertex_letters = @{$items[4]};
-				#print OUTFILE "VERTEX_LETTERS: @vertex_letters\n";
 				my $long_menus = $items[5];
 				my @constrain_geometry = ( [ "", $zone,  $sourcefile, $targetfile, $configfile , \@vertex_letters, $long_menus ] );
-				# print OUTFILE "\@constrain_geometry:" . Dumper(@constrain_geometry) . "\n\n";
 				constrain_geometry($to, $fileconfig, $stepsvar, $counterzone, 
 				$counterstep, $exeonfiles, \@applytype, \@constrain_geometry, $to_do);
 				
@@ -6987,7 +6822,6 @@ sub propagate_constraints
 			{
 				$to_do = "justread";
 				my @obs_letters = @{$items[4]};
-				# print OUTFILE "OBS_LETTERS: @obs_letters\n";
 				my $act_on_materials = $items[5];
 				my @constrain_obstructions = ( [ "", $applytype[$counterzone][3], $sourcefile, $targetfile, $configfile , \@obs_letters, $act_on_materials ] );
 				constrain_obstructions($to, $fileconfig, $stepsvar, $counterzone, 
@@ -7016,7 +6850,6 @@ sub propagate_constraints
 				my @vertex_letters = @{$items[4]};
 				my $long_menus = $items[5];
 				my @constrain_geometry = ( [ "", $zone,  $sourcefile, $targetfile, $configfile , \@vertex_letters, $long_menus ] );
-				# print Dumper(@constrain_geometry);
 				constrain_geometry($to, $fileconfig, $stepsvar, $counterzone, 
 				$counterstep, $exeonfiles, \@applytype, \@constrain_geometry, $to_do);
 			}
@@ -8764,19 +8597,19 @@ Sim::OPTS manages parametric explorations through the ESP-r building performance
 
 =head1 DESCRIPTION
 
-Sim::OPTS morphs models by propagation of constraints through the ESP-r building performance simulation platform and performs multiobjective optimization by overlapping block coordinate descent.
+Sim::OPTS it a tool for building detailed metadesign. It morphs models by propagation of constraints through the ESP-r building performance simulation platform and performs multiobjective optimization by overlapping block coordinate descent.
 
 A working knowledge of ESP-r is necessary to use OPTS.  Information about ESP-r can be found at http://www.esru.strath.ac.uk/Programs/ESP-r.htm.
 
-To install OPTS, the command <cpanm Sim::OPTS> has to be issued.  Perl will take care to install all dependencies.  OPTS can be loaded through the command <use Sim::OPTS> in Perl.  For that purpose, the "Devel::REPL" module may be used.  As an alternative, the batch file "opt" (which can be found in the "example" folder in this distribution) may be copied in a work directory.  In that case, to launch the program the command <opt> may be issued.  That command will activate the OPTS functions, following the settings specified in a previously prepared configuration file.  When launched, OPTS will ask the path to that file.  Its activity will start after receiving that information.
+To install OPTS, the command <cpanm Sim::OPTS> has to be issued.  Perl will take care to install all dependencies.  OPTS can be loaded through the command <use Sim::OPTS> in Perl.  For that purpose, the "Devel::REPL" module can be used.  As an alternative, the batch file "opt" (which can be found in the "example" folder in this distribution) may be copied in a work directory and the command <opt> may be issued.  That command will activate the OPTS functions, following the settings specified in a previously prepared configuration file.  When launched, OPTS will ask the path to that file.  Its activity will start after receiving that information.
 
-The OPTS configuration file have to contain a suitable description of the operations to be accomplished.  A great deal of instructions which are necessary to run OPTS will usually be specified in that file, which has to point to an existing ESP-r model.  In this distribution there is a template file with explanations and an example of OPTS configuration file.  The example has been written a previous version of OPTS and will probably not work with the present one due to minor changes in the header variables. The complete set of files linked to that configuration file may be downloaded at http://figshare.com/articles/Dataset_of_a_computational_research_on_block_coordinate_search_based_on_building_performance_simulations/1158993 . 
+The OPTS configuration file has to contain a suitable description of the operations to be accomplished pointing to an existing ESP-r model.  In this distribution there is a template file with explanations and an example of OPTS configuration file.  The example has been written for a previous version of OPTS and will probably not work with the present one due to minor changes in the header variables. The complete set of files linked to that configuration file may be downloaded at http://figshare.com/articles/Dataset_of_a_computational_research_on_block_coordinate_search_based_on_building_performance_simulations/1158993 . 
 
-To run OPTS without making it act on files, the setting <$exeonfiles = "n";> should be specified in the configuration file.  By setting the variable "$toshell" to the chosen path, the path for the text file that will receive the commands in place of the shell should be specified.
+To run OPTS without making it act on model files, the setting <$exeonfiles = "n";> should be specified in the configuration file.  By setting the variable "$toshell" to the chosen path, the path for the text file that will receive the commands in place of the shell should be specified.
 
 OPTS will give instruction to ESP-r via shell to make it modify the building model in different copies.  Then, if asked, it will run simulations, retrieve the results, extract some information from them and order it as requested.
 
-Besides an OPTS configuration file, also configuration files for propagation of constraints may be created.  This will give to the morphing operations much greater flexibility.  Propagation of constraints can regard the geometry of a model, solar shadings, mass/flow network, and/or controls; and also, how those pieces of information affect each other and daylighting (calculated through the Radiance lighting simulation program).  To get some hints about what propagation on constraints can be used for in the program, an example file included in this distribution may be studied.
+Besides an OPTS configuration file, also configuration files for propagation of constraints may be created.  This will give to the morphing operations much greater flexibility.  Propagation of constraints can regard the geometry of a model, solar shadings, mass/flow network, and/or controls; and also, how those pieces of information affect each other and daylighting (calculated through the Radiance lighting simulation program).  Example of configuration files for propagation of constraints are included in this distribution.
 
 The ESP-r model folders and the result files that will be created in a parametric search will be named as the root model, followed by a "_" character,  followed by a variable number referred to the first morphing phase, followed by a "-" character, followed by an iteration number for the variable in question, and so on for all morphing phases.  For example, the model instance produced in the first iteration for a root model named "model" in a search constituted by 3 morphing phases and 5 iteration steps each will be named "model_1-1_2-1_3-1"; and the last one "model_1-5_2-5_3-5".
 
@@ -8791,7 +8624,6 @@ OPTS is a program I have written as a side project since 2008 with no funding.  
 =head2 EXPORT
 
 "opts".
-
 
 =head1 SEE ALSO
 

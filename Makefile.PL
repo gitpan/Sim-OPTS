@@ -9,7 +9,7 @@ WriteMakefile(
 			'List::MoreUtils'	=> '0'
 			}, # e.g., Module::Name => 1.1
     ($] >= 5.014 ?     ## Add these new keywords supported since 5.005
-      (ABSTRACT       => 'Sim::OPTS manages parametric explorations by propagation of constraints through the ESP-r building performance simulation platform and performs optimization by overlapping block coordinate descent.', # retrieve abstract from module
+      (ABSTRACT       => 'Sim::OPTS it a tool for building detailed metadesign. It manages parametric explorations through the ESP-r building performance simulation platform and performs optimization by block coordinate descent.', # retrieve abstract from module
        AUTHOR         => 'Gian Luca Brunetti <gianluca.brunetti@polimi.it>') : ()),
 );
 
