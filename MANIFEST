@@ -8,6 +8,10 @@ lib/Sim/OPTS.pm
 examples/opt
 examples/example-of_opts_configuration_file(previous_version).pl
 examples/template-of_opts_configuration_file.pl
+examples/a_casefile.pl
+examples/a_chancefile.pl
+examples/a_caseseed.pl
+examples/a_chanceseed.pl
 examples/examples_of_costraint_files/amoeba.reshape_backwindow.pl
 examples/examples_of_costraint_files/amoeba.reshape_frontwindow.pl
 examples/examples_of_costraint_files/amoeba.reshape_leftwindow.pl

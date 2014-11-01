@@ -23,13 +23,32 @@
 ####################### HERE FOLLOW CONFIGURATION DATA #####################
 ####### TAKE CARE: JUST PARTS _IN RED_ SOULD TO BE SAFELY EDITABLE! ########
 
-@varn = ( [ [1, 2, 3] ] ); # VARIABLE NUMBERS. THE PROGRAM TRIPLES THE SERIES: IT TRANSFORMS IT IN 1, 2, 3, 1, 2, 3, 1, 2, 3.
 @midvalues = (2, 2, 2); # POINT TO POINT CORRENSPODENCE WITH THE ABOVE, and with the variables $setvar (see below). THE MID ITERATION NUMBER FOR EACH PARAMETER. 
 # I.E. IF THERE ARE 3 ITERATION PER PARAMETER, A VALUE "2" FOR EACH $midvalue (@midvalues) HAS TO BE SPECIFIED. 
 
-@casegroup = ( [ [3, 2], [4, 2] ] ) ; # BETWEEN SQUARE BRACKETS ARE THE BLOCKS OF BLOCK COORDINATE SEARCH. THE FIRST ITEM IN 
+# @casegroup = ( [ [5, 3], [7, 3], [9, 3] ] ) ; # BETWEEN SQUARE BRACKETS ARE THE BLOCKS OF BLOCK COORDINATE SEARCH. THE FIRST ITEM IN 
 # EACH SQUARE BRACKET IS THE POSITION OF THE FIRST ITEM IN THE ACTIVE BLOCK (INDEX FROM 0). THE SECOND ITEM IS THE DIMENSION OF THE ACTIVE BLOCK,
 # IN TERMS OF NUMBER OF PARAMETERS.
+
+$generatechance = 
+"n"; 
+# IF "n", SWEEP PATTERNS ARE TAKEN FROM $chancefile, WHERE THE SEAERCH STRUCTURES HAVE ALL EXPLICITLY SPECIFIED. IF "y", SWEEP PATTERN ARE GENERATED FROM $chanceseed.
+
+$casefile = 
+"./a_casefile.pl"; 
+# THIS BRINGS @casedata AND MAYBE @casegroup IF $generatechance IS SET TO "n".
+
+$chancefile = 
+"./a_chancefile.pl"; 
+# THIS BRINGS @chanceseriesIF $generatechance IS SET TO "n".
+
+$caseseed = 
+"./a_caseseed.pl"; 
+# FROM THIS @casedata AND MAYBE @casegroup ARE PRODUCED IF $generatechance IS SET TO "y", RESULTING IN A NEW $casefile.
+
+$chanceseed = 
+"./chanceseed.pl"; 
+# FROM THIS @chanceseries IS PRODUCED IF $generatechance IS SET TO "y", RESULTING IN A NEW $chancefile.
 
 $file = 
 "ame";  
@@ -92,7 +111,7 @@ $toshell =
 "$mypath/$file-$fileconfig.feedbacktoshell.txt"; 
 # name of the files into which the output to the shell will be printed. This may be useful to check the inner working of the program, or to postpone the operations with ESP-r.  In that case, the printed has to be made executable to be launched from the shell afterward. 
 
-$exeonfiles = “y”; # say “y” if you want OPTS's work be executed on files and directories. As an alternative, you may want to say “no” because you may want to output to a shell file that you can study and make executable afterwards.
+$exeonfiles = "y"; # say “y” if you want OPTS's work be executed on files and directories. As an alternative, you may want to say “no” because you may want to output to a shell file that you can study and make executable afterwards.
 
 
 $simnetwork = 

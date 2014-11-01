@@ -1,5 +1,5 @@
 {
-   "abstract" : "Sim::OPTS it a tool for building detailed metadesign. It manages parametric explorations through the ESP-r building performance simulation platform and performs optimization by block coordinate descent.",
+   "abstract" : "Sim::OPTS it a tool for detailed metadesign managing parametric explorations through the ESP-r building performance simulation platform and performing optimization by block coordinate descent.",
    "author" : [
       "Gian Luca Brunetti <gianluca.brunetti@polimi.it>"
    ],
@@ -37,5 +37,5 @@
       }
    },
    "release_status" : "stable",
-   "version" : "v0.36.16.6"
+   "version" : "v0.36.16.7"
 }
