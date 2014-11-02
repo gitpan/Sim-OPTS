@@ -27,7 +27,7 @@ no warnings;
 %EXPORT_TAGS = ( DEFAULT => [qw( &opts &prepare )]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw( opts prepare ); # our @EXPORT = qw( );
-$VERSION = '0.36.16.8'; # our $VERSION = '';
+$VERSION = '0.36.16.9'; # our $VERSION = '';
 $ABSTRACT = 'Sim::OPTS it a tool for detailed metadesign. It manages parametric explorations through the ESP-r building performance simulation platform and performs optimization by block coordinate descent.';
 
 #################################################################################
@@ -7098,11 +7098,6 @@ To describe a block search, the most important variables to be taken into accoun
 b) If a block search is sought on the basis of 5 parameters, with 4 overlapping active blocks composed by 3 parameters each having the leftmost parameters in position 0, 1, 2 and 4, and two sweeps have to be performed, with the second sweep having the parameters in inverted order, and the leftmost parameters in position 2, 4, 3 and 1, the following settings should be specified: <@varn = ( [ [1, 2, 3, 4, 5], [5, 4, 3, 2, 1] ] );> and <@casegroup = ( [ [0, 3], [1, 3], [2, 3], [4, 3] ], [2, 3], [4, 3], [3, 3], [1, 3] ] );>.  By the same strategy, that is, playing with the order of the parameters' sequence, blocks with non contiguous parameters can be modelled.  By the way, nothing prevents that the blocks are of different size (i.e. each composed by a different number of parameters).
 
 OPTS is a program I have written as a side project since 2008 with no funding.  It was the first real program I attempted to write.  From time to time I add some parts to it.  The parts of it that have been written earlier are the ones that are coded in the strangest manner.
-
-Here is the link to an article I have wrotten about some possible uses of OPTS in building design
-http://www.fupress.net/index.php/techne/article/view/12818 
-
-and here is the link to an article I have written on the basis of computational experiments supported by the use of OPTS, in which heuristic indicators for the design of overlapping block coordinate search structures are defined:  http://arxiv.org/abs/1407.5615 .
 
 =head2 EXPORT
 
