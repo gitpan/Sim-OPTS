@@ -1,4 +1,4 @@
-Sim-OPTS version 0.36.16.7
+Sim-OPTS version 0.36.16.8
 ============================
 
 INSTALLATION
@@ -17,6 +17,7 @@ This module requires these other modules and libraries:
   Math::Trig
   Data::Dumper
   List::Util
+  List::MoreUtils
   Devel::REPL
 
 COPYRIGHT AND LICENCE
@@ -24,8 +25,7 @@ COPYRIGHT AND LICENCE
 Copyright (C) 2008-2014 by Gian Luca Brunetti and Politecnico di Milano.
 This is free software.  You can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2 or later.
 
-
-Sim::OPTS it a tool for building detailed metadesign. It morphs models by propagation of constraints through the ESP-r building performance simulation platform and performs multiobjective optimization by overlapping block coordinate descent.
+Sim::OPTS it a tool for detailed metadesign. It morphs models by propagation of constraints through the ESP-r building performance simulation platform and performs optimization by overlapping block coordinate descent.
 
 A working knowledge of ESP-r is necessary to use OPTS.  Information about ESP-r can be found at http://www.esru.strath.ac.uk/Programs/ESP-r.htm.
 
@@ -51,10 +51,10 @@ b) If a block search is sought on the basis of 5 parameters, with 4 overlapping 
 
 OPTS is a program I have written as a side project since 2008 with no funding.  It was the first real program I attempted to write.  From time to time I add some parts to it.  The parts of it that have been written earlier are the ones that are coded in the strangest manner.
 
-For completeness, here is the link to an article of mine about the use of the morphing capabilities of OPTS
+Here is the link to an article I have wrotten about some possible uses of OPTS in building design
 http://www.fupress.net/index.php/techne/article/view/12818 
 
-and here is the link to an article I have written - on the basis of computational experiments supported by the use of OPTS - defining heuristic indicators for the design of overlapping block coordinate search structures:  http://arxiv.org/abs/1407.5615 .
+and here is the link to an article I have written on the basis of computational experiments supported by the use of OPTS, in which heuristic indicators for the design of overlapping block coordinate search structures are defined:  http://arxiv.org/abs/1407.5615 .
 
 Gian Luca Brunetti, Politecnico di Milano
 gianluca.brunetti@polimi.it

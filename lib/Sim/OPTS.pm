@@ -27,7 +27,7 @@ no warnings;
 %EXPORT_TAGS = ( DEFAULT => [qw( &opts &prepare )]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw( opts prepare ); # our @EXPORT = qw( );
-$VERSION = '0.36.16.7'; # our $VERSION = '';
+$VERSION = '0.36.16.8'; # our $VERSION = '';
 $ABSTRACT = 'Sim::OPTS it a tool for detailed metadesign. It manages parametric explorations through the ESP-r building performance simulation platform and performs optimization by block coordinate descent.';
 
 #################################################################################
@@ -6972,7 +6972,7 @@ TTT
 	##########################################################################################
 	# BEGINNING OF THE INSTRUCTIONS THAT LAUNCH OPTS AT EACH SUBSPACE SEARCH CYCLE.
 	
-	if ( (-e $casefile) and (-e $chancefile) )
+	if ( ( (-e $casefile) and (-e $chancefile) ) or ( (-e $caseseed) and (-e $chanceseed) ) )
 	{
 		eval "$casefile"; # THIS BRINGS @casedata AND MAYBE @casegroup (OR PRODUCES IT). 
 		eval "$chancefile"; # THIS BRINGS @chanceseries.
@@ -7033,7 +7033,7 @@ TTT
 			}
 		elsif ( $generatechance eq "y" )
 		{
-			# TO DO. ANCHOR1
+			; # TO DO. ANCHOR1
 		}
 		else
 		{
@@ -7059,14 +7059,12 @@ TTT
 #############################################################################
 #############################################################################
 
-
-
 1;
 __END__
 
 =head1 NAME
 
-Sim::OPTS is a tool for detailed metadesign managing parametric explorations through the ESP-r building performance simulation platform and performs optimization by block coordinate descent.
+Sim::OPTS is a tool for detailed metadesign managing parametric explorations through the ESP-r building performance simulation platform and performing optimization by block coordinate descent.
 
 =head1 SYNOPSIS
 
@@ -7075,7 +7073,7 @@ Sim::OPTS is a tool for detailed metadesign managing parametric explorations thr
 
 =head1 DESCRIPTION
 
-Sim::OPTS it a tool for building detailed metadesign. It morphs models by propagation of constraints through the ESP-r building performance simulation platform and performs multiobjective optimization by overlapping block coordinate descent.
+Sim::OPTS it a tool for detailed metadesign. It morphs models by propagation of constraints through the ESP-r building performance simulation platform and performs  optimization by overlapping block coordinate descent.
 
 A working knowledge of ESP-r is necessary to use OPTS.  Information about ESP-r can be found at http://www.esru.strath.ac.uk/Programs/ESP-r.htm.
 
@@ -7101,10 +7099,10 @@ b) If a block search is sought on the basis of 5 parameters, with 4 overlapping 
 
 OPTS is a program I have written as a side project since 2008 with no funding.  It was the first real program I attempted to write.  From time to time I add some parts to it.  The parts of it that have been written earlier are the ones that are coded in the strangest manner.
 
-Here is the link to an article of mine about the use of the morphing capabilities of OPTS:
+Here is the link to an article I have wrotten about some possible uses of OPTS in building design
 http://www.fupress.net/index.php/techne/article/view/12818 
 
-and here is the link to an article I have written - on the basis of computational experiments supported by the use of OPTS - defining heuristic indicators for the design of overlapping block coordinate search structures:  http://arxiv.org/abs/1407.5615 .
+and here is the link to an article I have written on the basis of computational experiments supported by the use of OPTS, in which heuristic indicators for the design of overlapping block coordinate search structures are defined:  http://arxiv.org/abs/1407.5615 .
 
 =head2 EXPORT
 
@@ -7112,7 +7110,7 @@ and here is the link to an article I have written - on the basis of computationa
 
 =head1 SEE ALSO
 
-The available documentation is mostly collected in the readme.txt file. An example of instruction for propagation of constraints in OPTS are uploaded in my page at the Politecnico di Milano (www.polimi.it). Its web address may vary, so I don't list it here. But it may be googled.
+The available examples are collected in the "example" directory in this distribution and at the figshare address specified above.
 
 =head1 AUTHOR
 
