@@ -1,4 +1,4 @@
-Sim-OPTS version 0.36.16.9
+Sim-OPTS version 0.36.16.10
 ============================
 
 INSTALLATION
@@ -47,7 +47,7 @@ To describe a block search, the most important variables to be taken into accoun
 
 1) If brute force optimization is sought for a case composed by 4 parameters, the following settings should be specified: <@varn = (1, 2, 3, 4);> and <@casegroup = ( [ [0, 4] ] ) ;>.
 
-b) If a block search is sought on the basis of 5 parameters, with 4 overlapping active blocks composed by 3 parameters each having the leftmost parameters in position 0, 1, 2 and 4, and two sweeps have to be performed, with the second sweep having the parameters in inverted order, and the leftmost parameters in position 2, 4, 3 and 1, the following settings should be specified: <@varn = ( [ [1, 2, 3, 4, 5], [5, 4, 3, 2, 1] ] );> and <@casegroup = ( [ [0, 3], [1, 3], [2, 3], [4, 3] ], [2, 3], [4, 3], [3, 3], [1, 3] ] );>.  By the same strategy, that is, playing with the order of the parameters' sequence, blocks with non contiguous parameters can be modelled.  By the way, nothing prevents that the blocks are of different size (i.e. each composed by a different number of parameters).
+b) If a block search is sought on the basis of 5 parameters, with 4 overlapping active blocks composed by 3 parameters each having the leftmost parameters in position 0, 1, 2 and 4, and two search sweeps have to be performed, with the second sweep having the parameters in inverted order and the leftmost parameters in position 2, 4, 3 and 1, the following settings should be specified: <@varn = ( [ [1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [5, 4, 3, 2, 1], [5, 4, 3, 2, 1], [5, 4, 3, 2, 1], [5, 4, 3, 2, 1]] );> and <@casegroup = ( [ [0, 3], [1, 3], [2, 3], [4, 3] ], [2, 3], [4, 3], [3, 3], [1, 3] ] );>.  By the same strategy, that is, playing with the order of the parameters' sequence, blocks with non contiguous parameters can be modelled.  By the way, nothing prevents that the blocks are of different size (i.e. each composed by a different number of parameters).
 
 OPTS is a program I have written as a side project since 2008 with no funding.  It was the first real program I attempted to write.  From time to time I add some parts to it.  The parts of it that have been written earlier are the ones that are coded in the strangest manner.
 
