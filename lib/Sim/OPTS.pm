@@ -10,24 +10,25 @@ use vars qw( $VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS );
 use Math::Trig;
 use List::Util qw[ min max reduce shuffle];
 use List::MoreUtils;
-
+use List::AllUtils qw(sum);
+use Statistics::Basic qw(:all);
+use Set::Intersection;
+use List::Compare;
 use Data::Dumper;
 $Data::Dumper::Indent = 0;
 $Data::Dumper::Useqq  = 1;
 $Data::Dumper::Terse  = 1;
 
-#use feature qw(postderef);
-# no warnings qw(experimental::postderef);
+#use feature qw(postderef); # no warnings qw(experimental::postderef);
 use feature 'say';
 no strict; 
 no warnings;
 
 @ISA = qw(Exporter); # our @adamkISA = qw(Exporter);
-
 %EXPORT_TAGS = ( DEFAULT => [qw( &opts &prepare )]); # our %EXPORT_TAGS = ( 'all' => [ qw( ) ] );
 @EXPORT_OK   = qw(); # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = qw( opts prepare ); # our @EXPORT = qw( );
-$VERSION = '0.36.16.10'; # our $VERSION = '';
+$VERSION = '0.36.16.11'; # our $VERSION = '';
 $ABSTRACT = 'Sim::OPTS it a tool for detailed metadesign. It manages parametric explorations through the ESP-r building performance simulation platform and performs optimization by block coordinate descent.';
 
 #################################################################################
@@ -67,8 +68,10 @@ Please insert the name of a configuration file (Unix path):\n";
 
 	print "OPTS - IS - RUNNING.
 -------------------\n";
-	if ($outfile) { open( OUTFILE, ">$outfile" ) or die "Can't open $outfile: $!"; }
-	if ($toshell) { open( TOSHELL, ">$toshell" ) or die "Can't open $toshell: $!"; }	
+	if ($outfile) { open ( OUTFILE, ">$outfile" ) or die "Can't open $outfile: $!"; }
+	if ($toshell) { open ( TOSHELL, ">$toshell" ) or die "Can't open $toshell: $!"; }	
+	if ($reportfile) { open ( REPORTFILE, ">./$reportfile" ) or die "Can't open $reportfile: $!" };
+ 	if ($outfilewrite) { open ( OUTFILEWRITE, ">./$outfilewrite" ) or die "Can't open $outfilewrite: $!" };
 	unless (-e "$mypath/models") { `mkdir $mypath/models`; }
 	unless (-e "$mypath/models") { print TOSHELL "mkdir $mypath/models\n\n"; }
 	
@@ -6950,6 +6953,7 @@ TTT
 	# HERE IS A SPACE FOR GENERAL FUNCTIONS USED BY THE PROGRAM
 	###########################################################
 	###########################################################
+
 	sub odd 
 	{
 	    my $number = shift;
@@ -6962,6 +6966,9 @@ TTT
 	    return 1 if $number == 0;
 	    return odd ($number - 1);
 	}
+
+	sub _mean_ { return @_ ? sum(@_) / @_ : 0 }
+
 	###########################################################
 	###########################################################
 	# END OF THE SPACE FOR GENERAL FUNCTIONS
@@ -6980,20 +6987,21 @@ TTT
 		my $countcase = 0;
 		if ( $generatechance eq "n" )
 		{
+			my $countcase = 0;
 			foreach my $case (@casegroup) # in $casefile there may be a @casegroup. If not, it is fabricated from @casedescription and @chancefile
 			{
-				my @blocks = @{$case};
+				my @blockrefs = @{$case};
 				my $countblock = 1;
 				my (@varnumbers, @newvarnumbers, @chance, @newchance);
-				foreach my $blockref (@blocks)
+								
+				foreach my $blockref (@blockrefs)
 				{
 					my @overlap;
 					@varnumbers = @{$varn[$countcase][$countblock-1]};
-					push (@chancelineelms, @varnumbers, @varnumbers, @varnumbers); # THIS SHOULD BE USEFUL SOONER OR LATER
-					my $number_of_variables = scalar(@varnumbers);	
+					my $number_of_variables = scalar(@varnumbers);	$parameters = $number_of_variables; 
 					my @blockelts = @{$blockref};
 					$blockelts[0] = ( $blockelts[0] + $number_of_variables );
-					my @newblockelts = @{$blocks[$countblock]};		
+					my @newblockelts = @{$blockref[$countblock]};		
 					$newblockelts[0] = ( $newblockelts[0] + $number_of_variables );
 
 					sub def_filenew
@@ -7027,13 +7035,921 @@ TTT
 					&exec(\@varnumbers, $countblock, $countcase, \@newvarnumbers, \@uplift, \@downlift, \@blocks, \@blockelts, \@newblockelts, \@overlap);	
 					$countblock++;
 				}
+				$countcase++;
 			}
+			
+			
+			
+			
+			
+			
+			
+			
+			elsif ( $generatechance eq "y" )
+			{
+				my $countcase = 0;
+				foreach my $case (@caseseed) # in $casefile there may be a @casegroup. If not, it is fabricated from @casedescription and @chancefile
+				{
+					my @blockrefs = @{$case};
+					
+					my $countblock = 1;
+					my (@varnumbers, @newvarnumbers, @chance, @newchance);
+					
+					
+					################################	
+					#>
+					$countblocks = 0;
+				
+					$iter = $iters[$countcase];
+					my $countfirstline = 0;
+					my $totalsize;
+					my $totaloverlapsize;
+					my $totalnetsize;
+					my @localcommonances;
+					my @commonanceratios;
+					
+					my $commonalityflow;
+					my $recombinationflow,
+					my $informationflow;
 
-			$countcase++;
+					my $totalcommonalityflow;
+					my $totalrecombinationflow;
+					my $totalinformationflow;
+
+					my $cumulativecommonalityflow;
+					my $cumulativerecombinationflow;
+					my $cumulativeinformationflow;
+					
+					my $localcommonalityflow;
+					my $localrecombinationflow;
+					my $localinformationflow;
+					
+
+					my $addcommonalityflow;
+					my $addrecombinationflow;
+					my $addinformationflow;
+					
+					
+					my $remembercommonalityflow;
+					my $rememberrecombinationflow;
+					my $rememberinformationflow;
+
+					my $cumulativecommonalityflow;
+					my $cumulativerecombinationflow;
+					my $cumulativeinformationflow;
+					
+					my $localrecombinationratio;
+					
+					my $heritageleft;
+					my $heritagecentre;
+					my $heritageright;
+					my $previousblock;
+					
+					my $flatoverlapage;
+					my $rootexpoverlapage;
+					my $expoverlapage;
+					my $flatweightedoverlapage;
+					my $expweightedoverlapage;
+					my $overlap;
+					my $iruif;
+					my @commonalities;
+					my @commonalitiespe;
+					my @recombinations;
+					my @informations;
+					
+					my $stdcommonality;
+					my $stdrecombination;
+					my $stdinformation;
+					
+					my $stdfatminus;
+					my $stdshadow;
+					
+					my $localrecombinalityminusratio;
+					my $localrecombinalityratio;
+					my $localrenewalratio;
+					
+					my $recombinalityminusflow;
+					my $recombinalityflow;
+					my $renewalflow;
+					
+					my $cumulativerecombinalityminusflow;#
+					my $totalrecombinalityminusflow;#
+					my $cumulativerecombinalityflow;#
+					my $totalrecombinalityflow;#
+					my $cumulativerenewalflow;#
+					my $totalrenewalflow;#
+					
+					my $infminusflow;
+					my $cumulativeinfminusflow;
+					my $totalinfminusflow;
+					
+					my $infflow;
+					my $cumulativeinfflow;
+					my $totalinfflow;
+					
+					my $infoflow;
+					my $cumulativeinfoflow;
+					my $totalinfoflow;
+					
+					my @groupminus;
+					my @unionminus;
+					my $refreshmentminus;
+					
+					my @group;
+					my @union;
+					my $refreshment;
+					
+					my @basketminusnow;
+					my @unionminus;
+					my $n_basketminus;
+					my $n_unionminus;
+					
+					my @basketnow;
+					my @union;
+					my $n_basket;
+					my $n_union;
+					
+					my $recombination_ratio;
+					
+					my $proportionhike;
+					
+					my $iruifflow;
+					my $cumulativeiruif;
+					my $totaliruif;
+					
+					my ($commonalityflowproduct, $commonalityflowenhanced, $commonalityflowproductenhanced);
+					my ($cumulativecommonalityflowproduct, $cumulativecommonalityflowenhanced, $cumulativecommonalityflowproductenhanced);
+
+					my @basketageexport;
+					my $averageageexport;
+					my $cumulativeage;
+					my $refreshratio;
+					
+					my $flowratio;
+					my $cumulativeflowratio;
+
+					my $flowageratio;
+					my $cumulativeflowageratio;
+
+					my $shadowexport;
+					
+					my $modiflow;
+					my $cumulativemodiflow;
+					my $cumulativehike;
+					my $cumulativerefreshment;
+					my $reshmentperformance;
+					my $reshmentsize;
+					my $cumulativerefreshmentperformance;
+					my $refreshmentvolume;
+					my $IRUIF;
+					my $mmIRUIF;
+					my @basketlast;
+					my @newbasket;
+					my $averageage;
+					my @valuebasket;
+					my $roofopsvalue = 10;
+					my $otherIRUIF;
+					my $othermmIRUIF;
+					my @otherbasket;
+					my @basketcount;
+					my @finalbasket;
+					my @mmbasketresult;
+					my @mmbasketregen;
+					my $mmresult;
+					my $mmregen;
+					my ($sumnovelty,$lastindicator,$IRUIFnovelty,$IRUIFlastindicator,$IRUIFnoveltysquare,$IRUIFlastindicatorsquare,$IRUIFnoveltycube,$IRUIFlastindicatorcube);
+					my @pastjump;
+					my @pastbunch;
+					my @resbunches;
+					my @scores;
+					my $score;
+					
+					#>
+					######################à
+				
+					foreach my $blockref (@blockrefs)
+					{
+						my @overlap;
+						@varnumbers = @{$varn[$countcase][$countblock-1]};
+						push (@chancelineelms, [ @varnumbers, @varnumbers, @varnumbers ]); # THIS SHOULD BE USEFUL SOONER OR LATER
+						my $number_of_variables = scalar(@varnumbers);	$parameters = $number_of_variables; 
+						my @blockelts = @{$blockref};
+						foreach (@blockelts)
+						{
+							$blockelts[0] = ( $blockelts[0] + $number_of_variables );
+						}
+						
+						my $countertwo = 1;
+						while ($countertwo <= 3)
+						{
+							
+							my $counterone = 1;
+							my @pos;
+							while ($counterone <= $number_of_variables)
+							{
+								push (@pos, $counterone);
+								$counterone++;
+							}
+							$countertwo++;
+						}
+						
+						my @current_chanceseedgroup = @{$chancedata[$countcase]};
+						my @current_chanceseed = @{$current_chanceseedgroup[0]}:
+						
+						my @current_chancedata = @{$chancedata[$countcase]};
+						my $number_ofseedblocks = scalar(@blockelts);
+						my $block_length = $current_chancedata[0];
+						my $block_overlap = $current_chancedata[1];
+						my $number_ofsweeps = $current_chancedata[2];
+
+						my $totalblock_num = ( $number_ofblocks * $number_of_sweeps );
+						my $number_ofblockstobuild = ( $totalblock_num - $number_ofseedblocks );
+						
+						my @wasteblockelts = @blockelts;
+						my $countbuild = 1;
+						while ($countbuild <= $number_ofblockstobuild)
+						{
+							my @chanceproduct = shuffle(@current_chanceseed)
+							my $beginning = int(rand(@$block_length) + $number_of_variables);
+							my @candidateblock_toadd = ($beginninng, $block_length);
+							my @blockelts_totest = push ( @wasteblockelts, [ @candidateblock_toadd ] );
+							my @iters = scalar(@blockelts_totest);
+						
+							
+							
+							
+							
+							#############################################
+							#>
+							
+							my @blk = @{$blockref};
+							my $attachment = $blk[0];
+							my $activeblock = $blk[1];
+							my $zoneend = $blk[3];
+							my $pastattachment;
+							my $pastactiveblock;
+							my $pastzoneend;
+							my $viewsize = $activeblock;
+							
+							#print "\@blk:@blk\n";
+
+							my @zoneoverlaps;
+							my @meanoverlaps;
+							my @zoneoverlapsize;
+							my @meanoverlapsize;
+							my $roofops = 1;
+							my $countops = $roofops;
+							my $counter = 0;
+							while ($countops > 0)
+							{
+								my @pastblk = @{$blockrefs[$countblocks - $countops]};
+								if ($countblocks == 0) { @pastblk = ""; }
+								
+								#print "\@pastblk:@pastblk\n";
+								$pastattachment = $pastblk[0];
+								$pastactiveblock = $pastblk[2];
+								$pastzoneend = $pastblk[3];
+								my @presentslice = @pos[ $attachment..($attachment+$activeblock-1) ];
+								my @pastslice = @pos[ $pastattachment..($pastattachment+$pastactiveblock-1) ];
+								my $lc = List::Compare->new(\@presentslice, \@pastslice);
+								my @intersection = $lc->get_intersection;
+								my $localoverlap = scalar(@intersection);
+								push (@meanoverlapsize, $localoverlap);
+								my $overlapsum = 0;
+								for ( @meanoverlapsize ) { $overlapsum += $_; }
+								$overlap = $overlapsum ;
+								if ($countblocks == 0) { $overlap = 0; }
+								# print "overlap: $overlap\n\n";
+								$countops--;
+								$counter++;
+							}
+							
+							$gohere = "yes";
+							if ($gohere eq "yes")
+							{
+								my $roofops = 2;
+								my $countops = $roofops;
+								my $counter = 0;
+								my @zoneoverlaps;
+								my @meanoverlaps;
+								my @zoneoverlapsize;
+								my @meanoverlapsize;
+								my @basketminus;
+								while ($countops > 1)
+								{
+									my @pastblk = @{$blockrefs[$countblocks - $countops]};
+									$pastattachment = $pastblk[0];
+									$pastactiveblock = $pastblk[2];
+									$pastzoneend = $pastblk[3];
+									my @presentslice = @pos[ $attachment..($attachment+$activeblock-1) ];
+									my @pastslice = @pos[ $pastattachment..($pastattachment+$pastactiveblock-1) ];
+									my $lc = List::Compare->new(\@presentslice, \@pastslice);
+									my @intersection = $lc->get_intersection;
+									push (@basketminus, @intersection);
+									#print "\@basketminus:@basket\n";
+									$stdfatminus = stddev(@basket);
+									my $localoverlap = scalar(@intersection);
+									my $localoverlapsize = $localoverlap; # STEPS HAS TO BE MADE MORE GENERAL, FOR DIVERSE BLOCK SIZES IN A SEARCH.
+									push (@meanoverlapsize, $localoverlap);
+									my $overlapsum = 0;
+									for ( @meanoverlapsize ) { $overlapsum += $_; }
+									$overlapminus = ($overlapsum );
+									@basketminusnow = @basketminus;
+									$countops--;
+									$counter++;
+								}
+							}
+							@unionminus = uniq(@basketminusnow);
+							$n_basketminus = scalar(@basketminusnow);
+							$n_unionminus = scalar (@unionminus);
+							if ( $n_unionminus == 0) {$n_unionminus = 1;};
+							if ( $n_basketminus == 0) {$n_basketminus = 1;};
+							$refreshmentminus = ( ( $n_unionminus / $n_basketminus )  ); 
+							#print REPORTFILE "\@basketminusnow:@basketminusnow, \@unionminus:@unionminus,\$refreshmentminus:$refreshmentminus\n";
+
+							$goheretoo = "yes";
+							if ($goheretoo eq "yes")
+							{
+								my @zoneoverlaps;
+								my @meanoverlaps;
+								my @zoneoverlapsize;
+								my @meanoverlapsize;
+								my @zoneoverlapweightedsize;
+								my @meanoverlapweightedsize;
+								#my $roofops = $activeblock; ########## TAKE CARE!!!!!
+								# my $roofops = $parameters / 2; 
+								my $roofops = $roofopsvalue; 
+								# my $roofops = $activeblock; 
+								# my $roofops = $parameters; 
+								my $countops = 1;
+								my $flatoverlapsum;
+								my $expoverlapsum;
+								my $flatweightedoverlapsum;
+								my $expweightedoverlapsum;
+								my $counter = 0;
+								my $countage = $roofops;
+								my @basket;
+								
+								my @basketage;
+								my $averageage;
+								my @freshbasket;
+								@basketnow;
+								while ($countops < $roofops)
+								{
+									my @pastblk = @{$blockrefs[$countblocks - $countops]};
+									$pastattachment = $pastblk[0];
+									$pastactiveblock = $pastblk[2];
+									$pastzoneend = $pastblk[3];
+									#my @presentslice = @pos[ $attachment..($attachment+$activeblock-1) ];
+									#foreach my $int (@presentslice) { $int = "$int" . "-" . "$countops"; }
+									my @pastslice = @pos[ $pastattachment..($pastattachment+$pastactiveblock-1) ];
+									my @otherslice = @pastslice;
+									foreach my $int (@pastslice) { $int = "$int" . "-" . "$countops"; }
+									#my $lc = List::Compare->new(\@presentslice, \@pastslice);
+									#my @intersection = $lc->get_intersection;
+									#my @newintersection = @intersection;
+									#if ($countops == $roofops) {push (@basket, @presentslice, @pastslice);}
+									if ($countops <= $roofops) {push (@basket, @pastslice);}
+									if ($countops <= $roofops) {push (@otherbasket, @otherslice);}
+									@newbasket = @basket;
+									
+									
+									@basketnow = @newbasket;
+									@activeblk = @presentslice;
+													
+									$countops++;
+									$counter++;
+									$countage--;
+								}
+							}
+						
+							
+							my @integralslice = @pos[10..19];
+							my @valuebasket;
+							foreach my $el (@integralslice)
+							{
+								my  @freshbasket;
+								foreach my $elm (@basketnow)
+								{
+									my $elmo = $elm;
+									$elmo =~ s/(.*)-(.*)/$1/;
+									if ($el eq $elmo)
+									{
+										push (@freshbasket, $elm);
+									}
+								}
+								@freshbasket = sort(@freshbasket);
+								#print "freshbasket:@freshbasket\n";
+								
+								my $winelm = $freshbasket[0];
+								# print "winelm: $winelm\n";
+								push (@valuebasket,$winelm);
+								
+								foreach my $elt (@integralslice)
+								{	
+									foreach my $elem (@valuebasket)
+									{
+										unless ($elem eq "")
+										{
+											my $elmo = $elem;
+											$elmo =~ s/(.*)-(.*)/$1/;
+											#print "sequence:$countcase,\$countblocks:$countblocks,\@valuebasket:@valuebasket,elmo:$elmo,n\n";
+											if ($elmo ~~ @integralslice)						
+											{ 
+												#print "there's $elmo\n";
+											}
+											else 
+											{
+												#print "there isn't $elmo\n";
+												if ($countblocks > $roofops){	my $eltinsert = "$elmo" . "-" . "$roofops";}
+												else {	my $eltinsert = "$elmo" . "-" . "$countblocks";}
+												push (@valuebasket, $eltinsert);
+											}
+										}
+									}
+								}
+								
+							}
+							
+							
+							
+							
+							
+							#print "valuebasket: @valuebasket\n";
+							
+							my $sumvalues = 0;
+							my @finalbasket;
+							foreach my $el (@valuebasket)
+							{
+								my $elmo = $el;
+								$elmo =~ s/(.*)-(.*)/$2/;
+								$sumvalues = $sumvalues + $elmo;
+								push (@finalbasket, $elmo);
+								
+							}
+							
+							
+							my $sizeloop = max(@finalbasket);		
+							
+
+							my @presentjump;
+							my @presentbunch;
+							my @resbunch;
+							if ($countblocks > 1)
+							{
+								my @pastblk = @{$blockrefs[$countblocks - 1]};
+								my @presentblk = @{$blockrefs[$countblocks]};
+								my $pastattachment = $pastblk[0];
+								my $pastactiveblock = $pastblk[2];
+								my $pastzoneend = $pastblk[3];
+								my @pastslice = @pos[ $pastattachment..($pastattachment+$pastactiveblock-1) ];
+								my @presentslice = @pos[ $attachment..($attachment+$activeblock-1) ];
+
+								my $counter = 0;
+								foreach my $presentelm (@presentslice)
+								{
+									my $pastelm = $pastslice[$counter];
+									my $joint = "$pastelm" . "-" . "$presentelm";
+									push (@resbunch, $joint);
+									$counter++;
+								}
+								
+								push (@resbunches, [@resbunch]);
+								my @presentbunch = @{$resbunches[0]};
+								my $countthis = 0;
+								foreach my $elm (@resbunches)
+								{
+									unless ($countthis == 0)
+									{
+										my @pastbunch = @{$elm};
+										my $lc = List::Compare->new(\@presentbunch, \@pastbunch);
+										my @intersection = $lc->get_intersection;
+										
+										push ( @scores, scalar(@intersection));
+										#print "presentbunch:@presentbunch, pastbunch:@pastbunch, intersection:@intersection, \nscores:@scores\n\n";
+									}
+									$countthis++;
+								}
+								#print "scores; @scores\n";
+								$score = max(@scores);
+								#print "scalarpresentjump: " . scalar(@presentjump) . "\n";
+								my $newoccurrences = $activeblock - $score;
+								$novelty = $newoccurrences / $number_of_variables ; # NSM, Novelty of the Search Move
+								# my $novelty = ($steps ** $newoccurrences) / ($steps ** $number_of_variables );
+
+							}
+							
+							my $averageage = ($sumvalues / $parameters);
+							
+							my $n1_averageage = 1 / $averageage; # FSW, Freshness of the Search Wake
+							
+							
+							my $lastindicator = ($n1_averageage * $novelty); # URR, Usefulness of Recursive Recombination
+							# my $lastindicator = ($n1_averageage * $sumnovelty ) ** ( 1 / 2 );
+							
+							my $stddev = stddev(@finalbasket);
+							
+							if ($stddev == 0) {$stddev = 0.0001;}
+							
+							my $n1_stddev = 1 / $stddev;
+							
+							my $mix = $averageage * $stddev;
+							
+							$result = 1 / $mix;
+							
+							push (@mmbasketresult, $result);
+							# if (scalar(@mmbasketresult) > 10) { shift @basketresult; }
+							$mmresult = mean(@mmbasketresult);
+									
+							$regen = $n1_averageage;
+							
+							push (@mmbasketregen, $regen);
+							# if (scalar(@mmbasketregen) > 10) { shift @basketregen; }
+							$mmregen = mean(@mmbasketregen);
+							
+									
+							#$averageagesize = ($steps ** $sumvalues) / ($steps ** $parameters);
+							
+							#$n1_averageagesize = 1 / $averageagesize;
+							
+							#$otheraverageage = $steps ** $averageage;
+							
+							#$otheraverageage = $averageage ** 2;
+							
+							#$otheraverageage3 = $averageage ** 3;
+							#$otheraverageage4 = $averageage ** 4;
+							
+							
+							#$otheraverageage = ( ( ($steps ** $sumvalues) / ($steps ** $roofopsvalue) ) ** (1/2));
+							# print "averageage: $averageage\n";
+
+							#$hikefactor = 1 / $averageage;
+							#$otherhikefactor = 1 / $otheraverageage;
+							
+							
+							#foreach my $elm (@integralslice)
+							#{
+							#	my $count = 0;
+							#	foreach my $elt (@otherbasket)
+							#	{
+							#		if ($elm eq $elt)
+							#		{
+							#			$count++;
+							#		}
+							#	}
+							#	push (@basketcount, $count);
+							#}
+									
+							#$stdcount = stddev(@basketcount);
+							#$stdcountsize = ($steps ** $stcount);
+							
+							#$downfactor = $stdcountsize * $averageagesize;
+							#$otherhikefactor = 1 / $downfactor;
+							
+							
+							#$otherhikefactor3 = 1 / $otheraverageage3;
+							#$otherhikefactor4 = 1 / $otheraverageage4;
+							print "sequence:$countcase,\$countblocks:$countblocks,\@valuebasket:@valuebasket,\@finalbasket:@finalbasket,averageage:$averageage,\$stddev:$stddev,\$mix:$mix,\$result:$result,\$mixsize:$mixsize,\$regen:$regen,\$score:$score,novelty:$novelty,\$lastindicator:$lastindicator\n\n";
+						
+							print REPORTFILE "sequence:$countcase,\$countblocks:$countblocks,\@valuebasket:@valuebasket,\@finalbasket:@finalbasket,averageage:$averageage,\$stddev:$stddev,\$mix:$mix,\$result:$result,\$mixsize:$mixsize,\$regen:$regen,\$score:$score,\$novelty:$novelty,\$lastindicator:$lastindicator\n\n";
+							# print REPORTFILE "sequence:$countcase,\@basketnow:@basketnow,\@union:@union,\$refreshment:$refreshment,\@shadowexport,@shadowexport,\@unionage:@unionage,\$refreshment:$refreshment,\$refreshmentage:$refreshmentage,\$proportionhike:$proportionhike,\$hike:$hike,\@basketageexport:@basketageexport,\$averageageexport:$averageageexport\n\n";
+							# print REPORTFILE "sequence:$countcase,\@basketnow:@basketnow,\@basketageexport:@basketageexport,\$averageageexport:$averageageexport,\$stdage:$stdage\n\n";
+							
+							
+							
+							#print REPORTFILE "\$countbundlesgroup,\$countcase,\$countblocks,\$overlapsize,\$localsize,\$localnetsize,\$totalsize,\$totaloverlapsize,\$totalnetsize,\$commonalityratio,\$commonality_volume,\$commonalityflow,\$overlap,\$overlapsize,\$overlapminus,\$overlapminussize,\$flatoverlapage,\$rootflatoverlapage,\$expoverlapage,\$rootexpoverlapage,\$flatoverlapage,\$rootflatoverlapage,\$expoverlapage,\$rootexpoverlapage\n"; 
+							#print REPORTFILE "$countbundlesgroup,$countcase,$countblocks,$overlapsize,$localsize,$localnetsize,$totalsize,$totaloverlapsize,$totalnetsize,$commonalityratio,$commonality_volume,$commonalityflow,$overlap,$overlapsize,$overlapminus,$overlapminussize, $flatoverlapage, $rootflatoverlapage, $expoverlapage, $rootexpoverlapage,$flatoverlapage, $rootflatoverlapage, $expoverlapage, $rootexpoverlapage\n"; 
+							
+							# END CALCULATION OF THE LOCAL SEARCH AGE.
+							#################################################################################################################
+							#################################################################################################################
+
+							$averageagesize = ($steps ** $averageageexport);
+
+							@centrebefores;
+							@centreafters;
+							$varsnum = ( $activeblock + $zoneend);
+							$limit = ($attachment + $activeblock + $zoneend);
+							$countafter = 0;
+							$counterrank = 0;
+							$leftcounter = $attachment;
+							$rightcounter = ($attachment + $activeblock);
+							$countblock = 0;
+									
+							$countfirstline = 0;
+							
+							if ($countblocks > 0) {$antesize = ( $steps ** $pastactiveblock );}
+							$postsize = ( $steps ** $activeblock );
+							$localsize = $postsize + $antesize;
+							if ($countblocks == 0) 
+							{
+								$localsize = $postsize;
+								$localsizeproduct = $postsize;
+							}
+							$localsizeproduct = $postsize * $antesize;
+							
+							$overlapsize = ($steps ** $overlap);
+							if ($overlap == 0) {$overlapsize = 1;}
+							
+							if ( ( $countcase == 0) and ($countblocks == 0) )
+							{
+								print OUTFILEWRITE "\$countcase,\$countblocks,\$attachment,\$activeblock,\$zoneend,\$pastattachment,\$pastactiveblock,\$pastzoneend,\$antesize,\$postsize,\$overlap,\$overlapsize,\$overlapminus,\$overlapminussize,\$overlapsum,\$overlapsumsize,\$localsize,\$localnetsize,\$totalsize,\$totaloverlapsize,\$totalnetsize,\$commonalityratio,\$commonality_volume,\$commonalityflow,\$recombinationflow,\$informationflow,\$cumulativecommonalityflow,\$cumulativerecombinationflow,\$cumulativeinformationflow,\$totalcommonalityflow,\$totalrecombinationflow,\$totalinformationflow,\$addcommonalityflow,\$addrecombinationflow,\$addinformationflow,\$recombinalityminusflow,\$cumulativerecombinalityminusflow,\$totalrecombinalityminusflow,\$recombinalityflow,\$cumulativerecombinalityflow,\$totalrecombinalityflow,\$renewalflow,\$cumulativerenewalflow,\$totalrenewalflow,\$infoflow,\$cumulativeinfoflow,\$totalinfoflow,\$refreshmentminus,\$recombination_ratio,\$proportionhike,\$hike,\$refreshment,\$infflow,\$cumulativeinfflow,\$totalinfflow,\$iruiflow,\$cumulativeiruif,\$totaliruif,\$averageageexport,\$cumulativeage,\$stdage,\$refreshratio,\$averageagesize,\$flowratio,\$cumulativeflowratio,\$flowageratio,\$cumulativeflowageratio,\$modiflow,\$cumulativemodiflow,\$refreshmentsize,\$refreshmentperformance,\$cumulativerefreshmentperformance,\$refreshmentvolume,\$IRUIF,\$mmIRUIF,\$IRUIFvolume,\$mmIRUIFvolume,\$hikefactor,\$otherIRUIF,\$othermmIRUIF,\$otherIRUIFvolume,\$othermmIRUIFvolume,\$averageage,\$steddev,\$mix,\$result,\$mixsize,\$regen,\$n1_averageage,\$n1_stddev,\$n1_averageagesize,\$mmresult,\$mmregen,\$novelty,\$lastindicator,\$IRUIFnovelty,\$IRUIFlastindicator,\$IRUIFnoveltysquare,\$IRUIFlastindicatorsquare,\$IRUIFnoveltycube,\$IRUIFlastindicatorcube"; 
+							}
+							
+							if  ($countblocks == 0)
+							{
+								$antesize = 0;
+								$overlap = 0;
+								$overlapsize = 0;
+								$overlapminus = 0; 
+								$overlapminussize = 0; 
+							}
+							if ($overlapminussize == 0) {$overlapminussize = 1;}
+							if ($overlapsize == 0){$overlapsize = 1;}
+							if ($totaloverlapsize == 0){$totaloverlapsize = 1;}
+							$overlapminussize = ($steps ** $overlapminus);
+							$overlapsum = ($overlapsize /$overlapminussize );
+							$overlapsumsize = ($steps ** $overlapsum);
+							if ($counterblocks == 0) {$overlapsumsize = 1;}
+							
+							#if ($overlapminus == 0) {$overlapminus = 1;}
+							$localnetsizeproduct = ( $localsizeproduct - $overlapsize );
+							if ($localnetsizeproduct == 0) {$localnetsizeproduct = 1;}
+							
+							if ($totalsize == 0){$totalsize = 1;}
+							$localnetsize = ( $localsize - $overlapsize ); 
+							if ($localnetsize == 0) {$localnetsize = 1;}
+							$totalsize = $totalsize + $postsize;
+							
+							$totaloverlapsize = $totaloverlapsize + $overlapsize;
+							$totalnetsize = ($totalsize - $totaloverlapsize); 
+							if ($totalnetsize == 0) { $localcommonalityratio = 0; }
+							
+							$refreshratio = $overlapsize/$overlapminussize;
+							
+							if  ($countblocks == 0)
+							{ 
+
+								$localcommonalityratio = 1; #
+								
+								# $localrecombinationratio = 1;
+								
+								$localrecombinationratio = 1; #
+								
+								$localiruifratio = 1; # THIS IS THE COMMONALITY OF THE SHADOW AT TIME STEP - 2.
+								
+								# $localrecombinationratio = 1; #
+								
+								# $localrecombinationratio = 1; #
+								
+								$localrenewalratio = 1; #
+								
+								$localinfminusratio =  1; #
+								$localinfratio =  1; #
+								
+								
+								
+								$localrecombinalityminusratio = 1; #
+								$localrecombinalityratio = 1; #
+								
+								$localcommonalityratioenhanced = 1; 
+								$localcommonalityratioproduct = 1; 
+								$localcommonalityratioproductenhanced = 1; 
+
+							}
+							elsif ($countblocks > 0) 
+							{ 
+								$localcommonalityratio = (  $overlapsize/ ( ( $antesize * $postsize) ** (1/2))); #
+								
+								# $localrecombinationratio = (($localcommonalityratio * $hike) ** (1/2));
+								
+								$localrecombinationratio = ( $overlapminussize / $overlapsize / ( ( $antesize * $postsize) ** (1/2)) ); #
+								
+								$localiruifratio = ( $overlapminussize / ( ( $antesize * $postsize) ** (1/2)) ); # THIS IS THE COMMONALITY OF THE SHADOW AT TIME STEP - 2.
+								
+								# $localrecombinationratio = ( (( $flatoverlapagesize * $proportionhike) )  / ( ( $antesize * $postsize) ** (1/2)) ); #
+								
+								# $localrecombinationratio = (  ($proportionhike * $overlapminussize ) /  ( ( $antesize * $postsize) ** (1/2)) ); #
+								
+								$localrenewalratio = (  $overlapminussize / ( ( $antesize * $postsize) ** (1/2)) ); #
+								
+								$localinfminusratio =  (  $overlapsize * $refreshmentminus / ( ( $antesize * $postsize) ** (1/2)) ); #
+								$localinfratio =  (  $overlapsize * $refreshment / ( ( $antesize * $postsize) ** (1/2)) ); #
+								
+								
+								$localrecombinalityminusratio = (  $overlapsize * $stdfatminus / ( ( $antesize * $postsize) ** (1/2)) ); #
+								$localrecombinalityratio = (  $overlapsize * $stdshadow / ( ( $antesize * $postsize) ** (1/2)) ); #
+								
+								$localcommonalityratioenhanced = ( $overlapsumsize / ( $localnetsize / 2) ); 
+								$localcommonalityratioproduct = ( ( $overlapsize **2 ) / $localnetsizeproduct ); 
+								$localcommonalityratioproductenhanced = ( ( $overlapsumsize **2 ) / $localnetsizeproduct ); 
+
+							}
+
+							if ($totalnetsize > 0) 
+							{ 
+								$commonalityratio = ( $totaloverlapsize / $totalnetsize );
+							}
+							$commonality_volume = ($totalnetsize * $commonalityratio);#
+							
+						
+							
+							if  ($countblocks == 0)
+							{ 
+								$commonalityflow = $postsize  ** (1/3) ;#
+								$recombinationflow = $postsize  ** (1/3) ;#
+								$informationflow = (($commonalityflow * $recombinationflow) ** (1/3));
+								$renewalflow = $postsize  ** (1/3) ;#
+								
+								$infminusflow = $postsize  ** (1/3) ;#
+								$infflow = $postsize  ** (1/3) ;#
+								
+								$iruiflow = $postsize ** (1/3) ;
+								
+								$recombinalityminusflow = $postsize  ** (1/3) ;#
+								$recombinalityflow = $postsize  ** (1/3) ;#
+								
+								$commonalityflowproduct = $postsize ** (1/3) ;
+								$commonalityflowenhanced = $postsize ** (1/3)  ;
+								$commonalityflowproductenhanced =  $postsize  ** (1/3) ;
+							}
+							elsif ($countblocks > 0)
+							{
+									$commonalityflow = (  $commonalityflow * $localcommonalityratio  * $postsize)  ** (1/3) ;# CF, Commonality Flow
+									# $commonalityflow = (  $commonalityflow * (($localcommonalityratio  * $postsize)  ** (1/3))) ;#
+									$recombinationflow = ( $recombinationflow * (($localrecombinationratio  * $postsize)  ** (1/3))) ;#
+									$informationflow = (($commonalityflow * $recombinationflow) ** (1/3));
+									$renewalflow = ( $renewalflow * (($localrenewalratio  * $postsize)  ** (1/3))) ;#
+									
+									$infminusflow = ( $infminusflow * (($localinfminusratio  * $postsize)  ** (1/3))) ;#
+									$infflow = ( $infflow * (($localinfratio  * $postsize)  ** (1/3)) );#
+									
+									$iruiflow = ( $iruifflow * (($localiruifratio * $postsize) ** (1/3)));
+									
+									$recombinalityminusflow = ( $recombinalityminusflow * (($localrecombinalityminusratio  * $postsize)  ** (1/3)));#
+									$recombinalityflow = ( $recombinalityflow * (($localrecombinalityratio  * $postsize)  ** (1/3))) ;#
+									
+									$commonalityflowproduct = ( $commonalityflowproduct * (($localcommonalityratioproduct * $postsize ) ** (1/3)));
+									$commonalityflowenhanced = ( $commonalityflowenhanced * (($postsize * $localcommonalityratioenhanced )  ** (1/3)))  ;
+									$commonalityflowproductenhanced = ( $commonalityflowproductenhanced * (($localcommonalityratioproductenhanced * $postsize ) ** (1/3)));
+							}	
+							 
+
+							$infoflow = ( ($commonalityflow *  $recombinationflow  ) ** ( 1 / 2 ) );
+							
+							$recombination_ratio = ( $flatoverlapage  / $overlapsize );
+
+							$flowratio = $iruifflow / $commonalityflow;
+
+							# $flowageratio = 1 / $flatoverlapagesize;
+
+							$modiflow = ( ($commonalityflow *  $hike  ) ** ( 1 / 2 ) );
+							
+							$cumulativemodiflow = $cumulativemodiflow + $modiflow;
+
+							$cumulativehike = $cumulativehike + $hike;
+							# if ($countblocks == 0) { $cumulativerefreshment = 1; }
+							$refreshnmentsize = (steps ** $refreshnment);
+							$cumulativerefreshment = $cumulativerefreshment + $refreshmentsize;
+							$cumulativerefreshmentperformance = $cumulativerefreshmentperformance + $refreshmentperformance;
+
+							$refreshmentvolume = $cumulativerefreshmentperformance * $totalnetsize;
+
+							
+							
+							# if ($cumulativeflowageratio == 0) {$cumulativeflowageratio = 1;}
+							# $cumulativeflowageratio = ( ($cumulativeflowageratio * $flowageratio) ** (1/2));
+							$cumulativeflowageratio = $cumulativeflowageratio + $flowageratio;
+
+							
+							if ($countblocks > 0) {$addcommonalityflow = $addcommonalityflow + abs($commonalityflow - $remembercommonalityflow);}
+							if ($countblocks > 0) {$addrecombinationflow = $addrecombinationflow + abs($recombinationflow - $rememberrecombinationflow);}
+							if ($countblocks > 0) {$addinformationflow = $addinformationflow + abs($informationflow - $rememberinformationflow);}
+							
+							$remembercommonalityflow = $commonalityflow;
+							$rememberrecombinationflow = $recombinationflow;
+							$rememberinformationflow = $informationflow;
+							
+							push (@commonalities, $commonalityflow);#
+							push (@recombinations, $recombinationflow);#
+							push (@informations,$informationflow);
+							$stdcommonality = stddev(@commonalities);#
+							$stdrecombination = stddev(@recombinations);#
+							$stdinformation = stddev(@informations);#
+								
+							$cumulativecommonalityflow = ($cumulativecommonalityflow + $commonalityflow ); # CCF, Cumulative Commonality FLow
+							
+							$IRUIF = $IRUIF + ( $totalnetsize * ( $n1_averageage ) );
+							$IRUIFnovelty = $IRUIFnovelty + ( $totalnetsize * ( $novelty ) );
+							$IRUIFlastindicator = $IRUIFlastindicator + ( $totalnetsize * ( $lastindicator ) );
+							$IRUIFnoveltysquare = $IRUIFnoveltysquare + ( $totalnetsize * ( ( $novelty ) ** 2 ));
+							$IRUIFlastindicatorsquare = $IRUIFlastindicatorsquare + ( $totalnetsize * ( ( $lastindicator )  ** 2 ) ); # IRUIF, Indicator of Recursive Usefulness of the Information Flow
+							$IRUIFnoveltycube = $IRUIFnoveltycube + ( $totalnetsize * ( ( $novelty ) ** 3 ));
+							$IRUIFlastindicatorcube = $IRUIFlastindicatorcube + ( $totalnetsize * ( ( $lastindicator )  ** 3 ) );
+							$IRUIFvolume = $IRUIF * $totalnetsize;
+							$mmIRUIF = $mmIRUIF + ( $commonalityflow * ($mmresult ** 2 ) );
+							$mmIRUIFvolume = $mmIRUIF * $totalnetsize;
+							$otherIRUIF = $otherIRUIF + ( $totalnetsize * ($n1_averageage ** 2 ) );
+							$otherIRUIFvolume = $otherIRUIF * $totalnetsize;
+							$othermmIRUIF = $othermmIRUIF + ( $commonalityflow * ($result ** 3 ) );
+							$othermmIRUIFvolume = $othermmIRUIF * $totalnetsize;
+
+							$totalcommonalityflow = $cumulativecommonalityflow * $totalnetsize;#
+							
+							$cumulativeiruif = ($cumulativeiruif + $iruifflow ); # THIS IS THE 
+							$totaliruif = $cumulativeiruif * $totalnetsize;
+
+							$cumulativeflowratio = $cumulativeflowratio + $flowratio;
+							
+							$cumulativerecombinationflow = ($cumulativerecombinationflow + $recombinationflow );#
+							$totalrecombinationflow = $cumulativerecombinationflow * $totalnetsize;#
+							$cumulativeinformationflow = ($cumulativeinformationflow + $informationflow );#
+							$totalinformationflow = $cumulativeinformationflow * $totalnetsize;#
+							$cumulativerenewalflow = ( $cumulativerenewalflow + $renewalflow );#
+							$totalrenewalflow =  $cumulativerenewalflow * $totalnetsize;#
+							
+							$cumulativeinfflow = ( $cumulativeinfflow + $infflow );#
+							$totalinfflow =  $cumulativeinfflow * $totalnetsize;#
+							
+							$cumulativeinfminusflow = ( $cumulativeinfminusflow + $infminusflow );#
+							$totalinfoflow =  $cumulativeinfoflow * $totalnetsize;#
+							
+							$cumulativeinfoflow = ( $cumulativeinfoflow + $infoflow );#
+							$totalinfoflow =  $cumulativeinfoflow * $totalnetsize;#
+							
+							
+							
+							
+							$cumulativerecombinalityminusflow = ($cumulativerecombinalityminusflow + $recombinalityminusflow );#
+							$totalrecombinalityminusflow =  $cumulativerecombinalityminusflow * $totalnetsize;#
+							$cumulativerecombinalityflow = ($cumulativerecombinalityflow + $recombinalityflow );#
+							$totalrecombinalityflow =  $cumulativerecombinalityflow * $totalnetsize;#
+							
+							$cumulativecommonalityflowproduct = $cumulativecommonalityflowproduct + $commonalityflowproduct;
+							$cumulativecommonalityflowenhanced = $cumulativecommonalityflowenhanced + $commonalityflowenhanced;
+							$cumulativecommonalityflowproductenhanced = $cumulativecommonalityflowproductenhanced + $commonalityflowproductenhanced;
+						
+							if ($countblocks == 0) { print OUTFILEWRITE "\n"; }
+							print OUTFILEWRITE "$countcase,$countblocks,$attachment,$activeblock,$zoneend,$pastattachment,$pastactiveblock,$pastzoneend,$antesize,$postsize,$overlap,$overlapsize,$overlapminus,$overlapminussize,$overlapsum,$overlapsumsize,$localsize,$localnetsize,$totalsize,$totaloverlapsize,$totalnetsize,$commonalityratio,$commonality_volume,$commonalityflow,$recombinationflow,$informationflow,$cumulativecommonalityflow,$cumulativerecombinationflow,$cumulativeinformationflow,$totalcommonalityflow,$totalrecombinationflow,$totalinformationflow,$addcommonalityflow,$addrecombinationflow,$addinformationflow,$recombinalityminusflow,$cumulativerecombinalityminusflow,$totalrecombinalityminusflow,$recombinalityflow,$cumulativerecombinalityflow,$totalrecombinalityflow,$renewalflow,$cumulativerenewalflow,$totalrenewalflow,$infoflow,$cumulativeinfoflow,$totalinfoflow,$refreshmentminus,$recombination_ratio,$proportionhike,$hike,$refreshment,$infflow,$cumulativeinfflow,$totalinfflow,$iruiflow,$cumulativeiruif,$totaliruif,$averageageexport,$cumulativeage,$stdage,$refreshratio,$averageagesize,$flowratio,$cumulativeflowratio,$flowageratio,$cumulativeflowageratio,$modiflow,$cumulativemodiflow,$refreshmentsize,$refreshmentperformance,$cumulativerefreshmentperformance,$refreshmentvolume,$IRUIF,$mmIRUIF,$IRUIFvolume,$mmIRUIFvolume,$hikefactor,$otherIRUIF,$othermmIRUIF,$otherIRUIFvolume,$othermmIRUIFvolume,$averageage,$steddev,$mix,$result,$mixsize,$regen,$n1_averageage,$n1_stddev,$n1_averageagesize,$mmresult,$mmregen,$novelty,$lastindicator,$IRUIFnovelty,$IRUIFlastindicator,$IRUIFnoveltysquare,$IRUIFlastindicatorsquare,$IRUIFnoveltycube,$IRUIFlastindicatorcube\n"; 
+
+							$countblocks++;
+							
+							#>
+							####################################################
+							
+						
+						
+						
+							$countbuild++;
+						}
+						
+						
+						my @blockelts = @{$blockref};
+						$blockelts[0] = ( $blockelts[0] + $number_of_variables );
+						my @newblockelts = @{$blocks[$countblock]};		
+						$newblockelts[0] = ( $newblockelts[0] + $number_of_variables );
+						
+						sub def_filenew
+						{
+							$filenew = "$mypath/models/$file" . "_";
+							my $counterfn = 0;
+							foreach my $el (@varn)
+							{
+								$filenew = "$filenew" . "$varn[$counterfn]" . "-" . "$midvalues[$countblock]" . "_" ;
+								$counterfn++;
+							}
+						}
+						if ($countblock == 1) 
+						{ 
+							&def_filenew;
+							@uplift = ($filenew); 
+							@downlift = ($filenew);
+						}
+			
+						foreach my $el (@varnumbers)
+						{
+							foreach my $elt (@newvarnumbers)
+							{
+								if ( $el eq $elt)
+								{
+									push (@overlap, $el);
+								}
+							}
+						}
+						@overlap = sort(@overlap);
+						&exec(\@varnumbers, $countblock, $countcase, \@newvarnumbers, \@uplift, \@downlift, \@blocks, \@blockelts, \@newblockelts, \@overlap);	
+						$countblock++;
+					}
+					$countcase++;
+				}
 			}
-		elsif ( $generatechance eq "y" )
-		{
-			; # TO DO. ANCHOR1
+			
+			
+			
+			
+			
+			
+			
 		}
 		else
 		{
@@ -7052,6 +7968,8 @@ TTT
 
 	close(OUTFILE);
 	close(TOSHELL);
+	close (OUTFILEWRITE);
+	close ( REPORTFILE);
 	exit;
 
 } # END OF SUB OPTS
@@ -7073,31 +7991,36 @@ Sim::OPTS is a tool for detailed metadesign managing parametric explorations thr
 
 =head1 DESCRIPTION
 
-Sim::OPTS it a tool for detailed metadesign. It morphs models by propagation of constraints through the ESP-r building performance simulation platform and performs  optimization by overlapping block coordinate descent.
+Sim::OPTS it a tool for detailed metadesign. It morphs models by propagation of constraints through the ESP-r building performance simulation platform and performs optimization by overlapping block coordinate descent.
 
-A working knowledge of ESP-r is necessary to use OPTS.  Information about ESP-r can be found at http://www.esru.strath.ac.uk/Programs/ESP-r.htm.
+A working knowledge of ESP-r is necessary to use OPTS. Information about ESP-r can be found at http://www.esru.strath.ac.uk/Programs/ESP-r.htm.
 
-To install OPTS, the command <cpanm Sim::OPTS> has to be issued.  Perl will take care to install all dependencies.  OPTS can be loaded through the command <use Sim::OPTS> in Perl.  For that purpose, the "Devel::REPL" module can be used.  As an alternative, the batch file "opt" (which can be found in the "example" folder in this distribution) may be copied in a work directory and the command <opt> may be issued.  That command will activate the OPTS functions, following the settings specified in a previously prepared configuration file.  When launched, OPTS will ask the path to that file.  Its activity will start after receiving that information.
+To install OPTS, the command <cpanm Sim::OPTS> has to be issued. Perl will take care to install all dependencies. OPTS can be loaded through the command <use Sim::OPTS> in Perl. For that purpose, the "Devel::REPL" module can be used. As an alternative, the batch file "opt" (which can be found in the "example" folder in this distribution) may be copied in a work directory and the command <opt> may be issued. That command will activate the OPTS functions, following the settings specified in a previously prepared configuration file. When launched, OPTS will ask the path to that file. Its activity will start after receiving that information. 
+The OPTS configuration file has to contain a suitable description of the operations to be accomplished pointing to an existing ESP-r model. The OPTS configuration file is extended by other files in which the search structures to be searched into or to be generated are specified. Those files are designated with the "$casefile", "$chancefile", "$caseed" and "$chanceseed" variables. But if wanted the variables contained in those files can be written directly in the main configuration file.
 
-The OPTS configuration file has to contain a suitable description of the operations to be accomplished pointing to an existing ESP-r model.  The OPTS configuration file is extended by other files in which the search structures to be searched into or to be generated are specified.  Those files are designated with the "$casefile", "$chancefile", "$caseed" and "$chanceseed" variables.
+In this distribution there is a set of commented template files and an example of OPTS configuration file. The example has been written for a previous version of OPTS and will probably not work with the present one due to minor changes in the header variables. The complete set of files linked to that configuration file may be downloaded athttp://figshare.com/articles/Dataset_of_a_computational_research_on_block_coordinate_search_based_on_building_performance_simulations/1158993 .
 
-In this distribution there is a set of commented template files and an example of OPTS configuration file.  The example has been written for a previous version of OPTS and will probably not work with the present one due to minor changes in the header variables. The complete set of files linked to that configuration file may be downloaded at http://figshare.com/articles/Dataset_of_a_computational_research_on_block_coordinate_search_based_on_building_performance_simulations/1158993 . 
+To run OPTS without making it act on model files, the setting <$exeonfiles = "n";> should be specified in the configuration file. By setting the variable "$toshell" to the chosen path, the path for the text file that will receive the commands in place of the shell should be specified.
 
-To run OPTS without making it act on model files, the setting <$exeonfiles = "n";> should be specified in the configuration file.  By setting the variable "$toshell" to the chosen path, the path for the text file that will receive the commands in place of the shell should be specified.
+OPTS will give instruction to ESP-r via shell to make it modify the building model in different copies. Then, if asked, it will run simulations, retrieve the results, extract some information from them and order it as requested.
 
-OPTS will give instruction to ESP-r via shell to make it modify the building model in different copies.  Then, if asked, it will run simulations, retrieve the results, extract some information from them and order it as requested.
+Besides an OPTS configuration file, also configuration files for propagation of constraints may be created. This will give to the morphing operations much greater flexibility. Propagation of constraints can regard the geometry of a model, solar shadings, mass/flow network, and/or controls; and also, how those pieces of information affect each other and daylighting (calculated through the Radiance lighting simulation program). Example of configuration files for propagation of constraints are included in this distribution.
 
-Besides an OPTS configuration file, also configuration files for propagation of constraints may be created.  This will give to the morphing operations much greater flexibility.  Propagation of constraints can regard the geometry of a model, solar shadings, mass/flow network, and/or controls; and also, how those pieces of information affect each other and daylighting (calculated through the Radiance lighting simulation program).  Example of configuration files for propagation of constraints are included in this distribution.
+The ESP-r model folders and the result files that will be created in a parametric search will be named as the root model, followed by a "_" character, followed by a variable number referred to the first morphing phase, followed by a "-" character, followed by an iteration number for the variable in question, and so on for all morphing phases. For example, the model instance produced in the first iteration for a root model named "model" in a search constituted by 3 morphing phases and 5 iteration steps each will be named "model_1-1_2-1_3-1"; and the last one "model_1-5_2-5_3-5".
 
-The ESP-r model folders and the result files that will be created in a parametric search will be named as the root model, followed by a "_" character,  followed by a variable number referred to the first morphing phase, followed by a "-" character, followed by an iteration number for the variable in question, and so on for all morphing phases.  For example, the model instance produced in the first iteration for a root model named "model" in a search constituted by 3 morphing phases and 5 iteration steps each will be named "model_1-1_2-1_3-1"; and the last one "model_1-5_2-5_3-5".
-
-To describe a block search, the most important variables to be taken into account in a configuration file are "@varn" - which represents the sequence of design variables - and "@casegroup" - which represent the sequence of decompositions to be taken into account.  After joining "@varn" with two copies of itself, OPTS will work in the middle of the so-obtained sequence, but the user is not required to be aware of that.  How "@varn" and "@casegroup" should be specified is more quickly described with a couple of examples. 
+To describe a block search, the most important variables to be taken into account in a configuration file are "@varn" - which represents the sequence of design variables - and "@casegroup" - which represent the sequence of decompositions to be taken into account. After joining "@varn" with two copies of itself, OPTS will work in the middle of the so-obtained sequence, but the user is not required to be aware of that. How "@varn" and "@casegroup" should be specified is more quickly described with a couple of examples.
 
 1) If brute force optimization is sought for a case composed by 4 parameters, the following settings should be specified: <@varn = (1, 2, 3, 4);> and <@casegroup = ( [ [0, 4] ] ) ;>.
 
-b) If a block search is sought on the basis of 5 parameters, with 4 overlapping active blocks composed by 3 parameters each having the leftmost parameters in position 0, 1, 2 and 4, and two search sweeps have to be performed, with the second sweep having the parameters in inverted order and the leftmost parameters in position 2, 4, 3 and 1, the following settings should be specified: <@varn = ( [ [1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [5, 4, 3, 2, 1], [5, 4, 3, 2, 1], [5, 4, 3, 2, 1], [5, 4, 3, 2, 1]] );> and <@casegroup = ( [ [0, 3], [1, 3], [2, 3], [4, 3] ], [2, 3], [4, 3], [3, 3], [1, 3] ] );>.  By the same strategy, that is, playing with the order of the parameters' sequence, blocks with non contiguous parameters can be modelled.  By the way, nothing prevents that the blocks are of different size (i.e. each composed by a different number of parameters).
+2) If optimization is sought for two cases (brute force, again, for instance, with a different set of parameters), the two sets of parameters in questions has to be specificied as sublists of the general parameter list: <@varn = (1, 2, 3, 4, 6, 7, 8);> and <@casegroup = ( [ [0, 4] , [5, 8] ] ) ;>.
 
-OPTS is a program I have written as a side project since 2008 with no funding.  It was the first real program I attempted to write.  From time to time I add some parts to it.  The parts of it that have been written earlier are the ones that are coded in the strangest manner.
+3) If a block search is sought on the basis of 5 parameters, with 4 overlapping active blocks composed by 3 parameters each having the leftmost parameters in position 0, 1, 2 and 4, and two search sweeps have to be performed, with the second sweep having the parameters in inverted order and the leftmost parameters in position 2, 4, 3 and 1, the following settings should be specified: <@varn = ( [ [1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [5, 4, 3, 2, 1], [5, 4, 3, 2, 1], [5, 4, 3, 2, 1], [5, 4, 3, 2, 1]] );> and <@casegroup = ( [ [0, 3], [1, 3], [2, 3], [4, 3] ], [2, 3], [4, 3], [3, 3], [1, 3] ] );>.
+
+4) By playing with the order of the parameters' sequence, blocks with non-contiguous parameters can be modelled. Example: <@varn = ( [ [1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [5, 2, 4, 1, 3], [2, 4, 1, 5, 2], [5, 1, 4, 2, 3], [5, 1, 4, 2, 3] ] );> and <@casegroup = ( [ [0, 3], [1, 3], [2, 3], [4, 3] ], [2, 3], [4, 3], [3, 3], [1, 3] ] );>.
+
+5) Nothing prevents that the blocks are of different size (i.e. each composed by a different number of parameters). Example: <@varn = ( [ [1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [5, 2, 4, 1, 3], [2, 4, 1, 5, 2], [5, 1, 4, 2, 3], [5, 1, 4, 2, 3] ] );> and <@casegroup = ( [ [0, 3], [1, 3], [2, 3], [4, 3] ], [2, 2], [4, 2], [3, 4], [1, 4] ] );>.
+
+OPTS is a program I have written as a side project since 2008 with no funding. It was the first real program I attempted to write. From time to time I add some parts to it. The parts of it that have been written earlier are the ones that are coded in the strangest manner.
 
 =head2 EXPORT
 

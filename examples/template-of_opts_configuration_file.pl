@@ -34,21 +34,26 @@ $generatechance =
 "n"; 
 # IF "n", SWEEP PATTERNS ARE TAKEN FROM $chancefile, WHERE THE SEAERCH STRUCTURES HAVE ALL EXPLICITLY SPECIFIED. IF "y", SWEEP PATTERN ARE GENERATED FROM $chanceseed.
 
-$casefile = 
+$casefile_ = 
 "./a_casefile.pl"; 
 # THIS BRINGS @casedata AND MAYBE @casegroup IF $generatechance IS SET TO "n".
 
-$chancefile = 
+$chancefile_ = 
 "./a_chancefile.pl"; 
 # THIS BRINGS @chanceseriesIF $generatechance IS SET TO "n".
 
-$caseseed = 
+$caseseed_ = 
 "./a_caseseed.pl"; 
 # FROM THIS @casedata AND MAYBE @casegroup ARE PRODUCED IF $generatechance IS SET TO "y", RESULTING IN A NEW $casefile.
 
-$chanceseed = 
+
+$chanceseed_ = 
 "./chanceseed.pl"; 
 # FROM THIS @chanceseries IS PRODUCED IF $generatechance IS SET TO "y", RESULTING IN A NEW $chancefile.
+
+$chancedata =
+"./chancedata.pl";
+# IT IS USED IF $generatechance IS SET TO "y". IT CONTAINS INFORMATIONS ABOUT THE BLOCKS TO BE GENERATED.
 
 $file = 
 "ame";  
@@ -107,11 +112,15 @@ $fileconfig=(
 $outfile = "$mypath/$file-$fileconfig.feedback.txt"; 
 # Write here the name of the files in which reports will be printed. This may be useful to debug the program.  But in order to do this, you'll have to mess up with the source code to specify what you want to be printed.
 
+$outfilewrite = "$mypath/outfilewrite.csv";
+
 $toshell = 
 "$mypath/$file-$fileconfig.feedbacktoshell.txt"; 
 # name of the files into which the output to the shell will be printed. This may be useful to check the inner working of the program, or to postpone the operations with ESP-r.  In that case, the printed has to be made executable to be launched from the shell afterward. 
 
 $exeonfiles = "y"; # say “y” if you want OPTS's work be executed on files and directories. As an alternative, you may want to say “no” because you may want to output to a shell file that you can study and make executable afterwards.
+
+my $reportfile = "$mypath/reportfile.txt";
 
 
 $simnetwork = 
